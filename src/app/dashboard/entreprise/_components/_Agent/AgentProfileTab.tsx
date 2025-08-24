@@ -12,14 +12,14 @@ interface AgentProfileTabProps {
   formData: Partial<Agent>;
   onInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void;
   onCheckboxChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  
+
   // Service management
   services: Service[];
   isAddingService: boolean;
   selectedServiceId: string;
   selectedNiveauService: string;
   selectedServiceNiveaux: NiveauService[];
-  
+
   // Handlers
   onAddService?: () => void;
   onRemoveFromService?: (serviceId: string) => void;
@@ -84,7 +84,7 @@ const AgentProfileTab: React.FC<AgentProfileTabProps> = ({
             </div>
           </div>
         );
-        case 'journalier':
+      case 'journalier':
         return (
           <div className="grid grid-cols-4 items-center gap-4">
             <div className="font-semibold text-right">Jour du mois:</div>
@@ -95,7 +95,7 @@ const AgentProfileTab: React.FC<AgentProfileTabProps> = ({
                 value={formData.intervallePaiement || 1}
                 onChange={onInputChange}
                 min="1"
-        
+
                 placeholder="Nombre de Jour"
               />
               <span className="text-xs text-gray-500 mt-1">Jour du mois où le paiement sera effectué</span>
@@ -239,7 +239,7 @@ const AgentProfileTab: React.FC<AgentProfileTabProps> = ({
                 onChange={onInputChange}
                 className="w-full border border-gray-300 rounded-md px-3 py-2"
               >
-                
+
                 {walletOptions.map((option) => (
                   <option key={option.value} value={option.value}>
                     {option.label}
@@ -352,7 +352,7 @@ const AgentProfileTab: React.FC<AgentProfileTabProps> = ({
                         {formData.aPayer ? '✅ Agent à payer' : '❌ Agent non payé'}
                       </span>
                       <span className="text-xs text-gray-500">
-                        {formData.aPayer 
+                        {formData.aPayer
                           ? 'Cet agent recevra des paiements automatiques selon la fréquence définie'
                           : 'Cet agent ne recevra pas de paiements automatiques'
                         }
@@ -367,58 +367,194 @@ const AgentProfileTab: React.FC<AgentProfileTabProps> = ({
       )}
 
       {/* Date de prochain virement avec heure */}
-      <div className="grid grid-cols-4 items-center gap-4">
-        <div className="font-semibold text-right">Prochain virement:</div>
-        <div className="col-span-3">
-          {isEditing ? (
-            <div className="flex items-center">
-              <Calendar className="w-4 h-4 mr-2 text-gray-500" />
-              <Input
-                type="datetime-local"
-                name="dateProchainVirement"
-                value={(() => {
-                  const date = formData.dateProchainVirement;
-                  if (!date) return "";
-                  
-                  try {
-                    if (date instanceof Date) {
-                      return date.toISOString().slice(0, 16);
-                    } else if (typeof date === 'string') {
-                      // Si c'est déjà au format ISO, on le retourne tel quel (truncated pour datetime-local)
-                      if (date.includes('T')) {
-                        return date.slice(0, 16);
-                      }
-                      // Sinon, on essaie de le convertir
-                      return new Date(date).toISOString().slice(0, 16);
-                    }
-                  } catch (error) {
-                    console.error("Erreur de conversion de date:", error);
-                  }
-                  return "";
-                })()}
-                onChange={onInputChange}
-                className="flex-1"
-              />
-            </div>
-          ) : (
-            (() => {
-              const date = agent.dateProchainVirement;
-              if (!date) return "-";
-              
+<div className="grid grid-cols-4 items-center gap-4">
+  <div className="font-semibold text-right">Prochain virement:</div>
+  <div className="col-span-3">
+    {isEditing ? (
+      <div className="flex flex-col space-y-2">
+        <div className="flex items-center">
+          <Calendar className="w-4 h-4 mr-2 text-gray-500" />
+          <Input
+            type="datetime-local"
+            name="dateProchainVirement"
+            value={(() => {
+              const date = formData.dateProchainVirement;
+              if (!date) return "";
+
               try {
                 if (date instanceof Date) {
-                  return date.toLocaleString("fr-FR");
+                  return date.toISOString().slice(0, 16);
                 } else if (typeof date === 'string') {
-                  return new Date(date).toLocaleString("fr-FR");
+                  // Si c'est déjà au format ISO, on le retourne tel quel (truncated pour datetime-local)
+                  if (date.includes('T')) {
+                    return date.slice(0, 16);
+                  }
+                  // Sinon, on essaie de le convertir
+                  return new Date(date).toISOString().slice(0, 16);
                 }
               } catch (error) {
-                console.error("Erreur d'affichage de date:", error);
+                console.error("Erreur de conversion de date:", error);
               }
-              return "-";
-            })()
-          )}
+              return "";
+            })()}
+            onChange={onInputChange}
+            className="flex-1"
+          />
         </div>
+
+        {/* Texte explicatif en mode édition - aligné avec le calendrier */}
+        {formData.dateProchainVirement && formData.frequencePaiement && formData.frequencePaiement !== 'unique' && (
+          <div className="ml-6 text-xs text-blue-600 bg-blue-50 p-3 rounded-lg border border-blue-200">
+            <div className="flex items-center mb-1">
+              <Calendar className="w-3 h-3 mr-1" />
+              <span className="font-medium">Activation automatique:</span>
+            </div>
+            {(() => {
+              try {
+                const nextPayment = new Date(formData.dateProchainVirement);
+                let activationText = "";
+
+                switch (formData.frequencePaiement) {
+                  case 'mensuel':
+                    const nextMonth = new Date(nextPayment);
+                    nextMonth.setMonth(nextMonth.getMonth() + 1);
+                    activationText = `Prochain paiement le ${nextMonth.toLocaleDateString("fr-FR")} puis chaque mois`;
+                    break;
+
+                  case 'hebdomadaire':
+                    const nextWeek = new Date(nextPayment);
+                    nextWeek.setDate(nextWeek.getDate() + 7);
+                    activationText = `Prochain paiement le ${nextWeek.toLocaleDateString("fr-FR")} puis chaque semaine`;
+                    break;
+
+                  case 'journalier':
+                    const interval = formData.intervallePaiement || 1;
+                    const nextDay = new Date(nextPayment);
+                    nextDay.setDate(nextDay.getDate() + interval);
+                    activationText = `Prochain paiement le ${nextDay.toLocaleDateString("fr-FR")} puis tous les ${interval} jour${interval > 1 ? 's' : ''}`;
+                    break;
+
+                  case 'horaire':
+                    const hourInterval = formData.intervallePaiement || 1;
+                    const nextHour = new Date(nextPayment);
+                    nextHour.setHours(nextHour.getHours() + hourInterval);
+                    activationText = `Prochain paiement le ${nextHour.toLocaleString("fr-FR")} puis toutes les ${hourInterval} heure${hourInterval > 1 ? 's' : ''}`;
+                    break;
+
+                  case 'minute':
+                    const minuteInterval = formData.intervallePaiement || 1;
+                    const nextMinute = new Date(nextPayment);
+                    nextMinute.setMinutes(nextMinute.getMinutes() + minuteInterval);
+                    activationText = `Prochain paiement le ${nextMinute.toLocaleString("fr-FR")} puis toutes les ${minuteInterval} minute${minuteInterval > 1 ? 's' : ''}`;
+                    break;
+
+                  default:
+                    activationText = "Paiement programmé selon la fréquence définie";
+                }
+
+                return (
+                  <div className="text-xs leading-relaxed">
+                    {activationText}
+                  </div>
+                );
+              } catch (error) {
+                return (
+                  <div className="text-xs text-red-600">
+                    Erreur de calcul de la prochaine activation
+                  </div>
+                );
+              }
+            })()}
+          </div>
+        )}
       </div>
+    ) : (
+      <div className="flex flex-col space-y-2">
+        {(() => {
+          const date = agent.dateProchainVirement;
+          if (!date) return "-";
+
+          try {
+            if (date instanceof Date) {
+              return date.toLocaleString("fr-FR");
+            } else if (typeof date === 'string') {
+              return new Date(date).toLocaleString("fr-FR");
+            }
+          } catch (error) {
+            console.error("Erreur d'affichage de date:", error);
+          }
+          return "-";
+        })()}
+
+        {/* Texte explicatif en mode lecture */}
+        {agent.dateProchainVirement && agent.frequencePaiement && agent.frequencePaiement !== 'unique' && (
+          <div className="text-xs text-blue-600 bg-blue-50 p-3 rounded-lg border border-blue-200">
+            <div className="flex items-center mb-1">
+              <Calendar className="w-3 h-3 mr-1" />
+              <span className="font-medium">Activation automatique:</span>
+            </div>
+            {(() => {
+              try {
+                const nextPayment = new Date(agent.dateProchainVirement);
+                let activationText = "";
+
+                switch (agent.frequencePaiement) {
+                  case 'mensuel':
+                    const nextMonth = new Date(nextPayment);
+                    nextMonth.setMonth(nextMonth.getMonth() + 1);
+                    activationText = `Prochain paiement le ${nextMonth.toLocaleDateString("fr-FR")} puis chaque mois`;
+                    break;
+
+                  case 'hebdomadaire':
+                    const nextWeek = new Date(nextPayment);
+                    nextWeek.setDate(nextWeek.getDate() + 7);
+                    activationText = `Prochain paiement le ${nextWeek.toLocaleDateString("fr-FR")} puis chaque semaine`;
+                    break;
+
+                  case 'journalier':
+                    const interval = agent.intervallePaiement || 1;
+                    const nextDay = new Date(nextPayment);
+                    nextDay.setDate(nextDay.getDate() + interval);
+                    activationText = `Prochain paiement le ${nextDay.toLocaleDateString("fr-FR")} puis tous les ${interval} jour${interval > 1 ? 's' : ''}`;
+                    break;
+
+                  case 'horaire':
+                    const hourInterval = agent.intervallePaiement || 1;
+                    const nextHour = new Date(nextPayment);
+                    nextHour.setHours(nextHour.getHours() + hourInterval);
+                    activationText = `Prochain paiement le ${nextHour.toLocaleString("fr-FR")} puis toutes les ${hourInterval} heure${hourInterval > 1 ? 's' : ''}`;
+                    break;
+
+                  case 'minute':
+                    const minuteInterval = agent.intervallePaiement || 1;
+                    const nextMinute = new Date(nextPayment);
+                    nextMinute.setMinutes(nextMinute.getMinutes() + minuteInterval);
+                    activationText = `Prochain paiement le ${nextMinute.toLocaleString("fr-FR")} puis toutes les ${minuteInterval} minute${minuteInterval > 1 ? 's' : ''}`;
+                    break;
+
+                  default:
+                    activationText = "Paiement programmé selon la fréquence définie";
+                }
+
+                return (
+                  <div className="text-xs leading-relaxed">
+                    {activationText}
+                  </div>
+                );
+              } catch (error) {
+                return (
+                  <div className="text-xs text-red-600">
+                    Erreur de calcul de la prochaine activation
+                  </div>
+                );
+              }
+            })()}
+          </div>
+        )}
+      </div>
+    )}
+  </div>
+</div>
 
       {!isEditing && (
         <>
@@ -467,7 +603,7 @@ const AgentProfileTab: React.FC<AgentProfileTabProps> = ({
               ) : (
                 <span className="text-gray-500">No services selected</span>
               )}
-              
+
               {onAddService && (
                 <Button
                   variant="outline"
@@ -485,11 +621,11 @@ const AgentProfileTab: React.FC<AgentProfileTabProps> = ({
                   )}
                 </Button>
               )}
-              
+
               {isAddingService && (
                 <div className="mt-4 p-3 border rounded-md bg-gray-50">
                   <h4 className="font-medium mb-2">Add a service</h4>
-                  
+
                   <div className="space-y-3">
                     <div>
                       <Label htmlFor="service-select">Service</Label>
@@ -502,8 +638,8 @@ const AgentProfileTab: React.FC<AgentProfileTabProps> = ({
                         <option value="">Select a service</option>
                         {Array.isArray(services) && services.length > 0 ? (
                           services
-                            .filter(service => 
-                              !agent.servicesAffecte?.some(agentService => 
+                            .filter(service =>
+                              !agent.servicesAffecte?.some(agentService =>
                                 agentService._id === service._id
                               )
                             )
@@ -517,7 +653,7 @@ const AgentProfileTab: React.FC<AgentProfileTabProps> = ({
                         )}
                       </select>
                     </div>
-                    
+
                     {selectedServiceId && selectedServiceNiveaux.length > 0 && (
                       <div>
                         <Label htmlFor="niveau-select">Service level</Label>
@@ -536,7 +672,7 @@ const AgentProfileTab: React.FC<AgentProfileTabProps> = ({
                         </select>
                       </div>
                     )}
-                    
+
                     <div className="flex justify-end mt-2">
                       <Button
                         size="sm"

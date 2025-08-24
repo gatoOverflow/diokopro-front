@@ -7,6 +7,7 @@ import { validateOTP } from "@/actions/service";
 import PhoneInput from "../../clientsPage/_components/phone";
 import OtpInput from "../../entreprise/_components/_Agent/OtpInput";
 import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation"; // Ajout pour Next.js
 
 import * as Select from "@radix-ui/react-select";
 interface Service {
@@ -25,6 +26,7 @@ interface ValidationErrors {
 }
 
 const CreateAgentModal = ({ services = [], entrepriseId = "" }: CreateAgentModalProps) => {
+  const router = useRouter(); // Hook pour Next.js
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<ValidationErrors>({});
@@ -48,10 +50,13 @@ const CreateAgentModal = ({ services = [], entrepriseId = "" }: CreateAgentModal
     dateProchainVirement: ""
   });
 
+  // États pour la vérification OTP
+  const [showOtpVerification, setShowOtpVerification] = useState(false);
+  const [otpCode, setOtpCode] = useState("");
+  const [pendingChangeId, setPendingChangeId] = useState("");
+
   // Log pour déboguer l'état des services
   useEffect(() => {
-    //console.log("Services disponibles:", services);
-
     // Vérifier si un service existe mais que l'entrepriseId est manquante
     const servicesMissingEntrepriseId = services.filter(service => !service.entrepriseId);
     if (servicesMissingEntrepriseId.length > 0) {
@@ -66,15 +71,20 @@ const CreateAgentModal = ({ services = [], entrepriseId = "" }: CreateAgentModal
           ...prev,
           entrepriseId: defaultEntrepriseId
         }));
-        //console.log("EntrepriseId par défaut défini:", defaultEntrepriseId);
       }
     }
   }, [services]);
 
-  // États pour la vérification OTP
-  const [showOtpVerification, setShowOtpVerification] = useState(false);
-  const [otpCode, setOtpCode] = useState("");
-  const [pendingChangeId, setPendingChangeId] = useState("");
+  // Fonction pour actualiser la page
+  const refreshPage = () => {
+    // Option 1: Utiliser router.refresh() pour Next.js (recommandé)
+    if (router) {
+      router.refresh();
+    } else {
+      // Option 2: Actualisation complète de la page (fallback)
+      window.location.reload();
+    }
+  };
 
   // Récupérer l'entrepriseId du premier service disponible (solution de secours)
   const getDefaultEntrepriseId = () => {
@@ -109,7 +119,6 @@ const CreateAgentModal = ({ services = [], entrepriseId = "" }: CreateAgentModal
   // ✅ Fonction corrigée pour gérer le checkbox aPayer
   const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, checked } = e.target;
-    //console.log(`Checkbox ${name} changé:`, checked); // Debug
     setFormData(prev => ({ 
       ...prev, 
       [name]: checked 
@@ -161,9 +170,6 @@ const CreateAgentModal = ({ services = [], entrepriseId = "" }: CreateAgentModal
     setErrors({});
     const newErrors: ValidationErrors = {};
     let hasErrors = false;
-
-    // Debug: Afficher l'état d'aPayer avant soumission
-    //console.log("État aPayer lors de la soumission:", formData.aPayer);
 
     // Vérification de chaque champ obligatoire
     if (!formData.serviceId) {
@@ -234,7 +240,6 @@ const CreateAgentModal = ({ services = [], entrepriseId = "" }: CreateAgentModal
 
     // Si entrepriseId est vide et qu'un service est sélectionné, essayer d'utiliser une valeur par défaut
     if (!formData.entrepriseId && formData.serviceId) {
-      //console.log("Service sélectionné mais entrepriseId manquant, tentative d'utiliser l'entrepriseId par défaut");
       const defaultEntrepriseId = getDefaultEntrepriseId();
 
       if (defaultEntrepriseId) {
@@ -243,8 +248,6 @@ const CreateAgentModal = ({ services = [], entrepriseId = "" }: CreateAgentModal
           ...prev,
           entrepriseId: defaultEntrepriseId
         }));
-
-        //console.log("EntrepriseId par défaut utilisée:", defaultEntrepriseId);
       } else {
         console.error("Aucune entrepriseId par défaut disponible");
         toast.error("Erreur de sélection du service. Veuillez réessayer ou contacter l'administrateur.");
@@ -261,24 +264,25 @@ const CreateAgentModal = ({ services = [], entrepriseId = "" }: CreateAgentModal
     setIsLoading(true);
     try {
       const response = await createAgent(formData);
-      //console.log("Réponse reçue:", response);
 
       if (response.type === "success" && response.data?.pendingChangeId) {
         // Cas où l'agent a été créé mais nécessite une validation OTP
         toast.success("Demande de création envoyée ! Veuillez entrer le code OTP envoyé à l'administrateur");
         setPendingChangeId(response.data.pendingChangeId);
         setShowOtpVerification(true);
-        //console.log("OTP Verification activée, pendingChangeId:", response.data.pendingChangeId);
       } else if (response.message && response.pendingChangeId) {
         // Format de réponse alternatif du middleware requireOTPValidation
         toast.success("Demande de création envoyée ! Veuillez entrer le code OTP envoyé à l'administrateur");
         setPendingChangeId(response.pendingChangeId);
         setShowOtpVerification(true);
-        //console.log("OTP Verification activée, pendingChangeId:", response.pendingChangeId);
       } else if (response.type === "success") {
         // Cas où l'agent a été créé sans besoin de validation OTP
         toast.success("Agent créé avec succès !");
         resetModal();
+        // ✅ Actualiser la page après création réussie
+        setTimeout(() => {
+          refreshPage();
+        }, 500); // Petit délai pour laisser le toast s'afficher
       } else if (response.errors) {
         // Gestion structurée des erreurs du backend
         setErrors(response.errors);
@@ -314,14 +318,16 @@ const CreateAgentModal = ({ services = [], entrepriseId = "" }: CreateAgentModal
 
     setIsLoading(true);
     try {
-      //console.log("Validation OTP:", { pendingChangeId, otpCode, entrepriseId: formData.entrepriseId });
       // Vérification OTP avec le pendingChangeId et l'entrepriseId
       const response = await validateOTP(pendingChangeId, otpCode, formData.entrepriseId);
-      //console.log("Réponse API validation OTP:", response);
 
       if (response.success) {
         toast.success("Agent validé avec succès !");
         resetModal();
+        // ✅ Actualiser la page après validation OTP réussie
+        setTimeout(() => {
+          refreshPage();
+        }, 500); // Petit délai pour laisser le toast s'afficher
       } else {
         toast.error(response.error || "Code OTP invalide ou expiré");
 
@@ -351,8 +357,6 @@ const CreateAgentModal = ({ services = [], entrepriseId = "" }: CreateAgentModal
     const selectedService = services.find((service) => service._id === selectedId);
 
     if (selectedService) {
-      //console.log("Service sélectionné:", selectedService);
-
       // Utilisez l'entrepriseId du service s'il existe, sinon utilisez celui passé en prop
       const serviceEntrepriseId = selectedService.entrepriseId || entrepriseId;
 
@@ -408,27 +412,6 @@ const CreateAgentModal = ({ services = [], entrepriseId = "" }: CreateAgentModal
             <span className="text-xs text-gray-500 mt-1">Jour du mois (1-31) où le paiement sera effectué</span>
           </div>
         );
-      /* case 'hebdomadaire':
-        return (
-          <div>
-            <label className="block mb-1 font-medium text-gray-700">Jour de la semaine</label>
-            <select
-              name="jourPaiement"
-              value={formData.jourPaiement}
-              onChange={handleChange}
-              className={`border ${errors.jourPaiement ? 'border-red-500' : 'border-gray-300'} rounded-md p-2 w-full`}
-            >
-              <option value="0">Dimanche</option>
-              <option value="1">Lundi</option>
-              <option value="2">Mardi</option>
-              <option value="3">Mercredi</option>
-              <option value="4">Jeudi</option>
-              <option value="5">Vendredi</option>
-              <option value="6">Samedi</option>
-            </select>
-            {getFieldError('jourPaiement')}
-          </div>
-        ); */
       case 'horaire':
         return (
           <div>

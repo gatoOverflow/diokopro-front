@@ -20,6 +20,7 @@ export const ENTERPRISES_INACTIVES_ENDPOINT = `${API_URL}/authSuper/entreprises/
 export const GET_ALL_SERVICE=`${API_URL}/getAllServices/entreprise`
 export const GET_ALL_HISTORIQUE=`${API_URL}/getAllPayments`
 export const SERVICE_URL = `${API_URL}/createService`
+export const UPDATE_SERVICE_URL = `${API_URL}/updateService`
 export const getEntreprise = `${API_URL}/getEntreprise`
 export const CLIENT_URL =`${API_URL}/createClient/entreprise`
 export const GET_ALL_CLIENT_URL =`${API_URL}/entreprises`

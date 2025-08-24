@@ -438,6 +438,8 @@ const handleVerifyClientOtp = useCallback(async (formData) => {
                     isOpen={isServiceDialogOpen}
                     onClose={() => setIsServiceDialogOpen(false)}
                     onUpdate={handleUpdateService}
+                    entrepriseId={entrepriseId}
+                    
                 />
             )}
 
