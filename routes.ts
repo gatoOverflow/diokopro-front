@@ -36,6 +36,7 @@ export const ROLEPAGES = {
     "/dashboard/entreprise/samm",
     "/dashboard/Clients",
     "/dashboard/Affectation",
+    "/dashboard/profile",
     "/dashboard/Agents",
     /^\/entreprise\/.*$/,
     /^\/dashboard\/profile\/[^/]+(\/updateProfile)?$/,

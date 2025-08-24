@@ -21,7 +21,7 @@ const ClientSchema = z.object({
 
   // Champs de paiement
   salaire: z.number().optional(),
-  frequencePaiement: z.enum(['mensuel', 'hebdomadaire', 'quotidien', 'horaire', 'minute', 'unique']).optional().default('mensuel'),
+  frequencePaiement: z.enum(['mensuel', 'hebdomadaire', 'journalier', 'horaire', 'minute', 'unique']).optional().default('mensuel'),
   intervallePaiement: z.number().optional(),
   jourPaiement: z.number().optional(),
   aFAirePayer: z.boolean().optional(),
@@ -122,7 +122,7 @@ export const updateClient = async (formData) => {
       return { type: "error", errors: validation.error.flatten().fieldErrors };
     }
 
-    const { entrepriseId, serviceId, clientId, niveauService, useTarifBase, ...clientData } = validation.data;
+    const { entrepriseId,  clientId, niveauService, useTarifBase, ...clientData } = validation.data;
 
     //console.log("Données validées:", { ...clientData, niveauService, useTarifBase });
     //console.log("URL de l'API:", `${UPDATE_CLIENT_URL}/${entrepriseId}/service/${serviceId}/client/${clientId}`);
@@ -138,7 +138,8 @@ export const updateClient = async (formData) => {
     };
 
     const response = await createdOrUpdated({ 
-      url: `${UPDATE_CLIENT_URL}/${entrepriseId}/service/${serviceId}/client/${clientId}`, 
+      //url: `${UPDATE_CLIENT_URL}/${entrepriseId}/service/${serviceId}/client/${clientId}`, 
+      url: `${UPDATE_CLIENT_URL}/${entrepriseId}/client/${clientId}`, 
       data: dataToSend,
       updated: true
     });

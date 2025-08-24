@@ -230,47 +230,98 @@ const handleAddServiceToClient = useCallback(async (data) => {
         setIsServiceDialogOpen(false);
     }, []);
 
-    const handleVerifyClientOtp = useCallback(async (formData) => {
-        try {
-            const { code, pendingChangeId } = formData;
+const handleVerifyClientOtp = useCallback(async (formData) => {
+    try {
+        // Extraction flexible des données
+        let code, pendingChangeId;
+        
+        // Si formData est un objet FormData (depuis un formulaire)
+        if (formData instanceof FormData) {
+            code = formData.get('code') || formData.get('otp');
+            pendingChangeId = formData.get('pendingChangeId');
+        } 
+        // Si formData est un objet Event (depuis un formulaire submit)
+        else if (formData.target) {
+            const form = formData.target;
+            code = form.code?.value || form.otp?.value;
+            pendingChangeId = form.pendingChangeId?.value;
+        }
+        // Si formData est un objet simple
+        else {
+            code = formData.code || formData.otp;
+            pendingChangeId = formData.pendingChangeId;
+        }
+        
+        console.log("Code extrait:", code, "Type:", typeof code);
+        console.log("PendingChangeId extrait:", pendingChangeId);
 
-            if (!code || code.length !== 6 || !/^\d{6}$/.test(code)) {
-                return {
-                    type: 'error',
-                    error: "Le code OTP doit contenir exactement 6 chiffres"
-                };
-            }
-
-            const changeId = String(pendingChangeId);
-            const result = await validateOTP(changeId, code, entrepriseId);
-
-            if (result && result.success) {
-                return {
-                    type: 'success',
-                    message: result.data?.message || "Validation réussie"
-                };
-            } else {
-                let errorMsg = "Échec de la vérification OTP";
-
-                if (result?.error) {
-                    errorMsg = result.error;
-                } else if (result?.errors) {
-                    if (result.errors.otp && result.errors.otp.length > 0) {
-                        errorMsg = result.errors.otp[0];
-                    } else if (result.errors.pendingChangeId && result.errors.pendingChangeId.length > 0) {
-                        errorMsg = result.errors.pendingChangeId[0];
-                    }
-                }
-
-                return { type: 'error', error: errorMsg };
-            }
-        } catch (error) {
+        // Validation plus souple du code OTP
+        if (!code || code.toString().trim().length === 0) {
             return {
                 type: 'error',
-                error: error.message || "Échec de la vérification OTP"
+                error: "Le code OTP est requis"
             };
         }
-    }, [entrepriseId]);
+
+        // Convertir le code en string et supprimer les espaces
+        const cleanCode = code.toString().trim();
+        
+        // Validation moins stricte - accepter les codes de 4 à 8 chiffres
+        if (!/^\d{4,8}$/.test(cleanCode)) {
+            return {
+                type: 'error',
+                error: "Le code OTP doit contenir entre 4 et 8 chiffres"
+            };
+        }
+
+        if (!pendingChangeId) {
+            return {
+                type: 'error',
+                error: "ID de changement en attente manquant"
+            };
+        }
+
+        const changeId = String(pendingChangeId);
+        
+        // Log pour debug (à retirer en production)
+        console.log("Validation OTP:", { 
+            code: cleanCode, 
+            pendingChangeId: changeId, 
+            entrepriseId 
+        });
+        
+        const result = await validateOTP(changeId, cleanCode, entrepriseId);
+
+        if (result && result.success) {
+            return {
+                type: 'success',
+                message: result.data?.message || "Validation réussie"
+            };
+        } else {
+            let errorMsg = "Échec de la vérification OTP";
+
+            if (result?.error) {
+                errorMsg = result.error;
+            } else if (result?.errors) {
+                if (result.errors.otp && result.errors.otp.length > 0) {
+                    errorMsg = result.errors.otp[0];
+                } else if (result.errors.pendingChangeId && result.errors.pendingChangeId.length > 0) {
+                    errorMsg = result.errors.pendingChangeId[0];
+                } else if (typeof result.errors === 'string') {
+                    errorMsg = result.errors;
+                }
+            }
+
+            return { type: 'error', error: errorMsg };
+        }
+    } catch (error) {
+        console.error("Erreur lors de la vérification OTP:", error);
+        return {
+            type: 'error',
+            error: error.message || "Échec de la vérification OTP"
+        };
+    }
+}, [entrepriseId]);
 
     const handleRemoveClientFromService = useCallback(async (formData) => {
         try {

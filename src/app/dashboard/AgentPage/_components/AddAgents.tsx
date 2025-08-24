@@ -45,7 +45,7 @@ const CreateAgentModal = ({ services = [], entrepriseId = "" }: CreateAgentModal
     jourPaiement: 1,
     wallet: "",
     aPayer: false, // ✅ Initialisé à false par défaut
-    dateProgrammee: ""
+    dateProchainVirement: ""
   });
 
   // Log pour déboguer l'état des services
@@ -146,7 +146,7 @@ const CreateAgentModal = ({ services = [], entrepriseId = "" }: CreateAgentModal
       intervallePaiement: 1,
       jourPaiement: 1,
       aPayer: false, // ✅ Réinitialisé à false
-      dateProgrammee: ""
+      dateProchainVirement: ""
     });
     setErrors({});
   };
@@ -408,7 +408,7 @@ const CreateAgentModal = ({ services = [], entrepriseId = "" }: CreateAgentModal
             <span className="text-xs text-gray-500 mt-1">Jour du mois (1-31) où le paiement sera effectué</span>
           </div>
         );
-      case 'hebdomadaire':
+      /* case 'hebdomadaire':
         return (
           <div>
             <label className="block mb-1 font-medium text-gray-700">Jour de la semaine</label>
@@ -428,7 +428,7 @@ const CreateAgentModal = ({ services = [], entrepriseId = "" }: CreateAgentModal
             </select>
             {getFieldError('jourPaiement')}
           </div>
-        );
+        ); */
       case 'horaire':
         return (
           <div>
@@ -444,6 +444,22 @@ const CreateAgentModal = ({ services = [], entrepriseId = "" }: CreateAgentModal
             />
             {getFieldError('intervallePaiement')}
             <span className="text-xs text-gray-500 mt-1">Nombre d'heures entre chaque paiement (1-24)</span>
+          </div>
+        );
+         case 'journalier':
+        return (
+          <div>
+            <label className="block mb-1 font-medium text-gray-700">Intervalle (Jours)</label>
+            <input
+              type="number"
+              name="intervallePaiement"
+              value={formData.intervallePaiement}
+              onChange={handleChange}
+              
+              className={`border ${errors.intervallePaiement ? 'border-red-500' : 'border-gray-300'} rounded-md p-2 w-full`}
+            />
+            {getFieldError('intervallePaiement')}
+            <span className="text-xs text-gray-500 mt-1">Nombre de jour entre chaque paiement </span>
           </div>
         );
       case 'minute':
@@ -713,7 +729,7 @@ const CreateAgentModal = ({ services = [], entrepriseId = "" }: CreateAgentModal
                       >
                         <option value="mensuel">Mensuel</option>
                         <option value="hebdomadaire">Hebdomadaire</option>
-                        <option value="quotidien">Quotidien</option>
+                        <option value="journalier">Journalier</option>
                         <option value="horaire">Horaire</option>
                         <option value="minute">Minute</option>
                         <option value="unique">Paiement unique</option>
@@ -721,18 +737,18 @@ const CreateAgentModal = ({ services = [], entrepriseId = "" }: CreateAgentModal
                       {getFieldError('frequencePaiement')}
                     </div>
                     <div>
-                      <label className="block mb-1 font-medium text-gray-700">Date programmée</label>
+                      <label className="block mb-1 font-medium text-gray-700">Date Prochain virement</label>
                       <div className="flex items-center border border-gray-300 rounded-md p-2">
                         <Calendar className="w-4 h-4 mr-2 text-gray-500" />
                         <input
                           type="datetime-local"
-                          name="dateProgrammee"
-                          value={formData.dateProgrammee}
+                          name="dateProchainVirement"
+                          value={formData.dateProchainVirement}
                           onChange={handleChange}
                           className="flex-1 outline-none"
                         />
                       </div>
-                      {getFieldError('dateProgrammee')}
+                      {getFieldError('dateProchainVirement')}
                       <span className="text-xs text-gray-500 mt-1">Date et heure prévues (optionnel)</span>
                     </div>
                   </div>

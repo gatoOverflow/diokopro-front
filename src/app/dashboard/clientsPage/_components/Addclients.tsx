@@ -7,6 +7,7 @@ import PhoneInput from "./phone";
 import { validateOTP } from "@/actions/service";
 import { Button } from "@/components/ui/button";
 import OtpInput from "../../entreprise/_components/_Agent/OtpInput";
+import { useRouter } from "next/navigation"; // Ajout pour Next.js
 
 interface NiveauService {
   nom: string;
@@ -31,6 +32,7 @@ interface ValidationErrors {
 }
 
 const CreateClientModal = ({ services = [], entrepriseId = "" }: CreateClientModalProps) => {
+  const router = useRouter(); // Hook pour Next.js
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<ValidationErrors>({});
@@ -51,15 +53,18 @@ const CreateClientModal = ({ services = [], entrepriseId = "" }: CreateClientMod
     frequencePaiement: "mensuel",
     intervallePaiement: 1,
     jourPaiement: 1,
-    aFAirePayer: false, // ✅ Par défaut à true pour les clients (ils reçoivent des paiements)
+    aFAirePayer: false,
     // Champ pour la date programmée
     dateProgrammee: ""
   });
   
+  // États pour la vérification OTP
+  const [showOtpVerification, setShowOtpVerification] = useState(false);
+  const [otpCode, setOtpCode] = useState("");
+  const [pendingChangeId, setPendingChangeId] = useState("");
+
   // Log pour déboguer l'état des services
   useEffect(() => {
-    //console.log("Services disponibles:", services);
-    
     // Vérifier si un service existe mais que l'entrepriseId est manquante
     const servicesMissingEntrepriseId = services.filter(service => !service.entrepriseId);
     if (servicesMissingEntrepriseId.length > 0) {
@@ -74,15 +79,20 @@ const CreateClientModal = ({ services = [], entrepriseId = "" }: CreateClientMod
           ...prev,
           entrepriseId: defaultEntrepriseId
         }));
-        //console.log("EntrepriseId par défaut défini:", defaultEntrepriseId);
       }
     }
   }, [services, formData.entrepriseId]);
 
-  // États pour la vérification OTP
-  const [showOtpVerification, setShowOtpVerification] = useState(false);
-  const [otpCode, setOtpCode] = useState("");
-  const [pendingChangeId, setPendingChangeId] = useState("");
+  // Fonction pour actualiser la page
+  const refreshPage = () => {
+    // Option 1: Utiliser router.refresh() pour Next.js (recommandé)
+    if (router) {
+      router.refresh();
+    } else {
+      // Option 2: Actualisation complète de la page (fallback)
+      window.location.reload();
+    }
+  };
 
   // Récupérer l'entrepriseId du premier service disponible (solution de secours)
   const getDefaultEntrepriseId = () => {
@@ -111,10 +121,8 @@ const CreateClientModal = ({ services = [], entrepriseId = "" }: CreateClientMod
     }
   };
 
-  // ✅ Fonction corrigée pour gérer le checkbox aPayer
   const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, checked } = e.target;
-    //console.log(`Checkbox ${name} changé:`, checked); // Debug
     setFormData(prev => ({ 
       ...prev, 
       [name]: checked 
@@ -151,7 +159,7 @@ const CreateClientModal = ({ services = [], entrepriseId = "" }: CreateClientMod
       frequencePaiement: "mensuel",
       intervallePaiement: 1,
       jourPaiement: 1,
-      aFAirePayer: false, // ✅ Par défaut à true pour les clients
+      aFAirePayer: false,
       // Réinitialiser la date programmée
       dateProgrammee: ""
     });
@@ -162,9 +170,6 @@ const CreateClientModal = ({ services = [], entrepriseId = "" }: CreateClientMod
   const validateForm = (): boolean => {
     const newErrors: ValidationErrors = {};
     let hasErrors = false;
-
-    // Debug: Afficher l'état d'aPayer avant validation
-    //console.log("État aPayer lors de la validation:", formData.aFAirePayer);
 
     // Validation des champs obligatoires
     const requiredFields = [
@@ -237,7 +242,6 @@ const CreateClientModal = ({ services = [], entrepriseId = "" }: CreateClientMod
     let finalFormData = { ...formData };
     
     if (!finalFormData.entrepriseId && finalFormData.serviceId) {
-      //console.log("Service sélectionné mais entrepriseId manquant, tentative d'utiliser l'entrepriseId par défaut");
       const defaultEntrepriseId = getDefaultEntrepriseId();
       
       if (defaultEntrepriseId) {
@@ -246,7 +250,6 @@ const CreateClientModal = ({ services = [], entrepriseId = "" }: CreateClientMod
           entrepriseId: defaultEntrepriseId
         };
         setFormData(finalFormData);
-        //console.log("EntrepriseId par défaut utilisée:", defaultEntrepriseId);
       } else {
         console.error("Aucune entrepriseId par défaut disponible");
         toast.error("Erreur de sélection du service. Veuillez réessayer ou contacter l'administrateur.");
@@ -257,19 +260,20 @@ const CreateClientModal = ({ services = [], entrepriseId = "" }: CreateClientMod
     setIsLoading(true);
     
     try {
-      //console.log("Données à envoyer:", finalFormData);
       const response = await createClient(finalFormData);
-      //console.log("Réponse reçue:", response);
 
       if (response.success || response.type === "success") {
         if (response.data?.pendingChangeId || response.pendingChangeId) {
           toast.success("Demande de création envoyée ! Veuillez entrer le code OTP.");
           setPendingChangeId(response.data?.pendingChangeId || response.pendingChangeId);
           setShowOtpVerification(true);
-          //console.log("OTP Verification activée, pendingChangeId:", response.data?.pendingChangeId || response.pendingChangeId);
         } else {
           toast.success("Client créé avec succès !");
           resetModal();
+          // ✅ Actualiser la page après création réussie
+          setTimeout(() => {
+            refreshPage();
+          }, 500); // Petit délai pour laisser le toast s'afficher
         }
       } else {
         // Gestion des erreurs
@@ -309,13 +313,15 @@ const CreateClientModal = ({ services = [], entrepriseId = "" }: CreateClientMod
     setIsLoading(true);
     
     try {
-      //console.log("Validation OTP:", { pendingChangeId, otpCode, entrepriseId: formData.entrepriseId });
       const response = await validateOTP(pendingChangeId, otpCode, formData.entrepriseId);
-      //console.log("Réponse API validation OTP:", response);
       
       if (response.success) {
         toast.success("Client validé avec succès !");
         resetModal();
+        // ✅ Actualiser la page après validation OTP réussie
+        setTimeout(() => {
+          refreshPage();
+        }, 500); // Petit délai pour laisser le toast s'afficher
       } else {
         toast.error(response.error || "Code OTP invalide ou expiré");
         
@@ -346,8 +352,6 @@ const CreateClientModal = ({ services = [], entrepriseId = "" }: CreateClientMod
     const selectedService = services.find((service) => service._id === selectedId);
   
     if (selectedService) {
-      //console.log("Service sélectionné:", selectedService);
-      
       // Utilisez l'entrepriseId du service s'il existe, sinon utilisez celui passé en prop
       const serviceEntrepriseId = selectedService.entrepriseId || entrepriseId;
       
@@ -383,7 +387,6 @@ const CreateClientModal = ({ services = [], entrepriseId = "" }: CreateClientMod
         serviceId: "",
         nomService: "",
         niveauService: "",
-        // Nous ne réinitialisons pas entrepriseId ici pour le conserver
       }));
       setSelectedServiceNiveaux([]);
     }
@@ -416,7 +419,7 @@ const CreateClientModal = ({ services = [], entrepriseId = "" }: CreateClientMod
             <span className="text-xs text-gray-500 mt-1 block">Jour du mois (1-31) où le paiement sera effectué</span>
           </div>
         );
-      case 'hebdomadaire':
+      /* case 'hebdomadaire':
         return (
           <div>
             <label className="block mb-1 font-medium text-gray-700">Jour de la semaine</label>
@@ -436,7 +439,7 @@ const CreateClientModal = ({ services = [], entrepriseId = "" }: CreateClientMod
             </select>
             {getFieldError('jourPaiement')}
           </div>
-        );
+        ); */
       case 'horaire':
         return (
           <div>
@@ -452,6 +455,23 @@ const CreateClientModal = ({ services = [], entrepriseId = "" }: CreateClientMod
             />
             {getFieldError('intervallePaiement')}
             <span className="text-xs text-gray-500 mt-1 block">Nombre d'heures entre chaque paiement (1-24)</span>
+          </div>
+        );
+        case 'journalier':
+        return (
+          <div>
+            <label className="block mb-1 font-medium text-gray-700">Intervalle (jours)</label>
+            <input
+              type="number"
+              name="intervallePaiement"
+              value={formData.intervallePaiement}
+              onChange={handleChange}
+              
+     
+              className={`border ${errors.intervallePaiement ? 'border-red-500' : 'border-gray-300'} rounded-md p-2 w-full focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
+            />
+            {getFieldError('intervallePaiement')}
+            <span className="text-xs text-gray-500 mt-1 block">Nombre de jour entre chaque paiement </span>
           </div>
         );
       case 'minute':
@@ -700,7 +720,7 @@ const CreateClientModal = ({ services = [], entrepriseId = "" }: CreateClientMod
                       >
                         <option value="mensuel">Mensuel</option>
                         <option value="hebdomadaire">Hebdomadaire</option>
-                        <option value="quotidien">Quotidien</option>
+                        <option value="journalier">Journalier</option>
                         <option value="horaire">Horaire</option>
                         <option value="minute">Minute</option>
                         <option value="unique">Paiement unique</option>
@@ -728,7 +748,7 @@ const CreateClientModal = ({ services = [], entrepriseId = "" }: CreateClientMod
                   {/* Champs conditionnels basés sur la fréquence de paiement */}
                   {renderFrequencyFields()}
 
-                  {/* ✅ Checkbox aPayer corrigé avec indicateur visuel - LOGIQUE INVERSÉE POUR LES CLIENTS */}
+                  {/* Checkbox aPayer corrigé avec indicateur visuel - LOGIQUE INVERSÉE POUR LES CLIENTS */}
                   <div className="mt-4 p-4 bg-gray-50 rounded-lg border">
                     <label className="flex items-center space-x-3 cursor-pointer">
                       <input

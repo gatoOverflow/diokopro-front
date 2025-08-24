@@ -51,6 +51,14 @@ export const useClientDialog = (
         telephone: client.telephone || '',
         adresse: client.adresse || '',
         nin: client.nin || '',
+         aFAirePayer: client.aFAirePayer,
+        dateProgrammee: client.dateProgrammee || null,
+        
+        // Champs de paiement
+      
+        frequencePaiement: client.frequencePaiement || 'mensuel',
+        intervallePaiement: client.intervallePaiement || 1,
+       
       });
       setIsEditing(false);
       setShowOtpVerification(false);
@@ -73,13 +81,33 @@ export const useClientDialog = (
     }
   }, [isEditing]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
-  };
+ const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const { name, value } = e.target;
+  
+  console.log(`Changement de ${name}:`, value); // Debug
+  
+  // Gestion spéciale pour la date programmée
+  if (name === 'dateProgrammee') {
+    setFormData(prev => ({
+      ...prev,
+      [name]: value || null
+    }));
+  }
+  // Gestion pour les champs numériques
+  else if (name === 'montantTotal' || name === 'intervallePaiement') {
+    setFormData(prev => ({
+      ...prev,
+      [name]: value ? Number(value) : ''
+    }));
+  }
+  // Autres champs
+  else {
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  }
+};
 
   const handleServiceChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedId = e.target.value;
@@ -111,6 +139,14 @@ export const useClientDialog = (
       setSelectedServiceNiveaux([]);
     }
   };
+  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const { name, checked } = e.target;
+  console.log(`Checkbox ${name} changé:`, checked); // Debug
+  setFormData(prev => ({
+    ...prev,
+    [name]: checked
+  }));
+};
 
   const showDeleteConfirmation = () => {
     setIsDeleting(true);
@@ -404,6 +440,7 @@ export const useClientDialog = (
     handleInputChange,
     handleServiceChange,
     handleNiveauServiceChange,
+    handleCheckboxChange, 
     handleShowPaymentDetails,
     toggleAddServiceMode,
     showDeleteConfirmation,

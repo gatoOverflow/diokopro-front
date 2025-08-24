@@ -1,18 +1,17 @@
-// components/agent/AgentProfileTab.tsx
-
 import React from 'react';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { X, Plus } from 'lucide-react';
-import { Agent, Service, NiveauService } from '@/app/lib/types'; // Adjust the import path as necessary
+import { X, Plus, Calendar, DollarSign } from 'lucide-react';
+import { Agent, Service, NiveauService } from '@/app/lib/types';
 
 interface AgentProfileTabProps {
   agent: Agent;
   isEditing: boolean;
   formData: Partial<Agent>;
   onInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void;
+  onCheckboxChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
   
   // Service management
   services: Service[];
@@ -35,6 +34,7 @@ const AgentProfileTab: React.FC<AgentProfileTabProps> = ({
   isEditing,
   formData,
   onInputChange,
+  onCheckboxChange,
   services,
   isAddingService,
   selectedServiceId,
@@ -48,8 +48,126 @@ const AgentProfileTab: React.FC<AgentProfileTabProps> = ({
   showRemoveFromServiceConfirmation
 }) => {
 
+  // Wallet options
+  const walletOptions = [
+    { value: 'orange-money-senegal', label: 'Orange Money Sénégal' },
+    { value: 'free-money-senegal', label: 'Free Money Sénégal' },
+    { value: 'wave-senegal', label: 'Wave Sénégal' },
+  ];
+
+  // Fonction helper pour afficher les erreurs d'un champ
+  const getFieldError = (fieldName: string) => {
+    // Vous pouvez ajouter la gestion des erreurs ici si nécessaire
+    return null;
+  };
+
+  // Fonction pour les champs conditionnels basés sur la fréquence de paiement
+  const renderFrequencyFields = () => {
+    if (!isEditing) return null;
+
+    switch (formData.frequencePaiement) {
+      case 'mensuel':
+        return (
+          <div className="grid grid-cols-4 items-center gap-4">
+            <div className="font-semibold text-right">Jour du mois:</div>
+            <div className="col-span-3">
+              <Input
+                type="number"
+                name="jourPaiement"
+                value={formData.jourPaiement || 1}
+                onChange={onInputChange}
+                min="1"
+                max="31"
+                placeholder="Jour du mois (1-31)"
+              />
+              <span className="text-xs text-gray-500 mt-1">Jour du mois où le paiement sera effectué</span>
+            </div>
+          </div>
+        );
+        case 'journalier':
+        return (
+          <div className="grid grid-cols-4 items-center gap-4">
+            <div className="font-semibold text-right">Jour du mois:</div>
+            <div className="col-span-3">
+              <Input
+                type="number"
+                name="jourPaiement"
+                value={formData.intervallePaiement || 1}
+                onChange={onInputChange}
+                min="1"
+        
+                placeholder="Nombre de Jour"
+              />
+              <span className="text-xs text-gray-500 mt-1">Jour du mois où le paiement sera effectué</span>
+            </div>
+          </div>
+        );
+      /* case 'hebdomadaire':
+        return (
+          <div className="grid grid-cols-4 items-center gap-4">
+            <div className="font-semibold text-right">Jour de la semaine:</div>
+            <div className="col-span-3">
+              <select
+                name="jourPaiement"
+                value={formData.jourPaiement || 0}
+                onChange={onInputChange}
+                className="w-full border border-gray-300 rounded-md px-3 py-2"
+              >
+                <option value="0">Dimanche</option>
+                <option value="1">Lundi</option>
+                <option value="2">Mardi</option>
+                <option value="3">Mercredi</option>
+                <option value="4">Jeudi</option>
+                <option value="5">Vendredi</option>
+                <option value="6">Samedi</option>
+              </select>
+            </div>
+          </div>
+        ); */
+      case 'horaire':
+        return (
+          <div className="grid grid-cols-4 items-center gap-4">
+            <div className="font-semibold text-right">Intervalle (heures):</div>
+            <div className="col-span-3">
+              <Input
+                type="number"
+                name="intervallePaiement"
+                value={formData.intervallePaiement || 1}
+                onChange={onInputChange}
+                min="1"
+                max="24"
+                placeholder="Nombre d'heures (1-24)"
+              />
+              <span className="text-xs text-gray-500 mt-1">Nombre d'heures entre chaque paiement</span>
+            </div>
+          </div>
+        );
+      case 'minute':
+        return (
+          <div className="grid grid-cols-4 items-center gap-4">
+            <div className="font-semibold text-right">Intervalle (minutes):</div>
+            <div className="col-span-3">
+              <Input
+                type="number"
+                name="intervallePaiement"
+                value={formData.intervallePaiement || 1}
+                onChange={onInputChange}
+                min="1"
+                max="60"
+                placeholder="Nombre de minutes (1-60)"
+              />
+              <span className="text-xs text-gray-500 mt-1">Nombre de minutes entre chaque paiement</span>
+            </div>
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
+
   return (
     <div className="grid gap-4 py-4">
+      {/* Informations personnelles */}
       <div className="grid grid-cols-4 items-center gap-4">
         <div className="font-semibold text-right">Last Name:</div>
         <div className="col-span-3">
@@ -111,6 +229,35 @@ const AgentProfileTab: React.FC<AgentProfileTabProps> = ({
       </div>
 
       <div className="grid grid-cols-4 items-center gap-4">
+        <div className="font-semibold text-right">Wallet:</div>
+        <div className="col-span-3">
+          {isEditing ? (
+            <div className="flex flex-col space-y-1 w-full">
+              <select
+                name="wallet"
+                value={formData.wallet || ''}
+                onChange={onInputChange}
+                className="w-full border border-gray-300 rounded-md px-3 py-2"
+              >
+                
+                {walletOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+              <span className="text-xs text-gray-500">Choose the mobile money service for payments</span>
+            </div>
+          ) : (
+            (() => {
+              const selectedWallet = walletOptions.find(option => option.value === agent.wallet);
+              return selectedWallet ? selectedWallet.label : agent.wallet || "-";
+            })()
+          )}
+        </div>
+      </div>
+
+      <div className="grid grid-cols-4 items-center gap-4">
         <div className="font-semibold text-right">Address:</div>
         <div className="col-span-3">
           {isEditing ? (
@@ -136,6 +283,139 @@ const AgentProfileTab: React.FC<AgentProfileTabProps> = ({
             />
           ) : (
             agent.nin || "-"
+          )}
+        </div>
+      </div>
+
+      {/* Salaire */}
+      {isEditing && (
+        <div className="grid grid-cols-4 items-center gap-4">
+          <div className="font-semibold text-right">Salaire:</div>
+          <div className="col-span-3">
+            <Input
+              type="number"
+              name="salaire"
+              value={formData.salaire || ''}
+              onChange={onInputChange}
+              placeholder="Montant du salaire"
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Section des paramètres de paiement en mode édition */}
+      {isEditing && (
+        <>
+          <div className="mt-6 border-t pt-4">
+            <h3 className="text-lg font-semibold mb-4 flex items-center">
+              <DollarSign className="w-5 h-5 mr-2 text-orange-500" />
+              Paramètres de paiement
+            </h3>
+
+            <div className="grid grid-cols-4 items-center gap-4 mb-4">
+              <div className="font-semibold text-right">Fréquence de paiement:</div>
+              <div className="col-span-3">
+                <select
+                  name="frequencePaiement"
+                  value={formData.frequencePaiement || 'mensuel'}
+                  onChange={onInputChange}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2"
+                >
+                  <option value="mensuel">Mensuel</option>
+                  <option value="hebdomadaire">Hebdomadaire</option>
+                  <option value="journalier">Journalier</option>
+                  <option value="horaire">Horaire</option>
+                  <option value="minute">Minute</option>
+                  <option value="unique">Paiement unique</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Champs conditionnels basés sur la fréquence */}
+            {renderFrequencyFields()}
+
+            {/* Checkbox aPayer */}
+            <div className="grid grid-cols-4 items-center gap-4 mt-4">
+              <div className="font-semibold text-right">Statut de paiement:</div>
+              <div className="col-span-3">
+                <div className="p-4 bg-gray-50 rounded-lg border">
+                  <label className="flex items-center space-x-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      name="aPayer"
+                      checked={formData.aPayer || false}
+                      onChange={onCheckboxChange || onInputChange}
+                      className="w-5 h-5 text-orange-500 border-2 border-gray-300 rounded focus:ring-orange-500 focus:ring-2"
+                    />
+                    <div className="flex flex-col">
+                      <span className={`font-medium ${formData.aPayer ? 'text-green-600' : 'text-gray-700'}`}>
+                        {formData.aPayer ? '✅ Agent à payer' : '❌ Agent non payé'}
+                      </span>
+                      <span className="text-xs text-gray-500">
+                        {formData.aPayer 
+                          ? 'Cet agent recevra des paiements automatiques selon la fréquence définie'
+                          : 'Cet agent ne recevra pas de paiements automatiques'
+                        }
+                      </span>
+                    </div>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Date de prochain virement avec heure */}
+      <div className="grid grid-cols-4 items-center gap-4">
+        <div className="font-semibold text-right">Prochain virement:</div>
+        <div className="col-span-3">
+          {isEditing ? (
+            <div className="flex items-center">
+              <Calendar className="w-4 h-4 mr-2 text-gray-500" />
+              <Input
+                type="datetime-local"
+                name="dateProchainVirement"
+                value={(() => {
+                  const date = formData.dateProchainVirement;
+                  if (!date) return "";
+                  
+                  try {
+                    if (date instanceof Date) {
+                      return date.toISOString().slice(0, 16);
+                    } else if (typeof date === 'string') {
+                      // Si c'est déjà au format ISO, on le retourne tel quel (truncated pour datetime-local)
+                      if (date.includes('T')) {
+                        return date.slice(0, 16);
+                      }
+                      // Sinon, on essaie de le convertir
+                      return new Date(date).toISOString().slice(0, 16);
+                    }
+                  } catch (error) {
+                    console.error("Erreur de conversion de date:", error);
+                  }
+                  return "";
+                })()}
+                onChange={onInputChange}
+                className="flex-1"
+              />
+            </div>
+          ) : (
+            (() => {
+              const date = agent.dateProchainVirement;
+              if (!date) return "-";
+              
+              try {
+                if (date instanceof Date) {
+                  return date.toLocaleString("fr-FR");
+                } else if (typeof date === 'string') {
+                  return new Date(date).toLocaleString("fr-FR");
+                }
+              } catch (error) {
+                console.error("Erreur d'affichage de date:", error);
+              }
+              return "-";
+            })()
           )}
         </div>
       </div>

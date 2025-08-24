@@ -11,4 +11,9 @@ export const RegisterSchema = z.object({
   dateCreation: z.string().min(1, "La date de création est requise"),
   rccm: z.string().min(1, "Le numéro RCCM est requis"),
   representéPar: z.string().min(1, "Le représentant doit être renseigné"),
+
+  adresse: z.string().min(1, "L'adresse est requise"),
+  emailEntreprise: z.string().email("Format d'email invalide pour l'entreprise"),
+  telephoneEntreprise: z.string().optional(),
+
 });

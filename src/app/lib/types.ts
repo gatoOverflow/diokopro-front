@@ -9,6 +9,9 @@ export type RequestData = {
     dateCreation: string;
     rccm: string;
     representéPar: string;
+    adresse: string;
+    telephoneEntreprise?: string; // Optionnel, si nécessaire
+    emailEntreprise?: string; // Optionnel, si nécessaire
   };
 
   export type FormDataRegister = {
@@ -52,11 +55,26 @@ export interface Entreprise {
 export interface Paiement {
   _id: string;
   paiementId?: string;
+  frais:string;
   montant: number;
   datePaiement: string;
+    dateReglement?: string | Date | null;
   statut: string;
+  token:string;
   expediteur?: Expediteur;
   entreprise?: Entreprise;
+}
+
+export interface UserInfos {
+  _id: string;
+  prenom: string;
+  nom: string;
+  email: string;
+  telephone: string;
+  role: string;
+  imgUser?: string;
+  adresse?: string;
+  nin?: string;
 }
 
 export interface Client {
@@ -76,12 +94,14 @@ export interface Client {
   // Nouveaux champs
   aDejaPaye?: boolean;
   aFAirePayer?: boolean;
-  dateProgrammee?: string;
+  dateProgrammee?: string | Date | null;
   frequencePaiement?: string;
   intervallePaiement?: number;
+  jourPaiement?: number;
   lienDejaEnvoye?: boolean;
   montantTotal?: number;
   niveauServicesChoisis?: string[];
+  dateReglement?: string | Date | null;
 }
 
 export type OperationType = 'update' | 'delete' | 'removeFromService' | 'addService';
@@ -136,6 +156,7 @@ export interface Paiement {
   _id: string;
   paiementId?: string;
   montant: number;
+  dateReglement?: string | Date | null;
   datePaiement: string;
   statut: string;
   expediteur?: Expediteur;
@@ -152,6 +173,8 @@ export interface VirementRecu {
   entreprise?: Entreprise;
 }
 
+// Dans votre fichier de types, modifiez l'interface Agent :
+
 export interface Agent {
   _id: string;
   nom: string;
@@ -160,14 +183,23 @@ export interface Agent {
   telephone: string;
   adresse?: string;
   nin?: string;
+  dateProchainVirement?: string | Date | null;
   estNouveau: boolean;
+  
+  // Nouveaux champs pour les paiements
+  salaire?: number;
+  frequencePaiement?: 'mensuel' | 'hebdomadaire' | 'journalier' | 'horaire' | 'minute' | 'unique';
+  intervallePaiement?: number;
+  jourPaiement?: number;
+  wallet?: string;
+  aPayer?: boolean;
+  
   dateCreation?: string;
   entrepriseId?: string;
   servicesAffecte?: Service[];
   paiementsEffectues?: Paiement[];
   virementsRecus?: VirementRecu[];
 }
-
 
 
 export interface AgentDialogProps {

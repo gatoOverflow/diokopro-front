@@ -33,7 +33,10 @@ export const register = async (state: any, formData: any) => {
             ninea: validatedData.ninea,
             dateCreation: validatedData.dateCreation,
             rccm: validatedData.rccm,
-            representéPar: validatedData.representéPar
+            representéPar: validatedData.representéPar,
+            adresse: validatedData.adresse,
+            emailEntreprise: validatedData.emailEntreprise, // Ajout de l'emailEntreprise
+            telephoneEntreprise: validatedData.telephoneEntreprise // Ajout du téléphoneEntreprise
         };
 
         //console.log("Données préparées pour l'envoi:", requestData);

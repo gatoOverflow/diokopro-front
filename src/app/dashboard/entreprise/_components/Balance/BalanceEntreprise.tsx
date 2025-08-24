@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useState } from 'react'
 import { CreditCard, Minus, Plus, Send, Loader2, AlertCircle, CheckCircle } from 'lucide-react'
-import { crediterCompte, envoyerMessage, rechargeCompte, retraitCompte } from '@/actions/Balance'
+import {  envoyerMessage, rechargeCompte, retraitCompte } from '@/actions/Balance'
 
 
 interface Balance {

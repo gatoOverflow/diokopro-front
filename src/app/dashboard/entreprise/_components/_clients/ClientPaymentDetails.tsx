@@ -45,26 +45,38 @@ const ClientPaymentDetails: React.FC<ClientPaymentDetailsProps> = ({
   return (
     <>
       <div className="grid gap-4 py-4">
-        <div className="flex items-center gap-2">
+       {/*  <div className="flex items-center gap-2">
           <CreditCard className="h-5 w-5 text-gray-500" />
           <div className="font-semibold">Montant:</div>
           <div>{payment.montant.toLocaleString('fr-FR')} FCFA</div>
-        </div>
+        </div> */}
+
+          <div className="flex items-center gap-2">
+          <CreditCard className="h-5 w-5 text-gray-500" />
+          <div className="font-semibold">Frais:</div>
+          <div>{payment.frais} FCFA</div>
+        </div> 
+
+         <div className="flex items-center gap-2">
+          <CreditCard className="h-5 w-5 text-gray-500" />
+          <div className="font-semibold">Token:</div>
+          <div>{payment.token}</div>
+        </div> 
         
-        <div className="flex items-center gap-2">
+        {/* <div className="flex items-center gap-2">
           <Calendar className="h-5 w-5 text-gray-500" />
           <div className="font-semibold">Date:</div>
           <div>{formatDate(payment.datePaiement)}</div>
-        </div>
+        </div> */}
         
-        <div className="flex items-center gap-2">
+       {/*  <div className="flex items-center gap-2">
           <Tag className="h-5 w-5 text-gray-500" />
           <div className="font-semibold">Statut:</div>
           <Badge variant={getStatusBadgeVariant(payment.statut)}>
             {payment.statut}
           </Badge>
-        </div>
-        
+        </div> */}
+        {/* 
         {payment.expediteur && (
           <div className="flex items-center gap-2">
             <User className="h-5 w-5 text-gray-500" />
@@ -82,7 +94,7 @@ const ClientPaymentDetails: React.FC<ClientPaymentDetailsProps> = ({
               {payment.paiementId}
             </div>
           </div>
-        )}
+        )} */}
       </div>
       
       <div className="flex justify-end mt-4">

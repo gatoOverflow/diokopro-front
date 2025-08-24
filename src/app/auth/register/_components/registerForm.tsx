@@ -31,7 +31,10 @@ const RegistrationForm = () => {
         ninea: "",
         dateCreation: "",
         rccm: "",
-        representéPar: ""
+        representéPar: "",
+        adresse: "",
+        emailEntreprise: "",
+        telephoneEntreprise: ""
     });
 
     useEffect(() => {
@@ -268,7 +271,59 @@ const RegistrationForm = () => {
                                             </div>
                                         </div>
                                     </div>
-
+ <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                            <Label htmlFor="adresse" className="font-medium text-gray-700">Adresse</Label>
+                                            <div className="relative">
+                                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-500">
+                                                    <FileText size={16} />
+                                                </div>
+                                                <Input
+                                                    id="adresse"
+                                                    name="adresse"
+                                                    value={formData.adresse}
+                                                    onChange={handleInputChange}
+                                                    className="pl-10 bg-gray-50 border-gray-200 focus:ring-blue-500"
+                                                    placeholder="Entrez votre Adresse"
+                                                    required
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label htmlFor="emailEntreprise" className="font-medium text-gray-700">Email Entreprise</Label>
+                                            <div className="relative">
+                                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-500">
+                                                    <FileText size={16} />
+                                                </div>
+                                                <Input
+                                                    id="emailEntreprise"
+                                                    name="emailEntreprise"
+                                                    value={formData.emailEntreprise}
+                                                    onChange={handleInputChange}
+                                                    className="pl-10 bg-gray-50 border-gray-200 focus:ring-blue-500"
+                                                    placeholder="Entrez l'Email"
+                                                    required
+                                                />
+                                            </div>
+                                        </div>
+                                         <div className="space-y-2">
+                                            <Label htmlFor="telephoneEntreprise" className="font-medium text-gray-700">Telephone</Label>
+                                            <div className="relative">
+                                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-500">
+                                                    <FileText size={16} />
+                                                </div>
+                                                <Input
+                                                    id="telephoneEntreprise"
+                                                    name="telephoneEntreprise"
+                                                    value={formData.telephoneEntreprise}
+                                                    onChange={handleInputChange}
+                                                    className="pl-10 bg-gray-50 border-gray-200 focus:ring-blue-500"
+                                                    placeholder="Entrez le numéro de téléphone"
+                                                    required
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div className="space-y-2">
                                             <Label htmlFor="dateCreation" className="font-medium text-gray-700">Date de création</Label>

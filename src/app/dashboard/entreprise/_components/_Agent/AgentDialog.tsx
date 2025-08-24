@@ -20,7 +20,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Trash2, Edit } from 'lucide-react';
+import { Trash2, Edit, Wallet } from 'lucide-react';
 import { toast } from "sonner";
 import { useRouter } from 'next/navigation';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -83,6 +83,14 @@ const AgentDialog: React.FC<AgentDialogProps> = ({
         telephone: agent.telephone || '',
         adresse: agent.adresse || '',
         nin: agent.nin || '',
+        salaire: agent.salaire,
+        dateProchainVirement: agent.dateProchainVirement || null,
+        frequencePaiement: agent.frequencePaiement || 'mensuel',
+        intervallePaiement: agent.intervallePaiement || 1,
+        
+        jourPaiement: agent.jourPaiement || 1,
+        wallet: agent.wallet || '',
+        aPayer: agent.aPayer || false,
       });
       setIsEditing(false);
       setShowOtpVerification(false);
@@ -105,11 +113,40 @@ const AgentDialog: React.FC<AgentDialogProps> = ({
   }, [isEditing]);
 
   // Handlers
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  
+const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
-  };
+    
+    // Gestion spéciale pour la date de prochain virement
+    if (name === 'dateProchainVirement') {
+        setFormData(prev => ({ 
+            ...prev, 
+            [name]: value || null 
+        }));
+    }
+    // Gestion pour les champs numériques
+    else if (name === 'salaire' || name === 'intervallePaiement' || name === 'jourPaiement') {
+        setFormData(prev => ({ 
+            ...prev, 
+            [name]: value ? Number(value) : '' 
+        }));
+    }
+    // Autres champs
+    else {
+        setFormData(prev => ({ 
+            ...prev, 
+            [name]: value 
+        }));
+    }
+};
 
+const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, checked } = e.target;
+    setFormData(prev => ({ 
+        ...prev, 
+        [name]: checked 
+    }));
+};
   const handleServiceChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedId = e.target.value;
     setSelectedServiceId(selectedId);
@@ -279,7 +316,7 @@ const AgentDialog: React.FC<AgentDialogProps> = ({
     }
   };
 
-  const handleOtpVerification = async () => {
+const handleOtpVerification = async () => {
     if (!pendingChangeId || !otpCode || otpCode.length !== 6) {
       toast.error("Please enter a valid 6-digit OTP code");
       return;
@@ -288,7 +325,7 @@ const AgentDialog: React.FC<AgentDialogProps> = ({
     setIsVerifying(true);
     try {
       const result = await verifyOtp({
-        otp: otpCode,
+        code: otpCode, // Changé de 'otp' à 'code' pour correspondre à CombinedView
         pendingChangeId,
         actionType: operationType,
         serviceId: ['removeFromService', 'addService'].includes(operationType) ? selectedServiceId : undefined,
@@ -410,6 +447,7 @@ const AgentDialog: React.FC<AgentDialogProps> = ({
                     selectedNiveauService={selectedNiveauService}
                     selectedServiceNiveaux={selectedServiceNiveaux}
                     onAddService={handleAddService}
+                    onCheckboxChange={handleCheckboxChange}
                     onRemoveFromService={onRemoveFromService}
                     toggleAddServiceMode={toggleAddServiceMode}
                     handleServiceChange={handleServiceChange}

@@ -1,11 +1,9 @@
-
-
 import React from 'react';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { X, Plus } from 'lucide-react';
+import { X, Plus, Calendar, DollarSign } from 'lucide-react';
 import { Client, Service, NiveauService } from '@/app/lib/types';
 
 interface ClientProfileTabProps {
@@ -13,15 +11,16 @@ interface ClientProfileTabProps {
   isEditing: boolean;
   formData: Partial<Client>;
   onInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void;
+  onCheckboxChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
   
-  // Service management props
+  // Service management
   services: Service[];
   isAddingService: boolean;
   selectedServiceId: string;
   selectedNiveauService: string;
   selectedServiceNiveaux: NiveauService[];
   
-  // Event handlers
+  // Handlers
   onAddService?: () => void;
   onRemoveFromService?: (serviceId: string) => void;
   toggleAddServiceMode: () => void;
@@ -35,6 +34,7 @@ const ClientProfileTab: React.FC<ClientProfileTabProps> = ({
   isEditing,
   formData,
   onInputChange,
+  onCheckboxChange,
   services,
   isAddingService,
   selectedServiceId,
@@ -47,25 +47,114 @@ const ClientProfileTab: React.FC<ClientProfileTabProps> = ({
   handleNiveauServiceChange,
   showRemoveFromServiceConfirmation
 }) => {
-  
-  // Formater la date
-  const formatDate = (dateString: string) => {
-    try {
-      return new Date(dateString).toLocaleDateString('fr-FR', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-      });
-    } catch (error) {
-      return "Date invalide";
+
+  // Fonction pour les champs conditionnels basés sur la fréquence de paiement
+  const renderFrequencyFields = () => {
+    if (!isEditing) return null;
+
+    switch (formData.frequencePaiement) {
+      case 'mensuel':
+        return (
+          <div className="grid grid-cols-4 items-center gap-4">
+            <div className="font-semibold text-right">Jour du mois:</div>
+            <div className="col-span-3">
+              <Input
+                type="number"
+                name="jourPaiement"
+                value={formData.jourPaiement || 1}
+                onChange={onInputChange}
+                min="1"
+                max="31"
+                placeholder="Jour du mois (1-31)"
+              />
+              <span className="text-xs text-gray-500 mt-1">Jour du mois où le paiement sera effectué</span>
+            </div>
+          </div>
+        );
+        case 'journalier':
+        return (
+          <div className="grid grid-cols-4 items-center gap-4">
+            <div className="font-semibold text-right">Nombre de Jour</div>
+            <div className="col-span-3">
+              <Input
+                type="number"
+                name="intervallePaiement"
+                value={formData.intervallePaiement || 1}
+                onChange={onInputChange}
+                min="0"
+              
+                placeholder="Choisir le nombre de jour "
+              />
+              <span className="text-xs text-gray-500 mt-1">Choisir le nombre de jour paiement sera effectué</span>
+            </div>
+          </div>
+        );
+      /* case 'hebdomadaire':
+        return (
+          <div className="grid grid-cols-4 items-center gap-4">
+            <div className="font-semibold text-right">Jour de la semaine:</div>
+            <div className="col-span-3">
+              <select
+                name="jourPaiement"
+                value={formData.jourPaiement || 0}
+                onChange={onInputChange}
+                className="w-full border border-gray-300 rounded-md px-3 py-2"
+              >
+                <option value="0">Dimanche</option>
+                <option value="1">Lundi</option>
+                <option value="2">Mardi</option>
+                <option value="3">Mercredi</option>
+                <option value="4">Jeudi</option>
+                <option value="5">Vendredi</option>
+                <option value="6">Samedi</option>
+              </select>
+            </div>
+          </div>
+        ); */
+      case 'horaire':
+        return (
+          <div className="grid grid-cols-4 items-center gap-4">
+            <div className="font-semibold text-right">Intervalle (heures):</div>
+            <div className="col-span-3">
+              <Input
+                type="number"
+                name="intervallePaiement"
+                value={formData.intervallePaiement || 1}
+                onChange={onInputChange}
+                min="1"
+                max="24"
+                placeholder="Nombre d'heures (1-24)"
+              />
+              <span className="text-xs text-gray-500 mt-1">Nombre d'heures entre chaque paiement</span>
+            </div>
+          </div>
+        );
+      case 'minute':
+        return (
+          <div className="grid grid-cols-4 items-center gap-4">
+            <div className="font-semibold text-right">Intervalle (minutes):</div>
+            <div className="col-span-3">
+              <Input
+                type="number"
+                name="intervallePaiement"
+                value={formData.intervallePaiement || 1}
+                onChange={onInputChange}
+                min="1"
+                max="60"
+                placeholder="Nombre de minutes (1-60)"
+              />
+              <span className="text-xs text-gray-500 mt-1">Nombre de minutes entre chaque paiement</span>
+            </div>
+          </div>
+        );
+      default:
+        return null;
     }
   };
 
   return (
     <div className="grid gap-4 py-4">
-      {/* Informations de base */}
+      {/* Informations personnelles */}
       <div className="grid grid-cols-4 items-center gap-4">
         <div className="font-semibold text-right">Nom:</div>
         <div className="col-span-3">
@@ -156,89 +245,140 @@ const ClientProfileTab: React.FC<ClientProfileTabProps> = ({
         </div>
       </div>
 
-      {/* Informations supplémentaires en mode consultation uniquement */}
+      {/* Montant à payer */}
+      
+
+      {/* Section des paramètres de paiement en mode édition */}
+      {isEditing && (
+        <>
+          <div className="mt-6 border-t pt-4">
+            <h3 className="text-lg font-semibold mb-4 flex items-center">
+              <DollarSign className="w-5 h-5 mr-2 text-orange-500" />
+              Paramètres de paiement
+            </h3>
+
+            <div className="grid grid-cols-4 items-center gap-4 mb-4">
+              <div className="font-semibold text-right">Fréquence de paiement:</div>
+              <div className="col-span-3">
+                <select
+                  name="frequencePaiement"
+                  value={formData.frequencePaiement || 'mensuel'}
+                  onChange={onInputChange}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2"
+                >
+                  <option value="mensuel">Mensuel</option>
+                  <option value="hebdomadaire">Hebdomadaire</option>
+                  <option value="journalier">Journalier</option>
+                  <option value="horaire">Horaire</option>
+                  <option value="minute">Minute</option>
+                  <option value="unique">Paiement unique</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Champs conditionnels basés sur la fréquence */}
+            {renderFrequencyFields()}
+
+            {/* Checkbox aDejaPaye */}
+            <div className="grid grid-cols-4 items-center gap-4 mt-4">
+              <div className="font-semibold text-right">Statut de paiement:</div>
+              <div className="col-span-3">
+                <div className="p-4 bg-gray-50 rounded-lg border">
+                  <label className="flex items-center space-x-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      name="aFAirePayer"
+                      checked={formData.aFAirePayer}
+                      onChange={onCheckboxChange || onInputChange}
+                      className="w-5 h-5 text-orange-500 border-2 border-gray-300 rounded focus:ring-orange-500 focus:ring-2"
+                    />
+                    <div className="flex flex-col">
+                      <span className={`font-medium ${formData.aFAirePayer ? 'text-green-600' : 'text-gray-700'}`}>
+                        {formData.aFAirePayer ? '✅ Client payé' : '❌ Client non payé'}
+                      </span>
+                      <span className="text-xs text-gray-500">
+                        {formData.aFAirePayer 
+                          ? 'Ce client a effectué ses paiements'
+                          : 'Ce client n\'a pas encore payé'
+                        }
+                      </span>
+                    </div>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Date de prochain paiement avec heure */}
+      <div className="grid grid-cols-4 items-center gap-4">
+        <div className="font-semibold text-right">Prochain paiement:</div>
+        <div className="col-span-3">
+          {isEditing ? (
+            <div className="flex items-center">
+              <Calendar className="w-4 h-4 mr-2 text-gray-500" />
+              <Input
+                type="datetime-local"
+                name="dateProgrammee"
+                value={(() => {
+                  const date = formData.dateProgrammee;
+                  if (!date) return "";
+                  
+                  try {
+                    if (date instanceof Date) {
+                      return date.toISOString().slice(0, 16);
+                    } else if (typeof date === 'string') {
+                      if (date.includes('T')) {
+                        return date.slice(0, 16);
+                      }
+                      return new Date(date).toISOString().slice(0, 16);
+                    }
+                  } catch (error) {
+                    console.error("Erreur de conversion de date:", error);
+                  }
+                  return "";
+                })()}
+                onChange={onInputChange}
+                className="flex-1"
+              />
+            </div>
+          ) : (
+            (() => {
+              const date = client.dateProgrammee;
+              if (!date) return "-";
+              
+              try {
+                if (date instanceof Date) {
+                  return date.toLocaleString("fr-FR");
+                } else if (typeof date === 'string') {
+                  return new Date(date).toLocaleString("fr-FR");
+                }
+              } catch (error) {
+                console.error("Erreur d'affichage de date:", error);
+              }
+              return "-";
+            })()
+          )}
+        </div>
+      </div>
+
       {!isEditing && (
         <>
+          {/* Statut de paiement en lecture seule */}
           <div className="grid grid-cols-4 items-center gap-4">
             <div className="font-semibold text-right">Statut:</div>
             <div className="col-span-3">
-              <Badge variant={client.estNouveau ? "default" : "secondary"}>
-                {client.estNouveau ? "Nouveau client" : "Client existant"}
+              <Badge variant={client.aDejaPaye ? "default" : "secondary"}>
+                {client.aDejaPaye ? "Client payé" : "Client non payé"}
               </Badge>
             </div>
           </div>
 
-          {client.dateCreation && (
-            <div className="grid grid-cols-4 items-center gap-4">
-              <div className="font-semibold text-right">Date de création:</div>
-              <div className="col-span-3">
-                {new Date(client.dateCreation).toLocaleDateString('fr-FR')}
-              </div>
-            </div>
-          )}
+        
 
-          {/* Nouvelles informations basées sur les données fournies */}
-          {client.montantTotal && (
-            <div className="grid grid-cols-4 items-center gap-4">
-              <div className="font-semibold text-right">Montant total:</div>
-              <div className="col-span-3 font-medium text-green-600">
-                {client.montantTotal.toLocaleString('fr-FR')} FCFA
-              </div>
-            </div>
-          )}
+          
 
-          {client.dateProgrammee && (
-            <div className="grid grid-cols-4 items-center gap-4">
-              <div className="font-semibold text-right">Date programmée:</div>
-              <div className="col-span-3">
-                {formatDate(client.dateProgrammee)}
-              </div>
-            </div>
-          )}
-
-          {client.frequencePaiement && (
-            <div className="grid grid-cols-4 items-center gap-4">
-              <div className="font-semibold text-right">Fréquence paiement:</div>
-              <div className="col-span-3">
-                <Badge variant="outline">{client.frequencePaiement}</Badge>
-              </div>
-            </div>
-          )}
-
-          {/* États de paiement */}
-          <div className="grid grid-cols-4 items-center gap-4">
-            <div className="font-semibold text-right">État paiement:</div>
-            <div className="col-span-3 space-y-1">
-              {client.aDejaPaye !== undefined && (
-                <Badge variant={client.aDejaPaye ? "success" : "secondary"}>
-                  {client.aDejaPaye ? "✅ Déjà payé" : "❌ Pas encore payé"}
-                </Badge>
-              )}
-              {client.aFAirePayer !== undefined && (
-                <Badge variant={client.aFAirePayer ? "default" : "secondary"} className="ml-1">
-                  {client.aFAirePayer ? "💰 À payer" : "🚫 Ne doit pas payer"}
-                </Badge>
-              )}
-            </div>
-          </div>
-
-          {/* Niveaux de services choisis */}
-          {client.niveauServicesChoisis && client.niveauServicesChoisis.length > 0 && (
-            <div className="grid grid-cols-4 items-start gap-4">
-              <div className="font-semibold text-right">Niveaux choisis:</div>
-              <div className="col-span-3">
-                <div className="flex flex-wrap gap-1">
-                  {client.niveauServicesChoisis.map((niveau, index) => (
-                    <Badge key={index} variant="outline" className="text-xs">
-                      {niveau}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Section Services */}
           <div className="grid grid-cols-4 items-start gap-4">
             <div className="font-semibold text-right">Services:</div>
             <div className="col-span-3">
@@ -264,10 +404,9 @@ const ClientProfileTab: React.FC<ClientProfileTabProps> = ({
                   ))}
                 </div>
               ) : (
-                <span className="text-gray-500">Aucun service choisi</span>
+                <span className="text-gray-500">Aucun service sélectionné</span>
               )}
               
-              {/* Bouton pour ajouter un service */}
               {onAddService && (
                 <Button
                   variant="outline"
@@ -286,7 +425,6 @@ const ClientProfileTab: React.FC<ClientProfileTabProps> = ({
                 </Button>
               )}
               
-              {/* Formulaire d'ajout de service */}
               {isAddingService && (
                 <div className="mt-4 p-3 border rounded-md bg-gray-50">
                   <h4 className="font-medium mb-2">Ajouter un service</h4>
@@ -303,7 +441,6 @@ const ClientProfileTab: React.FC<ClientProfileTabProps> = ({
                         <option value="">Sélectionner un service</option>
                         {Array.isArray(services) && services.length > 0 ? (
                           services
-                            // Filtrer les services déjà sélectionnés
                             .filter(service => 
                               !client.servicesChoisis?.some(clientService => 
                                 clientService._id === service._id

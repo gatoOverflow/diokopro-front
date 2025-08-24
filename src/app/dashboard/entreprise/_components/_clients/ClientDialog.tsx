@@ -85,6 +85,7 @@ const ClientDialog: React.FC<ClientDialogProps> = ({
     handleServiceChange,
     handleNiveauServiceChange,
     handleShowPaymentDetails,
+    handleCheckboxChange,
     toggleAddServiceMode,
     showDeleteConfirmation,
     showRemoveFromServiceConfirmation,
@@ -254,6 +255,7 @@ const ClientDialog: React.FC<ClientDialogProps> = ({
                     client={client}
                     isEditing={isEditing}
                     formData={formData}
+                   onCheckboxChange={handleCheckboxChange}
                     onInputChange={handleInputChange}
                     services={services}
                     isAddingService={isAddingService}

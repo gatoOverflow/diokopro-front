@@ -29,7 +29,7 @@ const AgentSchema = z.object({
   frequencePaiement: z.enum(['mensuel', 'hebdomadaire', 'quotidien', 'horaire', 'minute', 'unique']).optional().default('mensuel'),
   intervallePaiement: z.number().optional(),
   jourPaiement: z.number().optional(),
-  dateProgrammee: z.union([z.string(), z.date()]),
+  dateProchainVirement: z.union([z.string(), z.date()]), /// change here
   aPayer: z.boolean().optional()
 });
 
@@ -147,7 +147,7 @@ export const updatedAgent = async (formData) => {
 }
 
 export async function deleteAgent(formData) {
- // console.log("Début deleteAgent - Données reçues:", formData);
+  console.log("Début deleteAgent - Données reçues:", formData);
 
   try {
     const token = (await cookies()).get("token")?.value;
@@ -186,7 +186,7 @@ export async function deleteAgent(formData) {
       }
     });
     
-    //console.log("Réponse de suppression définitive:", response.data);
+    console.log("Réponse de suppression définitive:", response.data);
     
     // Vérifier si un ID de changement en attente est retourné (pour l'OTP)
     if (response.data?.pendingChangeId) {

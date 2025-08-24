@@ -53,5 +53,5 @@ export const GET_ALL_GERANTS_BY_ENTREPRISE=`${API_URL}/getAllGerants/entreprise`
 export const RECHARGE_COMPTE_ENTREPRISE=`${API_URL}/recharge-compte/entreprise`
 export const DEBITER_COMPTE_ENTREPRISE=`${API_URL}/retirer-compte/entreprise`
 export const REFUSE_ENTREPRISE_URL=`${API_URL}/authSuper/DisableEntreprise`
-
+export const USERSBYID_URL = `${API_URL}/get-user`
 //Events

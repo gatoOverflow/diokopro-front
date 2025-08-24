@@ -17,19 +17,20 @@ const ClientPaymentsTab: React.FC<ClientPaymentsTabProps> = ({
 }) => {
   
   // Formater la date
-  const formatDate = (dateString: string) => {
-    try {
-      return new Date(dateString).toLocaleDateString('fr-FR', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-      });
-    } catch (error) {
-      return "Date invalide";
-    }
-  };
+ const formatDate = (dateString: string) => {
+  try {
+    return new Date(dateString).toLocaleString('fr-FR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  } catch (error) {
+    return "Date invalide";
+  }
+};
+
 
   // Obtenir la classe CSS basée sur le statut du paiement
   const getStatusBadgeVariant = (status: string) => {
@@ -47,7 +48,10 @@ const ClientPaymentsTab: React.FC<ClientPaymentsTabProps> = ({
       payment.montant !== undefined || 
       payment.datePaiement || 
       payment.statut || 
-      payment.expediteur
+      payment.expediteur||
+      payment.token ||
+      payment.frais ||
+      payment.dateReglement
     );
   };
 
@@ -73,15 +77,22 @@ const ClientPaymentsTab: React.FC<ClientPaymentsTabProps> = ({
             >
               <div className="flex-1">
                 <div className="font-medium">
-                  {paiement.montant !== undefined 
+                  Montant:{paiement.montant !== undefined 
                     ? `${paiement.montant.toLocaleString('fr-FR')} FCFA` 
                     : 'Montant non disponible'}
                 </div>
-                <div className="text-xs text-gray-500">
-                  {paiement.datePaiement 
-                    ? formatDate(paiement.datePaiement) 
-                    : (paiement.expediteur?.nom ? `De: ${paiement.expediteur.nom}` : 'Détails non disponibles')}
+               <div className="font-medium">
+  {formatDate(paiement.dateReglement)}
+</div>
+
+                {/*  <div className="font-medium">
+                  Frais:{paiement.frais}
                 </div>
+                <div className="font-medium">
+                  Token:{paiement.token}
+                </div> */}
+                
+               
               </div>
               {paiement.statut && (
                 <Badge variant={getStatusBadgeVariant(paiement.statut)}>
