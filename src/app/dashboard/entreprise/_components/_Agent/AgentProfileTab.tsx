@@ -84,24 +84,24 @@ const AgentProfileTab: React.FC<AgentProfileTabProps> = ({
             </div>
           </div>
         );
-      case 'journalier':
-        return (
-          <div className="grid grid-cols-4 items-center gap-4">
-            <div className="font-semibold text-right">Jour du mois:</div>
-            <div className="col-span-3">
-              <Input
-                type="number"
-                name="jourPaiement"
-                value={formData.intervallePaiement || 1}
-                onChange={onInputChange}
-                min="1"
-
-                placeholder="Nombre de Jour"
-              />
-              <span className="text-xs text-gray-500 mt-1">Jour du mois où le paiement sera effectué</span>
-            </div>
-          </div>
-        );
+     case 'quotidien':
+  return (
+    <div className="grid grid-cols-4 items-center gap-4">
+      <div className="font-semibold text-right">Intervalle (jours):</div>
+      <div className="col-span-3">
+        <Input
+          type="number"
+          name="intervallePaiement"
+          value={formData.intervallePaiement || 1}
+          onChange={onInputChange}
+          min="1"
+          max="365"
+          placeholder="Nombre de jours (1-365)"
+        />
+        <span className="text-xs text-gray-500 mt-1">Nombre de jours entre chaque paiement</span>
+      </div>
+    </div>
+  );
       /* case 'hebdomadaire':
         return (
           <div className="grid grid-cols-4 items-center gap-4">
@@ -323,7 +323,7 @@ const AgentProfileTab: React.FC<AgentProfileTabProps> = ({
                 >
                   <option value="mensuel">Mensuel</option>
                   <option value="hebdomadaire">Hebdomadaire</option>
-                  <option value="journalier">Journalier</option>
+                  <option value="quotidien">Quotidien</option>
                   <option value="horaire">Horaire</option>
                   <option value="minute">Minute</option>
                   <option value="unique">Paiement unique</option>
@@ -427,7 +427,7 @@ const AgentProfileTab: React.FC<AgentProfileTabProps> = ({
                     activationText = `Prochain paiement le ${nextWeek.toLocaleDateString("fr-FR")} puis chaque semaine`;
                     break;
 
-                  case 'journalier':
+                  case 'quotidien':
                     const interval = formData.intervallePaiement || 1;
                     const nextDay = new Date(nextPayment);
                     nextDay.setDate(nextDay.getDate() + interval);
@@ -487,70 +487,8 @@ const AgentProfileTab: React.FC<AgentProfileTabProps> = ({
         })()}
 
         {/* Texte explicatif en mode lecture */}
-        {agent.dateProchainVirement && agent.frequencePaiement && agent.frequencePaiement !== 'unique' && (
-          <div className="text-xs text-blue-600 bg-blue-50 p-3 rounded-lg border border-blue-200">
-            <div className="flex items-center mb-1">
-              <Calendar className="w-3 h-3 mr-1" />
-              <span className="font-medium">Activation automatique:</span>
-            </div>
-            {(() => {
-              try {
-                const nextPayment = new Date(agent.dateProchainVirement);
-                let activationText = "";
-
-                switch (agent.frequencePaiement) {
-                  case 'mensuel':
-                    const nextMonth = new Date(nextPayment);
-                    nextMonth.setMonth(nextMonth.getMonth() + 1);
-                    activationText = `Prochain paiement le ${nextMonth.toLocaleDateString("fr-FR")} puis chaque mois`;
-                    break;
-
-                  case 'hebdomadaire':
-                    const nextWeek = new Date(nextPayment);
-                    nextWeek.setDate(nextWeek.getDate() + 7);
-                    activationText = `Prochain paiement le ${nextWeek.toLocaleDateString("fr-FR")} puis chaque semaine`;
-                    break;
-
-                  case 'journalier':
-                    const interval = agent.intervallePaiement || 1;
-                    const nextDay = new Date(nextPayment);
-                    nextDay.setDate(nextDay.getDate() + interval);
-                    activationText = `Prochain paiement le ${nextDay.toLocaleDateString("fr-FR")} puis tous les ${interval} jour${interval > 1 ? 's' : ''}`;
-                    break;
-
-                  case 'horaire':
-                    const hourInterval = agent.intervallePaiement || 1;
-                    const nextHour = new Date(nextPayment);
-                    nextHour.setHours(nextHour.getHours() + hourInterval);
-                    activationText = `Prochain paiement le ${nextHour.toLocaleString("fr-FR")} puis toutes les ${hourInterval} heure${hourInterval > 1 ? 's' : ''}`;
-                    break;
-
-                  case 'minute':
-                    const minuteInterval = agent.intervallePaiement || 1;
-                    const nextMinute = new Date(nextPayment);
-                    nextMinute.setMinutes(nextMinute.getMinutes() + minuteInterval);
-                    activationText = `Prochain paiement le ${nextMinute.toLocaleString("fr-FR")} puis toutes les ${minuteInterval} minute${minuteInterval > 1 ? 's' : ''}`;
-                    break;
-
-                  default:
-                    activationText = "Paiement programmé selon la fréquence définie";
-                }
-
-                return (
-                  <div className="text-xs leading-relaxed">
-                    {activationText}
-                  </div>
-                );
-              } catch (error) {
-                return (
-                  <div className="text-xs text-red-600">
-                    Erreur de calcul de la prochaine activation
-                  </div>
-                );
-              }
-            })()}
-          </div>
-        )}
+        
+       
       </div>
     )}
   </div>

@@ -188,7 +188,7 @@ export interface Agent {
   
   // Nouveaux champs pour les paiements
   salaire?: number;
-  frequencePaiement?: 'mensuel' | 'hebdomadaire' | 'journalier' | 'horaire' | 'minute' | 'unique';
+  frequencePaiement?: 'mensuel' | 'hebdomadaire' | 'quotidien' | 'horaire' | 'minute' | 'unique';
   intervallePaiement?: number;
   jourPaiement?: number;
   wallet?: string;

@@ -26,10 +26,10 @@ interface ServiceDialogProps {
   entrepriseId?: string; // Ajout pour l'OTP
 }
 
-const ServiceDialog: React.FC<ServiceDialogProps> = ({ 
-  service, 
-  isOpen, 
-  onClose, 
+const ServiceDialog: React.FC<ServiceDialogProps> = ({
+  service,
+  isOpen,
+  onClose,
   onUpdate,
   entrepriseId = "" // Ajout pour l'OTP
 }) => {
@@ -37,9 +37,10 @@ const ServiceDialog: React.FC<ServiceDialogProps> = ({
   const [nomService, setNomService] = useState('');
   const [description, setDescription] = useState('');
   const [tarifactionBase, setTarifactionBase] = useState('');
+  const [serviceDis, setService] = useState('');
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  
+
   // États pour la vérification OTP
   const [showOtpVerification, setShowOtpVerification] = useState(false);
   const [otpCode, setOtpCode] = useState("");
@@ -73,9 +74,9 @@ const ServiceDialog: React.FC<ServiceDialogProps> = ({
 
   const handleUpdate = async () => {
     if (!service) return;
-    
+
     setIsLoading(true);
-    
+
     try {
       const updatedServiceData = {
         serviceId: service._id,
@@ -83,25 +84,26 @@ const ServiceDialog: React.FC<ServiceDialogProps> = ({
         nomService,
         description,
         tarifactionBase: parseInt(tarifactionBase, 10) || 0,
+        serviceDis,
       };
-      
+
       // Vérifier que nous avons un entrepriseId
       if (!updatedServiceData.entrepriseId) {
         toast.error("ID de l'entreprise manquant. Impossible de mettre à jour le service.");
         setIsLoading(false);
         return;
       }
-      
+
       // Sauvegarder les données pour l'OTP
       setUpdatedServiceData(updatedServiceData);
-      
+
       console.log("🔄 Appel updateService avec:", updatedServiceData);
-      
+
       // Appeler la fonction updateService directement
       const response = await updateService(updatedServiceData);
-      
+
       console.log("📨 Réponse updateService:", response);
-      
+
       // Vérifier si une validation OTP est nécessaire
       if (response?.data?.pendingChangeId) {
         toast.success("Demande de modification envoyée ! Veuillez entrer le code OTP.");
@@ -111,7 +113,7 @@ const ServiceDialog: React.FC<ServiceDialogProps> = ({
         // Mise à jour réussie sans OTP
         toast.success("Service mis à jour avec succès !");
         setIsEditing(false);
-        
+
         // Appeler onUpdate pour mettre à jour l'état parent si nécessaire
         if (onUpdate) {
           onUpdate({
@@ -119,9 +121,10 @@ const ServiceDialog: React.FC<ServiceDialogProps> = ({
             nomService,
             description,
             tarifactionBase: parseInt(tarifactionBase, 10) || 0,
+            serviceDis
           });
         }
-        
+
         // ✅ Actualiser la page après mise à jour réussie
         setTimeout(() => {
           refreshPage();
@@ -136,7 +139,7 @@ const ServiceDialog: React.FC<ServiceDialogProps> = ({
         // Autres erreurs
         toast.error(response?.error || "Erreur lors de la mise à jour du service");
       }
-      
+
     } catch (error: any) {
       console.error("Erreur lors de la mise à jour:", error);
       toast.error(error.message || "Erreur lors de la mise à jour du service");
@@ -157,22 +160,22 @@ const ServiceDialog: React.FC<ServiceDialogProps> = ({
     }
 
     setIsLoading(true);
-    
+
     try {
       const response = await validateOTP(pendingChangeId, otpCode, entrepriseId);
-      
+
       if (response.success) {
         toast.success("Service validé avec succès !");
         setIsEditing(false);
         setShowOtpVerification(false);
-        
+
         // ✅ Actualiser la page après validation OTP réussie
         setTimeout(() => {
           refreshPage();
         }, 500); // Petit délai pour laisser le toast s'afficher
       } else {
         toast.error(response.error || "Code OTP invalide ou expiré");
-        
+
         if (response.errors) {
           Object.values(response.errors).forEach((errorArray: any) => {
             if (Array.isArray(errorArray)) {
@@ -212,8 +215,8 @@ const ServiceDialog: React.FC<ServiceDialogProps> = ({
         <DialogHeader>
           <DialogTitle className="flex justify-between items-center">
             <span>
-              {showOtpVerification ? "Vérification OTP - Modification du service" : 
-               (isEditing ? "Modifier le service" : "Détails du service")}
+              {showOtpVerification ? "Vérification OTP - Modification du service" :
+                (isEditing ? "Modifier le service" : "Détails du service")}
             </span>
             <DialogClose asChild>
               <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full">
@@ -223,10 +226,10 @@ const ServiceDialog: React.FC<ServiceDialogProps> = ({
           </DialogTitle>
           <DialogDescription>
             {showOtpVerification ? "Veuillez saisir le code OTP pour confirmer la modification" :
-             (isEditing ? "Modifiez les informations du service" : "Informations complètes sur le service")}
+              (isEditing ? "Modifiez les informations du service" : "Informations complètes sur le service")}
           </DialogDescription>
         </DialogHeader>
-        
+
         <div className="grid gap-4 py-4">
           {showOtpVerification ? (
             <OtpInput
@@ -262,17 +265,28 @@ const ServiceDialog: React.FC<ServiceDialogProps> = ({
                   disabled={isLoading}
                 />
               </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="tarifactionBase" className="text-right">Tarif de base:</Label>
-                <Input
-                  id="tarifactionBase"
-                  type="number"
-                  value={tarifactionBase}
-                  onChange={(e) => setTarifactionBase(e.target.value)}
-                  className="col-span-3"
-                  disabled={isLoading}
-                />
-              </div>
+
+              {service.niveauxDisponibles.map((samm, index) => (
+                <div key={index} className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor={`tarif-${index}`} className="text-right">
+                    {samm.nom} :
+                  </Label>
+                  <Input
+                    id={`tarif-${index}`}
+                    type="number"
+                    value={samm.tarif}
+                    onChange={(e) => {
+                      const newValue = e.target.value;
+                      const updated = [...service.niveauxDisponibles];
+                      updated[index].tarif = newValue;
+                      setService({ ...service, niveauxDisponibles: updated });
+                    }}
+                    className="col-span-3"
+                    disabled={isLoading}
+                  />
+                </div>
+              ))}
+
             </>
           ) : (
             <>
@@ -290,14 +304,25 @@ const ServiceDialog: React.FC<ServiceDialogProps> = ({
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <div className="font-semibold text-right">Gérants:</div>
-                <div className="col-span-3">{service.gerants?.join(", ") || "-"}</div>
+                <div className="col-span-3">{service.gerants.map((gerant, index) => (
+                  <div key={index}>
+                   {gerant.prenom} -  {gerant.nom} 
+                  </div>
+                ))}</div>
               </div>
-              {service.niveauxDisponibles && service.niveauxDisponibles.length > 0 && (
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <div className="font-semibold text-right">Niveaux disponibles:</div>
-                  <div className="col-span-3">{service.niveauxDisponibles.join(", ")}</div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <div className="font-semibold text-right">Niveaux disponibles:</div>
+                <div className="col-span-3 space-y-1">
+                  {service.niveauxDisponibles.map((samm, index) => (
+                    <div key={index}>
+                      {samm.nom} - {samm.tarif} FCFA
+                    </div>
+                  ))}
                 </div>
-              )}
+              </div>
+
+
+
               {service.createdAt && (
                 <div className="grid grid-cols-4 items-center gap-4">
                   <div className="font-semibold text-right">Date de création:</div>
@@ -307,19 +332,19 @@ const ServiceDialog: React.FC<ServiceDialogProps> = ({
             </>
           )}
         </div>
-        
+
         {!showOtpVerification && (
           <div className="flex justify-end mt-4 gap-2">
             {isEditing ? (
               <>
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   onClick={() => setIsEditing(false)}
                   disabled={isLoading}
                 >
                   Annuler
                 </Button>
-                <Button 
+                <Button
                   onClick={handleUpdate}
                   disabled={isLoading}
                   className="bg-[#ee7606] hover:bg-[#d56a05]"

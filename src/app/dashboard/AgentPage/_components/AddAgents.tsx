@@ -429,7 +429,7 @@ const CreateAgentModal = ({ services = [], entrepriseId = "" }: CreateAgentModal
             <span className="text-xs text-gray-500 mt-1">Nombre d'heures entre chaque paiement (1-24)</span>
           </div>
         );
-         case 'journalier':
+         case 'quotidien':
         return (
           <div>
             <label className="block mb-1 font-medium text-gray-700">Intervalle (Jours)</label>
@@ -712,7 +712,7 @@ const CreateAgentModal = ({ services = [], entrepriseId = "" }: CreateAgentModal
                       >
                         <option value="mensuel">Mensuel</option>
                         <option value="hebdomadaire">Hebdomadaire</option>
-                        <option value="journalier">Journalier</option>
+                        <option value="quotidien">Quotidien</option>
                         <option value="horaire">Horaire</option>
                         <option value="minute">Minute</option>
                         <option value="unique">Paiement unique</option>
