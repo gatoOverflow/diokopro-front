@@ -1,4 +1,4 @@
-'use client'
+/* 'use client'
 
 import { useState } from "react";
 import { UserInfos } from "@/lib/types";
@@ -118,3 +118,4 @@ export default function ChangePassword({ user }: Props) {
     </div>
   );
 }
+ */

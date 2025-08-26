@@ -1,4 +1,4 @@
-import React from 'react'
+/* import React from 'react'
 import ChangePassWord from '../_components/changePassWord';
 import { fetchJSON } from '@/lib/api';
 import { USERSBYID_URL } from '@/lib/endpoint';
@@ -23,4 +23,4 @@ async function page({params}: Props) {
   )
 }
 
-export default page
+export default page */
