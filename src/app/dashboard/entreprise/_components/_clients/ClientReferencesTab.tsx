@@ -25,7 +25,7 @@ const ClientReferencesTab: React.FC<ClientReferencesTabProps> = ({ client }) => 
               <div className="font-medium mb-1">
                 Référence #{index + 1}
               </div>
-              {/* Affichage conditionnel basé sur le type de référence */}
+              {/* Affichage conditionnel basé sur le type de référence  okki*/}
               {typeof reference === 'string' ? (
                 <div className="text-sm text-gray-600">{reference}</div>
               ) : typeof reference === 'object' && reference !== null ? (
