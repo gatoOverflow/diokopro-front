@@ -15,5 +15,5 @@ export const RegisterSchema = z.object({
   adresse: z.string().min(1, "L'adresse est requise"),
   emailEntreprise: z.string().email("Format d'email invalide pour l'entreprise"),
   telephoneEntreprise: z.string().optional(),
-
+//teste 45
 });
