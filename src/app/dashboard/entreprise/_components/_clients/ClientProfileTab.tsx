@@ -56,7 +56,7 @@ const ClientProfileTab: React.FC<ClientProfileTabProps> = ({
       case 'mensuel':
         return (
           <div className="grid grid-cols-4 items-center gap-4">
-            <div className="font-semibold text-right">Jour du mois:</div>
+            <div className="font-semibold text-right">Intervalle (mois):</div>
             <div className="col-span-3">
               <Input
                 type="number"
@@ -67,14 +67,14 @@ const ClientProfileTab: React.FC<ClientProfileTabProps> = ({
                 max="31"
                 placeholder="Jour du mois (1-31)"
               />
-              <span className="text-xs text-gray-500 mt-1">Jour du mois où le paiement sera effectué</span>
+            
             </div>
           </div>
         );
         case 'journalier':
         return (
           <div className="grid grid-cols-4 items-center gap-4">
-            <div className="font-semibold text-right">Nombre de Jour</div>
+            <div className="font-semibold text-right">Intervalle (jour):</div>
             <div className="col-span-3">
               <Input
                 type="number"
@@ -85,7 +85,7 @@ const ClientProfileTab: React.FC<ClientProfileTabProps> = ({
               
                 placeholder="Choisir le nombre de jour "
               />
-              <span className="text-xs text-gray-500 mt-1">Choisir le nombre de jour paiement sera effectué</span>
+           
             </div>
           </div>
         );
@@ -125,7 +125,7 @@ const ClientProfileTab: React.FC<ClientProfileTabProps> = ({
                 max="24"
                 placeholder="Nombre d'heures (1-24)"
               />
-              <span className="text-xs text-gray-500 mt-1">Nombre d'heures entre chaque paiement</span>
+         
             </div>
           </div>
         );
@@ -143,7 +143,7 @@ const ClientProfileTab: React.FC<ClientProfileTabProps> = ({
                 max="60"
                 placeholder="Nombre de minutes (1-60)"
               />
-              <span className="text-xs text-gray-500 mt-1">Nombre de minutes entre chaque paiement</span>
+   
             </div>
           </div>
         );
