@@ -1,14 +1,15 @@
-/* 'use client'
+'use client'
 
 import { useState } from "react";
-import { UserInfos } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { register } from "@/actions/userRegis";
+
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { UserInfos } from "@/app/lib/types";
+import { updatePassword } from "@/actions/Register";
 
 type Props = {
   user: UserInfos;
@@ -40,12 +41,13 @@ export default function ChangePassword({ user }: Props) {
     try {
       const formDataToSend = new FormData();
 
-      // 🔹 Ajouter les champs au FormData (éviter d'envoyer directement formData)
-      formDataToSend.append("userId", user._id);
+      // Ajouter les champs au FormData
+
+      formDataToSend.append("email", user.email); // Ajouter l'email
       formDataToSend.append("password", currentPassword);
       formDataToSend.append("newPassword", newPassword);
 
-      const response = await register({}, formDataToSend);
+      const response = await updatePassword({}, formDataToSend);
 
       if (response?.type === "error") {
         toast.error("Erreur lors de la mise à jour !");
@@ -72,6 +74,20 @@ export default function ChangePassword({ user }: Props) {
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid gap-4">
+              {/* Affichage de l'email (lecture seule) */}
+              <div className="grid gap-2">
+                <Label htmlFor="email">Adresse email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={user.email || ""}
+                  readOnly
+                  className="bg-gray-100 cursor-not-allowed"
+                  disabled
+                />
+                <p className="text-sm text-gray-500">Votre adresse email ne peut pas être modifiée</p>
+              </div>
+              
               <div className="grid gap-2">
                 <Label htmlFor="currentPassword">Mot de passe actuel</Label>
                 <Input
@@ -118,4 +134,3 @@ export default function ChangePassword({ user }: Props) {
     </div>
   );
 }
- */

@@ -1,9 +1,8 @@
 "use server";
 
 import axios from "axios";
-import { LoginSchema } from "@/schemas/loginschema";
-import { LOGIN_URL } from "./endpoint";
-import { log } from "console";
+import { LoginSchema, ResetSchema } from "@/schemas/loginschema";
+import { LOGIN_URL, RESET_PASSWORD_URL } from "./endpoint";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
@@ -52,6 +51,52 @@ export const login = async (state: any, formData: FormData) => {
     };
   }
 };
+
+export const ResetPassword = async (state: any, formData: FormData) => {
+  try {
+    // Validation avec zod
+    const validatedFields = ResetSchema.safeParse({
+      email: formData.get("email"),
+    });
+
+    if (!validatedFields.success) {
+      return { 
+        type: "error",
+        errors: validatedFields.error.flatten().fieldErrors,
+        data: null
+      };
+    }
+
+    const { email } = validatedFields.data;
+
+    // Faire une requête POST pour réinitialiser le mot de passe
+    const res = await axios.put(RESET_PASSWORD_URL, {
+      email,
+    });
+
+    //console.log("Reset password response:", res); // Debugging: Log the response
+
+    // Retourner la structure attendue par le composant
+    return {
+      type: "success",
+      data: {
+        message: res.data?.message || "Si cet email existe dans notre base de données, vous recevrez un lien de réinitialisation."
+      },
+      errors: {}
+    };
+
+  } catch (error: any) {
+    console.error("Reset password error:", error);
+    return {
+      type: "error",
+      data: {
+        message: error?.response?.data?.message || "Une erreur s'est produite lors de la réinitialisation"
+      },
+      errors: {}
+    };
+  }
+};
+
 
 export async function logout() {
   (await cookies()).delete("token");

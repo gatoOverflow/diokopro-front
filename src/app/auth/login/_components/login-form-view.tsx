@@ -72,7 +72,7 @@ export const LoginFormView = ({
         </div>
         <AlertFeedback type={state?.type} message={state?.message} />
         <div className="text-blue-800 text-right text-sm cursor-pointer">
-          <Link href={"forget-password"}>Forgot Password</Link>
+          <Link href={"/auth/forgotPassword"}>Forgot Password</Link>
         </div>
         <SubmitButton title="Submit" />
       </form>

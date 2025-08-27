@@ -6,6 +6,7 @@ export const PublicRoute: (string | RegExp)[] = [
   "",
   "/",
   "/auth/register",
+   "/auth/forgotPassword",
   "/auth/login",
   "/auth/new-password",
   "/auth/forgot-password",
@@ -40,6 +41,7 @@ export const ROLEPAGES = {
     "/dashboard/Agents",
     /^\/entreprise\/.*$/,
     /^\/dashboard\/profile\/[^/]+(\/updateProfile)?$/,
+     /^\/dashboard\/entreprise\/[^/]+(\/updateEntreprise)?$/,
     /^\/dashboard\/profile\/[^/]+(\/changePassWord)?$/
   ],
   gerant: [
@@ -50,7 +52,9 @@ export const ROLEPAGES = {
     "/dashboard/organizer/tickets",
     "/dashboard/organizer/chat",
     "/dashboard/profile",
+
     /^\/dashboard\/profile\/[^/]+(\/updateProfile)?$/,
+     /^\/dashboard\/profile\/[^/]+(\/updateEntreprise)?$/,
     /^\/dashboard\/profile\/[^/]+(\/changePassWord)?$/
   ],
   superAdmin: [

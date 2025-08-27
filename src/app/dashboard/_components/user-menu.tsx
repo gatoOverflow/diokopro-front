@@ -86,6 +86,12 @@ const UserMenu = ({ currentUser }: { currentUser?: User }) => {
             </Link>
           </DropdownMenuItem>
           <DropdownMenuItem>
+            <UserRoundPen />
+            <Link href={`/dashboard/profile/${currentUser?._id}/updateEntreprise`}>
+              Update Entreprise
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem>
             <CreditCard />
             <Link href={`/dashboard/profile/${currentUser?._id}/changePassWord`}>
               Change password

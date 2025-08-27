@@ -25,12 +25,28 @@ const ServicesList = ({ services, onServiceClick }) => {
       cellClassName: "text-sm font-medium text-gray-900 uppercase",
       defaultValue: "IPSUM"
     },
-    {
-      header: "Tarif",
-      field: "tarif",
-      cellClassName: "text-sm text-gray-500",
-      defaultValue: "Lorem"
-    },
+  {
+  header: "Tarif",
+  
+  cellClassName: "text-sm text-gray-500",
+  defaultValue: "Aucun tarif disponible",
+  render: (service) => (
+    <div className="space-y-1">
+  {service.niveauxDisponibles && service.niveauxDisponibles.length > 0 ? (
+    service.niveauxDisponibles.map((niv, idx) => (
+      <div key={idx} className="flex justify-between">
+        <span className="font-medium">{niv.nom} :</span>
+        <span>{niv.tarif} FCFA</span>
+      </div>
+    ))
+  ) : (
+    <span className="italic text-gray-400">Aucun tarif</span>
+  )}
+</div>
+
+  ),
+},
+
     {
       header: "Gérant(s)",
       render: (service) => (

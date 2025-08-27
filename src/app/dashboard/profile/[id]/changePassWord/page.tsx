@@ -1,7 +1,9 @@
-/* import React from 'react'
+ import React from 'react'
 import ChangePassWord from '../_components/changePassWord';
 import { fetchJSON } from '@/lib/api';
-import { USERSBYID_URL } from '@/lib/endpoint';
+import { USERSBYID_URL } from '@/actions/endpoint';
+import { log } from 'console';
+
 
 type Props = {
     params :{
@@ -11,6 +13,7 @@ type Props = {
 async function page({params}: Props) {
     // console.log("+++++++++",params.id);
     const res = await fetchJSON(`${USERSBYID_URL}/${params.id}`)
+    console.log(res);
     
     const userConnected = res.user
     // console.log(userConnected);
@@ -23,4 +26,4 @@ async function page({params}: Props) {
   )
 }
 
-export default page */
+export default page 

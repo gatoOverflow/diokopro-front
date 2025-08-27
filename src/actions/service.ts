@@ -2,7 +2,9 @@
 
 import { z } from "zod";
 import { createdOrUpdated } from "@/lib/api";
-import { BASE_URL, SERVICE_URL, UPDATE_SERVICE_URL } from "./endpoint";
+import { BASE_URL, DELETE_SERVICE_URL, SERVICE_URL, UPDATE_SERVICE_URL } from "./endpoint";
+import { cookies } from "next/headers";
+import axios from "axios";
 
 // Schéma de validation pour les données du service
 const ServiceSchema = z.object({
@@ -25,7 +27,10 @@ const UpdateServiceSchema = z.object({
     tarif: z.number().min(0, { message: "Le tarif ne peut pas être négatif" })
   })).optional()
 });
-
+const DeleteClientSchema = z.object({
+  serviceId: z.string().min(1, { message: "L'ID du client est obligatoire" }),
+  entrepriseId: z.string().min(1, { message: "L'ID de l'entreprise est obligatoire" })
+});
 // Fonction pour mettre à jour un service
 const updateService = async (formData) => {
   console.log("🏁 Début updateService dans service.ts");
@@ -33,14 +38,23 @@ const updateService = async (formData) => {
 
   try {
     // Convertir les champs numériques si nécessaire
-    const processedData = {
-      ...formData,
-      tarifactionBase: typeof formData.tarifactionBase === 'string' ? Number(formData.tarifactionBase) : formData.tarifactionBase,
-      niveauxDisponibles: formData.niveauxDisponibles?.map(niveau => ({
-        ...niveau,
-        tarif: typeof niveau.tarif === 'string' ? Number(niveau.tarif) : niveau.tarif
-      }))
-    };
+  const formDataWithNiveaux: typeof formData = {
+  ...formData,
+  niveauxDisponibles: formData.niveauxDisponibles ?? formData.serviceDis?.niveauxDisponibles ?? []
+};
+
+const processedData = {
+  ...formDataWithNiveaux,
+  tarifactionBase: typeof formDataWithNiveaux.tarifactionBase === 'string'
+    ? Number(formDataWithNiveaux.tarifactionBase)
+    : formDataWithNiveaux.tarifactionBase,
+  niveauxDisponibles: formDataWithNiveaux.niveauxDisponibles.map(niveau => ({
+    ...niveau,
+    tarif: typeof niveau.tarif === 'string' ? Number(niveau.tarif) : niveau.tarif
+  }))
+};
+
+  
 
     console.log("🔍 Début validation Zod");
     const validation = UpdateServiceSchema.safeParse(processedData);
@@ -216,5 +230,83 @@ const validateOTP = async (pendingChangeId, otp, entrepriseId) => {
     };
   }
 };
+export async function deleteService(formData) {
+ // console.log("Début deleteClient - Données reçues:", formData);
 
+  try {
+    const token = (await cookies()).get("token")?.value;
+    
+    if (!token) {
+      return { 
+        type: "error", 
+        message: "Non autorisé. Veuillez vous connecter." 
+      };
+    }
+    
+    const formObject = formData instanceof FormData
+      ? Object.fromEntries(formData.entries())
+      : formData;
+    
+    const validation = DeleteClientSchema.safeParse(formObject);
+    
+    if (!validation.success) {
+    //  console.log("Échec validation:", validation.error.flatten());
+      return { type: "error", errors: validation.error.flatten().fieldErrors };
+    }
+    
+    const { entrepriseId, serviceId } = validation.data;
+    const deleteUrl = `${DELETE_SERVICE_URL}/${entrepriseId}/service/${serviceId}`;
+    
+    //console.log("URL de l'API pour suppression définitive:", deleteUrl);
+    
+    // Requête de suppression avec l'autorisation
+    const response = await axios({
+      method: 'delete',
+      url: deleteUrl,
+      headers: { 
+        'Accept': "application/json",
+        'Content-Type': "application/json", 
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    
+   // console.log("Réponse de suppression définitive:", response.data);
+    
+    // Vérifier si un ID de changement en attente est retourné (pour l'OTP)
+    if (response.data?.pendingChangeId) {
+      return {
+        type: "pending",
+        message: "Un code OTP a été envoyé pour confirmer la suppression définitive",
+        data: { pendingChangeId: response.data.pendingChangeId }
+      };
+    }
+    
+    return { 
+      type: "success",
+      success: true,
+      message: "Client supprimé avec succès",
+      data: { type: 'success' }
+    };
+    
+  } catch (error) {
+    console.error("Erreur lors de la suppression du client:", error);
+    
+    if (error.response) {
+     // console.log("Statut:", error.response.status);
+     // console.log("Données:", error.response.data);
+      
+      if (error.response.status === 404) {
+        return {
+          type: "error",
+          message: "Client non trouvé"
+        };
+      }
+    }
+    
+    return {
+      type: "error",
+      message: error?.response?.data?.message || "Erreur lors de la suppression du client"
+    };
+  }
+}
 export { createService, validateOTP,updateService };

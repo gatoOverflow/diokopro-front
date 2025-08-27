@@ -9,6 +9,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+import { Label } from '@radix-ui/react-label';
 
 interface ServiceListProps {
   services: any[];
@@ -17,11 +18,11 @@ interface ServiceListProps {
   searchTerm: string;
 }
 
-const ServiceList: React.FC<ServiceListProps> = ({ 
-  services, 
-  totalServices, 
-  onServiceClick, 
-  searchTerm 
+const ServiceList: React.FC<ServiceListProps> = ({
+  services,
+  totalServices,
+  onServiceClick,
+  searchTerm
 }) => {
   return (
     <div className="mb-8">
@@ -52,7 +53,19 @@ const ServiceList: React.FC<ServiceListProps> = ({
               >
                 <TableCell className="font-medium">{service.nomService}</TableCell>
                 <TableCell>{service.description || "-"}</TableCell>
-                <TableCell>{service.tarifactionBase?.toLocaleString() || "-"} FCFA</TableCell>
+                <TableCell>
+                  {service.niveauxDisponibles.map((samm, index) => (
+                    <div key={index} className="grid grid-cols-4 items-center gap-4">
+                      <Label className="text-right">
+                        {samm.nom} :
+                      </Label>
+                      <span className="col-span-3">
+                        {samm.tarif} FCFA
+                      </span>
+                    </div>
+                  ))}
+                </TableCell>
+
                 <TableCell>{service.gerants?.join(", ") || "-"}</TableCell>
               </TableRow>
             ))

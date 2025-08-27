@@ -5,6 +5,7 @@ export const API_FILE = process.env.API_FILE
 // Auth endpoints
 export const BASE_URL =`${API_URL}`
 export const LOGIN_URL = `${API_URL}/auth/signIn`
+export const RESET_PASSWORD_URL = `${API_URL}/auth/forgotPassword`
 export const AUTH_URL = `${API_URL}/verify-token`
 export const VERIFY_OTP_URL = `${API_URL}/verifyOTP`
 export const GERANT_URL= `${API_URL}/createGerant/entreprise`;
@@ -12,7 +13,9 @@ export const UPDATE_GERANT_URL= `${API_URL}/updateGerant/entreprise`;
 export const UPDATE_AGENT_URL= `${API_URL}/updateAgent/entreprise`;
 export const CREATE_AGENT_URL= `${API_URL}/createAgent/entreprise`;
 export const REGISTER_URL = `${API_URL}/auth/signUp`
+export const UPDATE_PASSWORD_URL=`${API_URL}/auth/updatePassword`
 export const ENTERPRISES_ENDPOINT = `${API_URL}/getAllEntreprises`
+export const GET_ONE_ENTERPRISES_ENDPOINT = `${API_URL}/getEntreprise`
 export const ALL_ENTERPRISES_ENDPOINT = `${API_URL}/authSuper/getAllEntreprises`
 export const BALANCE_ENDPOINT = `${API_URL}/AccountBalance`
 export const BALANCE_ENDPOINT_FOR_ALL_ENTREPRISE = `${API_URL}/AllAccountBalanceEntreprise`
@@ -37,6 +40,7 @@ export const DELETE_CLIENT_URL_FOR_A_SERVICE =`${API_URL}/removeServiceFromClien
 export const DELETE_AGENT_URL_FOR_A_SERVICE =`${API_URL}/deleteAgentInService/entreprise`
 
 export const DELETE_CLIENT_URL =`${API_URL}/deleteClient/entreprise`
+export const DELETE_SERVICE_URL =`${API_URL}/deleteService/entreprise`
 export const DELETE_AGENT_URL =`${API_URL}/deleteAgent/entreprise`
 export const UPDATE_CLIENT_URL =`${API_URL}/updateClient/entreprise`
 export const ADD_CLIENT_TO_NEW_SERVICE_URL =`${API_URL}/addServiceToClient/entreprise`
@@ -54,5 +58,6 @@ export const GET_ALL_GERANTS_BY_ENTREPRISE=`${API_URL}/getAllGerants/entreprise`
 export const RECHARGE_COMPTE_ENTREPRISE=`${API_URL}/recharge-compte/entreprise`
 export const DEBITER_COMPTE_ENTREPRISE=`${API_URL}/retirer-compte/entreprise`
 export const REFUSE_ENTREPRISE_URL=`${API_URL}/authSuper/DisableEntreprise`
+export const UPDATE_ENTREPRISE_URL=`${API_URL}/updateEntreprise`
 export const USERSBYID_URL = `${API_URL}/get-user`
 //Events

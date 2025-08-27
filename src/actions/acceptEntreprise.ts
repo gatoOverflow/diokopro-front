@@ -3,7 +3,7 @@
 import { z } from "zod";
 import { createdOrUpdated } from "@/lib/api";
 import { ACTIVATE_ENTREPRISE_URL, REFUSE_ENTREPRISE_URL } from "./endpoint"; 
-
+import { UPDATE_ENTREPRISE_URL } from './endpoint';
 // Schéma pour la validation des données
 const UpdateEntrepriseStatusSchema = z.object({
   entrepriseId: z.string().min(1, { message: "L'ID de l'entreprise est obligatoire" }),
@@ -106,5 +106,63 @@ export const updateEntrepriseStatus = async (formData) => {
     }
 
     return { type: "error", error: `Erreur lors de ${formData.estActif ? 'l\'acceptation' : 'du refus'} de l'entreprise` };
+  }
+};
+
+
+
+
+// Schéma de validation pour l'entreprise
+const UpdateEntrepriseSchema = z.object({
+  entrepriseId: z.string(),
+  nomEntreprise: z.string().min(1, "Le nom de l'entreprise est requis"),
+  adresse: z.string().optional(),
+  emailEntreprise: z.string().email("Email invalide").optional().or(z.literal("")),
+  telephoneEntreprise: z.string().optional(),
+  ninea: z.string().optional(),
+  rccm: z.string().optional(),
+  representéPar: z.string().min(1, "Le représentant est requis"),
+  dateCreation: z.string().optional(),
+});
+
+export const updateEntreprise = async (formData) => {
+  console.log("Début updateEntreprise - Données reçues:", formData);
+  
+  try {
+    // Validation des données
+    const validation = UpdateEntrepriseSchema.safeParse(formData);
+    
+    if (!validation.success) {
+      console.log("Échec validation:", validation.error.flatten());
+      return { type: "error", errors: validation.error.flatten().fieldErrors };
+    }
+
+    const { entrepriseId, ...entrepriseData } = validation.data;
+    
+    console.log("Données validées:", entrepriseData);
+    console.log("URL de l'API:", `${UPDATE_ENTREPRISE_URL}/${entrepriseId}`);
+
+    // Préparer les données à envoyer à l'API (nettoyer les champs vides)
+    const dataToSend = Object.fromEntries(
+      Object.entries(entrepriseData).filter(([_, value]) => value !== "" && value !== undefined)
+    );
+
+    const response = await createdOrUpdated({
+      url: `${UPDATE_ENTREPRISE_URL}/${entrepriseId}`,
+      data: dataToSend,
+      updated: true
+    });
+
+    console.log("Réponse API:", response);
+    return { type: "success", data: response };
+
+  } catch (error) {
+    console.error("Erreur dans updateEntreprise:", error);
+    
+    if (error.response?.data?.message) {
+      return { type: "error", error: error.response.data.message };
+    }
+    
+    return { type: "error", error: "Erreur lors de la mise à jour de l'entreprise" };
   }
 };
