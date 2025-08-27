@@ -252,8 +252,8 @@ const handleVerifyClientOtp = useCallback(async (formData) => {
             pendingChangeId = formData.pendingChangeId;
         }
         
-        console.log("Code extrait:", code, "Type:", typeof code);
-        console.log("PendingChangeId extrait:", pendingChangeId);
+       // console.log("Code extrait:", code, "Type:", typeof code);
+       // console.log("PendingChangeId extrait:", pendingChangeId);
 
         // Validation plus souple du code OTP
         if (!code || code.toString().trim().length === 0) {
@@ -283,12 +283,12 @@ const handleVerifyClientOtp = useCallback(async (formData) => {
 
         const changeId = String(pendingChangeId);
         
-        // Log pour debug (à retirer en production)
+      /*   // Log pour debug (à retirer en production)
         console.log("Validation OTP:", { 
             code: cleanCode, 
             pendingChangeId: changeId, 
             entrepriseId 
-        });
+        }); */
         
         const result = await validateOTP(changeId, cleanCode, entrepriseId);
 

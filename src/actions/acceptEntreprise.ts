@@ -126,21 +126,21 @@ const UpdateEntrepriseSchema = z.object({
 });
 
 export const updateEntreprise = async (formData) => {
-  console.log("Début updateEntreprise - Données reçues:", formData);
+  //console.log("Début updateEntreprise - Données reçues:", formData);
   
   try {
     // Validation des données
     const validation = UpdateEntrepriseSchema.safeParse(formData);
     
     if (!validation.success) {
-      console.log("Échec validation:", validation.error.flatten());
+      //console.log("Échec validation:", validation.error.flatten());
       return { type: "error", errors: validation.error.flatten().fieldErrors };
     }
 
     const { entrepriseId, ...entrepriseData } = validation.data;
     
-    console.log("Données validées:", entrepriseData);
-    console.log("URL de l'API:", `${UPDATE_ENTREPRISE_URL}/${entrepriseId}`);
+    //console.log("Données validées:", entrepriseData);
+   // console.log("URL de l'API:", `${UPDATE_ENTREPRISE_URL}/${entrepriseId}`);
 
     // Préparer les données à envoyer à l'API (nettoyer les champs vides)
     const dataToSend = Object.fromEntries(
@@ -153,7 +153,7 @@ export const updateEntreprise = async (formData) => {
       updated: true
     });
 
-    console.log("Réponse API:", response);
+   // console.log("Réponse API:", response);
     return { type: "success", data: response };
 
   } catch (error) {

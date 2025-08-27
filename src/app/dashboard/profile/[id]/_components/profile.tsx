@@ -61,7 +61,7 @@ export default function UpdateProfile({ user }: Props) {
           const currentEnterpriseId = enterprises[0]?._id;
           if (currentEnterpriseId) {
             setEntrepriseId(currentEnterpriseId);
-            console.log("Entreprise récupérée:", currentEnterpriseId);
+            //console.log("Entreprise récupérée:", currentEnterpriseId);
           } else {
             setEntrepriseError("ID d'entreprise non trouvé");
           }
@@ -137,12 +137,12 @@ export default function UpdateProfile({ user }: Props) {
         email: formData.email,
       };
 
-      console.log("Données à envoyer:", updateData);
+     // console.log("Données à envoyer:", updateData);
 
       // Appeler l'action de mise à jour
       const result = await updatedAgent(updateData);
       
-      console.log("Réponse de la mise à jour:", result);
+   //   console.log("Réponse de la mise à jour:", result);
       
       if (result?.data?.pendingChangeId) {
         // OTP requis
@@ -183,15 +183,15 @@ export default function UpdateProfile({ user }: Props) {
 
     setIsVerifying(true);
     try {
-      console.log("Vérification OTP avec:", {
+    /*   console.log("Vérification OTP avec:", {
         pendingChangeId,
         otpCode,
         entrepriseId
-      });
+      }); */
 
       const result = await validateOTP(pendingChangeId, otpCode, entrepriseId);
       
-      console.log("Réponse de la vérification OTP:", result);
+     // console.log("Réponse de la vérification OTP:", result);
       
       if (result?.success || result?.type === 'success') {
         toast.success("Mise à jour réussie !");

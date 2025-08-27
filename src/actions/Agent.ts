@@ -186,7 +186,7 @@ export async function deleteAgent(formData) {
       }
     });
     
-    console.log("Réponse de suppression définitive:", response.data);
+   // console.log("Réponse de suppression définitive:", response.data);
     
     // Vérifier si un ID de changement en attente est retourné (pour l'OTP)
     if (response.data?.pendingChangeId) {

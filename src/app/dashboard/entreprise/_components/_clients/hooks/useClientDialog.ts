@@ -84,7 +84,7 @@ export const useClientDialog = (
  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
   const { name, value } = e.target;
   
-  console.log(`Changement de ${name}:`, value); // Debug
+  //console.log(`Changement de ${name}:`, value); // Debug
   
   // Gestion spéciale pour la date programmée
   if (name === 'dateProgrammee') {
@@ -141,7 +141,7 @@ export const useClientDialog = (
   };
   const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
   const { name, checked } = e.target;
-  console.log(`Checkbox ${name} changé:`, checked); // Debug
+  //console.log(`Checkbox ${name} changé:`, checked); // Debug
   setFormData(prev => ({
     ...prev,
     [name]: checked

@@ -24,7 +24,7 @@ async function ProfileUpdatePage({ params }: Props) {
       
       if (enterprises && enterprises.length > 0) {
         entrepriseId = enterprises[0]?._id;
-        console.log("Entreprise récupérée pour l'utilisateur:", entrepriseId);
+       // console.log("Entreprise récupérée pour l'utilisateur:", entrepriseId);
       } else {
         console.error("Aucune entreprise trouvée");
       }

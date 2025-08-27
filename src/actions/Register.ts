@@ -44,7 +44,7 @@ export const register = async (state: any, formData: any) => {
         const res = await axios.post(REGISTER_URL, requestData);
 
 
-        console.log("Réponse du serveur:", res.data);
+       // console.log("Réponse du serveur:", res.data);
 
         return {
             type: "success",
@@ -104,7 +104,7 @@ export const updatePassword = async (state: any, formData: FormData) => {
             newPassword: formData.get('newPassword') as string,
         };
 
-        console.log("Données du formulaire reçues:", rawData);
+     //   console.log("Données du formulaire reçues:", rawData);
 
         // Validation avec Zod
         const validationResult = UpdatePasswordSchema.safeParse(rawData);
@@ -129,12 +129,12 @@ export const updatePassword = async (state: any, formData: FormData) => {
             confirmNewPassword: validatedData.newPassword, // Même valeur que newPassword
         };
 
-        console.log("Données préparées pour l'envoi:", requestData);
+       // console.log("Données préparées pour l'envoi:", requestData);
 
         // Envoi de la requête à votre API
         const res = await axios.put(UPDATE_PASSWORD_URL, requestData);
 
-        console.log("Réponse du serveur:", res.data);
+       // console.log("Réponse du serveur:", res.data);
 
         return {
             type: "success",

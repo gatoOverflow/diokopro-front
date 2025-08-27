@@ -26,7 +26,7 @@ async function EntrepriseUpdatePage({ params }: Props) {
         
         if (enterprises && enterprises.length > 0) {
           entrepriseId = enterprises[0]?._id;
-          console.log("Entreprise récupérée pour l'utilisateur:", entrepriseId);
+         // console.log("Entreprise récupérée pour l'utilisateur:", entrepriseId);
         } else {
           console.error("Aucune entreprise trouvée");
         }
@@ -55,7 +55,7 @@ async function EntrepriseUpdatePage({ params }: Props) {
     try {
       // Utiliser le endpoint pour récupérer une entreprise spécifique
       entrepriseData = await fetchJSON(`${GET_ONE_ENTERPRISES_ENDPOINT}/${entrepriseId}`);
-      console.log("Données de l'entreprise récupérées:", entrepriseData);
+     // console.log("Données de l'entreprise récupérées:", entrepriseData);
     } catch (error) {
       console.error("Erreur lors de la récupération des détails de l'entreprise:", error);
       return (

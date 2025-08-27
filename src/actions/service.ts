@@ -33,8 +33,8 @@ const DeleteClientSchema = z.object({
 });
 // Fonction pour mettre à jour un service
 const updateService = async (formData) => {
-  console.log("🏁 Début updateService dans service.ts");
-  console.log("📦 Données reçues:", formData);
+//  console.log("🏁 Début updateService dans service.ts");
+//  console.log("📦 Données reçues:", formData);
 
   try {
     // Convertir les champs numériques si nécessaire
@@ -56,33 +56,33 @@ const processedData = {
 
   
 
-    console.log("🔍 Début validation Zod");
+   // console.log("🔍 Début validation Zod");
     const validation = UpdateServiceSchema.safeParse(processedData);
 
     if (!validation.success) {
-      console.log("❌ Échec validation Zod:", validation.error.flatten());
+    //  console.log("❌ Échec validation Zod:", validation.error.flatten());
       return { type: "error", errors: validation.error.flatten().fieldErrors };
     }
-    console.log("✅ Validation Zod réussie");
+   // console.log("✅ Validation Zod réussie");
 
     const { entrepriseId, serviceId, ...serviceData } = validation.data;
 
     // Construction de l'URL avec les IDs validés
     const apiUrl = `${UPDATE_SERVICE_URL}/entreprise/${entrepriseId}/service/${serviceId}`;
 
-    console.log("📝 Données préparées pour l'API:", serviceData);
-    console.log("🔗 URL complète de l'API:", apiUrl);
-    console.log("🏢 EntrepriseId:", entrepriseId);
-    console.log("🔧 ServiceId:", serviceId);
+   // console.log("📝 Données préparées pour l'API:", serviceData);
+   // console.log("🔗 URL complète de l'API:", apiUrl);
+   // console.log("🏢 EntrepriseId:", entrepriseId);
+//console.log("🔧 ServiceId:", serviceId);
 
     // Appel à l'API
-    console.log("🚀 Envoi de la requête à l'API...");
+   // console.log("🚀 Envoi de la requête à l'API...");
     const response = await createdOrUpdated({ 
       url: apiUrl, 
       data: serviceData,
       updated: true // Indiquer que c'est une mise à jour
     });
-    console.log("✨ Réponse de l'API:", response);
+   // console.log("✨ Réponse de l'API:", response);
 
     return { type: "success", data: response };
   } catch (error) {

@@ -31,7 +31,7 @@ const CombinedPage = async () => {
   const clientsResponse = await fetchJSON(`${GET_ALL_CLIENT_URL}/${currentEnterpriseId}/clients`);
   
   const clients = clientsResponse.data || [];
-console.log(services);
+//console.log(services);
 
 
 

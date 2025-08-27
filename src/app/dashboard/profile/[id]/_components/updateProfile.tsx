@@ -36,11 +36,11 @@ export default function UpdateProfile({ user, entrepriseId }: Props) {
   const router = useRouter();
 
   // Log des informations importantes
-  console.log("Données reçues:", {
+ /*  console.log("Données reçues:", {
     userId: user?._id,
     entrepriseId: entrepriseId,
     role: user?.role
-  });
+  }); */
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -94,12 +94,12 @@ export default function UpdateProfile({ user, entrepriseId }: Props) {
         email: formData.email,
       };
 
-      console.log("Données à envoyer:", updateData);
+      //console.log("Données à envoyer:", updateData);
 
       // Appeler l'action de mise à jour
       const result = await updatedAgent(updateData);
       
-      console.log("Réponse de la mise à jour:", result);
+     //console.log("Réponse de la mise à jour:", result);
       
       // Vérifier si OTP est requis
       if (result?.data?.pendingChangeId) {
@@ -140,15 +140,15 @@ export default function UpdateProfile({ user, entrepriseId }: Props) {
 
     setIsVerifying(true);
     try {
-      console.log("Vérification OTP avec:", {
+     /*  console.log("Vérification OTP avec:", {
         pendingChangeId,
         otpCode,
         entrepriseId
       });
-
+ */
       const result = await validateOTP(pendingChangeId, otpCode, entrepriseId);
       
-      console.log("Réponse de la vérification OTP:", result);
+      //console.log("Réponse de la vérification OTP:", result);
       
       if (result?.success || result?.type === 'success') {
         toast.success("Mise à jour réussie !");

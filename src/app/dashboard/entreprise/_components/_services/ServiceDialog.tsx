@@ -123,11 +123,11 @@ const ServiceDialog: React.FC<ServiceDialogProps> = ({
       setUpdatedServiceData(updatedServiceData);
       setDeleteOperation(false);
 
-      console.log("🔄 Appel updateService avec:", updatedServiceData);
+     // console.log("🔄 Appel updateService avec:", updatedServiceData);
 
       const response = await updateService(updatedServiceData);
 
-      console.log("📨 Réponse updateService:", response);
+    //  console.log("📨 Réponse updateService:", response);
 
       if (response?.data?.pendingChangeId) {
         toast.success("Demande de modification envoyée ! Veuillez entrer le code OTP.");
@@ -189,11 +189,11 @@ const ServiceDialog: React.FC<ServiceDialogProps> = ({
       // Marquer que nous sommes en train de supprimer pour l'OTP
       setDeleteOperation(true);
 
-      console.log("🗑️ Appel deleteService avec:", deleteData);
+     // console.log("🗑️ Appel deleteService avec:", deleteData);
 
       const response = await deleteService(deleteData);
 
-      console.log("📨 Réponse deleteService:", response);
+    //  console.log("📨 Réponse deleteService:", response);
 
       if (response?.data?.pendingChangeId) {
         toast.success("Demande de suppression envoyée ! Veuillez entrer le code OTP.");
@@ -411,7 +411,7 @@ const ServiceDialog: React.FC<ServiceDialogProps> = ({
 
                   <Button
                     onClick={addNiveau}
-                    className="mt-2 bg-green-500 hover:bg-green-600"
+                    className="mt-2 bg-[#ee7606] hover:bg-[#d56a05]"
                     disabled={isLoading}
                   >
                     Ajouter un niveau

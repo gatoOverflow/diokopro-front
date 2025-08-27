@@ -45,10 +45,10 @@ export default function UpdateEntreprise({ entreprise }: Props) {
   const router = useRouter();
 
   // Log des informations importantes
-  console.log("Données de l'entreprise reçues:", {
+/*   console.log("Données de l'entreprise reçues:", {
     entrepriseId: entreprise?._id,
     nomEntreprise: entreprise?.nomEntreprise
-  });
+  }); */
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -119,12 +119,12 @@ export default function UpdateEntreprise({ entreprise }: Props) {
         dateCreation: formData.dateCreation,
       };
 
-      console.log("Données à envoyer:", updateData);
+      //console.log("Données à envoyer:", updateData);
 
       // Appeler l'action de mise à jour
       const result = await updateEntreprise(updateData);
       
-      console.log("Réponse de la mise à jour:", result);
+    //  console.log("Réponse de la mise à jour:", result);
       
       if (result?.type === 'success') {
         toast.success("Entreprise mise à jour avec succès !");
