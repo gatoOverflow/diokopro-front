@@ -3,9 +3,7 @@ import TableView from './TableView';
 import SearchFilter from './SearchFilter';
 import useTableData from '../Hooks/useTableData';
 
-
 const ServicesList = ({ services, onServiceClick }) => {
-  // Hook pour le tableau et le filtrage
   const {
     displayedData: displayedServices,
     page: servicePage,
@@ -17,7 +15,6 @@ const ServicesList = ({ services, onServiceClick }) => {
     itemsPerPage: 6
   });
 
-  // Colonnes du tableau
   const serviceColumns = [
     {
       header: "Nom(s)",
@@ -25,32 +22,28 @@ const ServicesList = ({ services, onServiceClick }) => {
       cellClassName: "text-sm font-medium text-gray-900 uppercase",
       defaultValue: "IPSUM"
     },
-  {
-  header: "Tarif",
-  
-  cellClassName: "text-sm text-gray-500",
-  defaultValue: "Aucun tarif disponible",
-  render: (service) => (
-    <div className="space-y-1">
-  {service.niveauxDisponibles && service.niveauxDisponibles.length > 0 ? (
-    service.niveauxDisponibles.map((niv, idx) => (
-      <div key={idx} className="flex justify-between">
-        <span className="font-medium">{niv.nom} :</span>
-        <span>{niv.tarif} FCFA</span>
-      </div>
-    ))
-  ) : (
-    <span className="italic text-gray-400">Aucun tarif</span>
-  )}
-</div>
-
-  ),
-},
-
+    {
+      header: "Tarif",
+      cellClassName: "text-sm text-gray-600",
+      defaultValue: "Lorem",
+      render: (service) => (
+        <div className="text-sm text-gray-600">
+          {service.niveauxDisponibles && service.niveauxDisponibles.length > 0 ? (
+            service.niveauxDisponibles.map((niv, idx) => (
+              <div key={idx}>
+                {niv.nom}: {niv.tarif} FCFA
+              </div>
+            ))
+          ) : (
+            <span>Lorem</span>
+          )}
+        </div>
+      ),
+    },
     {
       header: "Gérant(s)",
       render: (service) => (
-        <div className="text-sm text-gray-500">
+        <div className="text-sm text-gray-600">
           {service.gerants && service.gerants.length > 0
             ? service.gerants.map(gerant => `${gerant.nom} ${gerant.prenom}`).join(', ')
             : "IPSUM Lorem"
@@ -60,7 +53,6 @@ const ServicesList = ({ services, onServiceClick }) => {
     }
   ];
 
-  // Message d'erreur personnalisé pour les données vides
   const getEmptyMessage = () => {
     if (serviceSearchTerm) {
       return "Aucun service ne correspond à votre recherche";
@@ -69,20 +61,17 @@ const ServicesList = ({ services, onServiceClick }) => {
   };
 
   return (
-    <div className="bg-white p-4 rounded-lg shadow-xl">
-      <h2 className="text-xl font-semibold text-blue-500 mb-4">Liste des Services</h2>
-      
-      {/* Filtre de recherche */}
-      <div className="mb-4">
+    <div className="bg-white rounded-lg shadow-sm p-4 h-full">
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-xl font-semibold text-[#00BFFF]">Liste des Services</h2>
         <SearchFilter 
           searchTerm={serviceSearchTerm}
           onSearchChange={setServiceSearchTerm}
-          searchPlaceholder="Rechercher un service"
-          className="justify-start"
+          searchPlaceholder="Rechercher"
+          className="max-w-[200px]"
         />
       </div>
 
-      {/* Tableau des services */}
       <TableView 
         data={displayedServices}
         columns={serviceColumns}
@@ -91,6 +80,7 @@ const ServicesList = ({ services, onServiceClick }) => {
         totalPages={serviceTotalPages}
         onPageChange={setServicePage}
         emptyMessage={getEmptyMessage()}
+        className="border-t-0"
       />
     </div>
   );

@@ -23,7 +23,6 @@ interface BalanceProps {
 export default function BalanceEntreprise({ balances, entrepriseId, onBalanceUpdate }: BalanceProps) {
   const [isRechargeOpen, setIsRechargeOpen] = useState(false)
   const [isRetraitOpen, setIsRetraitOpen] = useState(false)
-  const [isCreditOpen, setIsCreditOpen] = useState(false)
   const [isMessageOpen, setIsMessageOpen] = useState(false)
   
   const [rechargeAmount, setRechargeAmount] = useState('')
@@ -32,7 +31,6 @@ export default function BalanceEntreprise({ balances, entrepriseId, onBalanceUpd
     numAdmin: '',
     wallet: ''
   })
-  const [creditAmount, setCreditAmount] = useState('')
   const [messageData, setMessageData] = useState({
     titre: '',
     message: ''
@@ -68,7 +66,6 @@ export default function BalanceEntreprise({ balances, entrepriseId, onBalanceUpd
 
       if (result.type === 'success') {
         showNotification('success', result.message)
-        // Ouvrir le lien de paiement dans un nouvel onglet
         if (result.data?.data?.paymentUrl) {
           window.open(result.data.data.paymentUrl, '_blank')
         }
@@ -76,7 +73,6 @@ export default function BalanceEntreprise({ balances, entrepriseId, onBalanceUpd
         setIsRechargeOpen(false)
         if (onBalanceUpdate) onBalanceUpdate()
       } else if (result.errors) {
-        // Gestion des erreurs de validation
         const errorMessages = Object.values(result.errors).flat().join(', ')
         showNotification('error', errorMessages)
       } else {
@@ -125,7 +121,6 @@ export default function BalanceEntreprise({ balances, entrepriseId, onBalanceUpd
         setIsRetraitOpen(false)
         if (onBalanceUpdate) onBalanceUpdate()
       } else if (result.errors) {
-        // Gestion des erreurs de validation
         const errorMessages = Object.values(result.errors).flat().join(', ')
         showNotification('error', errorMessages)
       } else {
@@ -134,44 +129,6 @@ export default function BalanceEntreprise({ balances, entrepriseId, onBalanceUpd
     } catch (error) {
       showNotification('error', 'Erreur de connexion')
       console.error('Erreur retrait:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const handleCredit = async () => {
-    if (!creditAmount || isNaN(Number(creditAmount)) || Number(creditAmount) <= 0) {
-      showNotification('error', 'Veuillez entrer un montant valide')
-      return
-    }
-
-    if (!entrepriseId) {
-      showNotification('error', 'ID entreprise manquant')
-      return
-    }
-
-    setLoading(true)
-    try {
-      const result = await crediterCompte(entrepriseId, {
-        montant: Number(creditAmount),
-        raison: 'Crédit manuel'
-      })
-
-      if (result.type === 'success') {
-        showNotification('success', result.message)
-        setCreditAmount('')
-        setIsCreditOpen(false)
-        if (onBalanceUpdate) onBalanceUpdate()
-      } else if (result.errors) {
-        // Gestion des erreurs de validation
-        const errorMessages = Object.values(result.errors).flat().join(', ')
-        showNotification('error', errorMessages)
-      } else {
-        showNotification('error', result.error || 'Erreur lors du crédit')
-      }
-    } catch (error) {
-      showNotification('error', 'Erreur de connexion')
-      console.error('Erreur crédit:', error)
     } finally {
       setLoading(false)
     }
@@ -200,7 +157,6 @@ export default function BalanceEntreprise({ balances, entrepriseId, onBalanceUpd
         setMessageData({ titre: '', message: '' })
         setIsMessageOpen(false)
       } else if (result.errors) {
-        // Gestion des erreurs de validation
         const errorMessages = Object.values(result.errors).flat().join(', ')
         showNotification('error', errorMessages)
       } else {
@@ -238,11 +194,11 @@ export default function BalanceEntreprise({ balances, entrepriseId, onBalanceUpd
         </div>
       )}
 
-      <div className="space-y-6">
-        {/* Account Management */}
-        <Card className="shadow-sm border">
-          <CardHeader className="pb-2">
-            <CardTitle className="flex items-center gap-2">
+      <div className="space-y-4">
+        {/* Gestion de compte */}
+        <Card className="shadow-sm border bg-white">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-lg font-semibold">
               <CreditCard className="w-5 h-5" />
               Gestion de compte
             </CardTitle>
@@ -253,11 +209,11 @@ export default function BalanceEntreprise({ balances, entrepriseId, onBalanceUpd
                 <p className="text-sm text-gray-500">Solde disponible</p>
                 <h1 className="text-2xl font-bold">{balances.balance.toLocaleString()} FCFA</h1>
               </div>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="flex gap-2">
                 {/* Bouton Alimenter */}
                 <Dialog open={isRechargeOpen} onOpenChange={setIsRechargeOpen}>
                   <DialogTrigger asChild>
-                    <Button className="w-full bg-[#FF8D3C] hover:bg-[#FF8D3C]/90">
+                    <Button className="flex-1 bg-[#FF8D3C] hover:bg-[#FF8D3C]/90 text-white">
                       <Plus className="w-4 h-4 mr-1" />
                       Alimenter
                     </Button>
@@ -299,13 +255,10 @@ export default function BalanceEntreprise({ balances, entrepriseId, onBalanceUpd
                   </DialogContent>
                 </Dialog>
 
-                {/* Bouton Créditer */}
-               
-
                 {/* Bouton Débiter */}
                 <Dialog open={isRetraitOpen} onOpenChange={setIsRetraitOpen}>
                   <DialogTrigger asChild>
-                    <Button className="w-full bg-[#FF8D3C] hover:bg-[#FF8D3C]/90">
+                    <Button className="flex-1 bg-[#FF8D3C] hover:bg-[#FF8D3C]/90 text-white">
                       <Minus className="w-4 h-4 mr-1" />
                       Débiter
                     </Button>
@@ -381,10 +334,10 @@ export default function BalanceEntreprise({ balances, entrepriseId, onBalanceUpd
           </CardContent>
         </Card>
         
-        {/* Messaging */}
-        <Card className="shadow-sm border">
-          <CardHeader className="pb-2">
-            <CardTitle className="flex items-center gap-2">
+        {/* Messagerie */}
+        <Card className="shadow-sm border bg-white">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-lg font-semibold">
               <Send className="w-5 h-5" />
               Messagerie
             </CardTitle>
@@ -392,7 +345,7 @@ export default function BalanceEntreprise({ balances, entrepriseId, onBalanceUpd
           <CardContent>
             <Dialog open={isMessageOpen} onOpenChange={setIsMessageOpen}>
               <DialogTrigger asChild>
-                <Button className="w-full bg-[#FF8D3C] hover:bg-[#FF8D3C]/90">
+                <Button className="w-full bg-[#FF8D3C] hover:bg-[#FF8D3C]/90 text-white">
                   <Send className="w-4 h-4 mr-2" />
                   Composer un message
                 </Button>
@@ -428,8 +381,7 @@ export default function BalanceEntreprise({ balances, entrepriseId, onBalanceUpd
                     />
                   </div>
                   <Button 
-                    onClick={handleSendMessage} 
-                    disabled={loading || !messageData.titre || !messageData.message}
+                    onClick={handleSendMessage}disabled={loading || !messageData.titre || !messageData.message}
                     className="w-full bg-[#FF8D3C] hover:bg-[#FF8D3C]/90"
                   >
                     {loading ? (

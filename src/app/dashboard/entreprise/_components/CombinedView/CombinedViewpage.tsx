@@ -61,48 +61,43 @@ const CombinedView = ({
         setSelectedGerant(gerant);
         setIsGerantDialogOpen(true);
     }, []);
-const handleAddServiceToAgent = useCallback(async (data) => {
-    try {
-        if (!data.agentId || !data.serviceId || !data.niveauService) {
-            toast.error("Données de service invalides");
-            return { type: 'error', error: "Données de service invalides" };
-        }
 
-        // S'assurer que l'entrepriseId est inclus
-        const serviceData = {
-            ...data,
-            entrepriseId: entrepriseId
-        };
+    const handleAddServiceToAgent = useCallback(async (data) => {
+        try {
+            if (!data.agentId || !data.serviceId || !data.niveauService) {
+                toast.error("Données de service invalides");
+                return { type: 'error', error: "Données de service invalides" };
+            }
 
-        // Appeler l'action d'ajout de service pour agent
-        // Vous devrez créer/importer cette fonction depuis vos actions
-        const result = await addServiceToAgent(serviceData);
-        
-        //console.log("Résultat de l'ajout de service à l'agent:", result);
-        
-        // Adapter la structure de réponse
-        if (result.pendingChangeId) {
-            return {
-                type: 'pending',
-                message: result.message || "Un code OTP a été envoyé à l'administrateur",
-                data: {
-                    pendingChangeId: result.pendingChangeId
-                }
+            const serviceData = {
+                ...data,
+                entrepriseId: entrepriseId
             };
-        } else if (result.type === 'success') {
-            toast.success(result.message || "Service ajouté avec succès");
-        } else if (result.type === 'error') {
-            toast.error(result.error || "Échec de l'ajout du service");
+
+            const result = await addServiceToAgent(serviceData);
+            
+            if (result.pendingChangeId) {
+                return {
+                    type: 'pending',
+                    message: result.message || "Un code OTP a été envoyé à l'administrateur",
+                    data: {
+                        pendingChangeId: result.pendingChangeId
+                    }
+                };
+            } else if (result.type === 'success') {
+                toast.success(result.message || "Service ajouté avec succès");
+            } else if (result.type === 'error') {
+                toast.error(result.error || "Échec de l'ajout du service");
+            }
+            
+            return result;
+        } catch (error) {
+            console.error("Erreur lors de l'ajout du service à l'agent:", error);
+            toast.error("Une erreur est survenue lors de l'ajout du service");
+            return { type: 'error', error: "Une erreur est survenue" };
         }
-        
-        return result;
-    } catch (error) {
-        console.error("Erreur lors de l'ajout du service à l'agent:", error);
-        toast.error("Une erreur est survenue lors de l'ajout du service");
-        return { type: 'error', error: "Une erreur est survenue" };
-    }
-}, [entrepriseId]);
-    // Gestion des mises à jour - optimisée avec useCallback pour éviter les re-créations de fonctions
+    }, [entrepriseId]);
+
     const handleUpdateClient = useCallback(async (updatedClient) => {
         try {
             if (!updatedClient || !updatedClient._id) {
@@ -130,47 +125,41 @@ const handleAddServiceToAgent = useCallback(async (data) => {
         }
     }, [entrepriseId]);
 
-const handleAddServiceToClient = useCallback(async (data) => {
-    try {
-        if (!data.clientId || !data.serviceId || !data.niveauService) {
-            toast.error("Données de service invalides");
-            return { type: 'error', error: "Données de service invalides" };
-        }
+    const handleAddServiceToClient = useCallback(async (data) => {
+        try {
+            if (!data.clientId || !data.serviceId || !data.niveauService) {
+                toast.error("Données de service invalides");
+                return { type: 'error', error: "Données de service invalides" };
+            }
 
-        // S'assurer que l'entrepriseId est inclus
-        const serviceData = {
-            ...data,
-            entrepriseId: entrepriseId
-        };
-
-        // Appeler l'action d'ajout de service
-        const result = await addServiceToClient(serviceData);
-        
-        //("Résultat de l'ajout de service:", result);
-        
-        // Adapter la structure de réponse pour correspondre à ce que ClientDialog attend
-        if (result.pendingChangeId) {
-            // Format de réponse que vous avez partagé
-            return {
-                type: 'pending',
-                message: result.message || "Un code OTP a été envoyé à l'administrateur",
-                data: {
-                    pendingChangeId: result.pendingChangeId
-                }
+            const serviceData = {
+                ...data,
+                entrepriseId: entrepriseId
             };
-        } else if (result.type === 'success') {
-            toast.success(result.message || "Service ajouté avec succès");
-        } else if (result.type === 'error') {
-            toast.error(result.error || "Échec de l'ajout du service");
+
+            const result = await addServiceToClient(serviceData);
+            
+            if (result.pendingChangeId) {
+                return {
+                    type: 'pending',
+                    message: result.message || "Un code OTP a été envoyé à l'administrateur",
+                    data: {
+                        pendingChangeId: result.pendingChangeId
+                    }
+                };
+            } else if (result.type === 'success') {
+                toast.success(result.message || "Service ajouté avec succès");
+            } else if (result.type === 'error') {
+                toast.error(result.error || "Échec de l'ajout du service");
+            }
+            
+            return result;
+        } catch (error) {
+            console.error("Erreur lors de l'ajout du service:", error);
+            toast.error("Une erreur est survenue lors de l'ajout du service");
+            return { type: 'error', error: "Une erreur est survenue" };
         }
-        
-        return result;
-    } catch (error) {
-        console.error("Erreur lors de l'ajout du service:", error);
-        toast.error("Une erreur est survenue lors de l'ajout du service");
-        return { type: 'error', error: "Une erreur est survenue" };
-    }
-}, [entrepriseId]);
+    }, [entrepriseId]);
 
     const handleUpdateAgent = useCallback(async (updateAgent) => {
         try {
@@ -225,103 +214,84 @@ const handleAddServiceToClient = useCallback(async (data) => {
     }, [entrepriseId]);
 
     const handleUpdateService = useCallback((updatedService) => {
-        // Si vous avez une fonction pour mettre à jour les services, l'intégrer ici
-        //console.log("Updating service:", updatedService);
         setIsServiceDialogOpen(false);
     }, []);
 
-const handleVerifyClientOtp = useCallback(async (formData) => {
-    try {
-        // Extraction flexible des données
-        let code, pendingChangeId;
-        
-        // Si formData est un objet FormData (depuis un formulaire)
-        if (formData instanceof FormData) {
-            code = formData.get('code') || formData.get('otp');
-            pendingChangeId = formData.get('pendingChangeId');
-        } 
-        // Si formData est un objet Event (depuis un formulaire submit)
-        else if (formData.target) {
-            const form = formData.target;
-            code = form.code?.value || form.otp?.value;
-            pendingChangeId = form.pendingChangeId?.value;
-        }
-        // Si formData est un objet simple
-        else {
-            code = formData.code || formData.otp;
-            pendingChangeId = formData.pendingChangeId;
-        }
-        
-       // console.log("Code extrait:", code, "Type:", typeof code);
-       // console.log("PendingChangeId extrait:", pendingChangeId);
-
-        // Validation plus souple du code OTP
-        if (!code || code.toString().trim().length === 0) {
-            return {
-                type: 'error',
-                error: "Le code OTP est requis"
-            };
-        }
-
-        // Convertir le code en string et supprimer les espaces
-        const cleanCode = code.toString().trim();
-        
-        // Validation moins stricte - accepter les codes de 4 à 8 chiffres
-        if (!/^\d{4,8}$/.test(cleanCode)) {
-            return {
-                type: 'error',
-                error: "Le code OTP doit contenir entre 4 et 8 chiffres"
-            };
-        }
-
-        if (!pendingChangeId) {
-            return {
-                type: 'error',
-                error: "ID de changement en attente manquant"
-            };
-        }
-
-        const changeId = String(pendingChangeId);
-        
-      /*   // Log pour debug (à retirer en production)
-        console.log("Validation OTP:", { 
-            code: cleanCode, 
-            pendingChangeId: changeId, 
-            entrepriseId 
-        }); */
-        
-        const result = await validateOTP(changeId, cleanCode, entrepriseId);
-
-        if (result && result.success) {
-            return {
-                type: 'success',
-                message: result.data?.message || "Validation réussie"
-            };
-        } else {
-            let errorMsg = "Échec de la vérification OTP";
-
-            if (result?.error) {
-                errorMsg = result.error;
-            } else if (result?.errors) {
-                if (result.errors.otp && result.errors.otp.length > 0) {
-                    errorMsg = result.errors.otp[0];
-                } else if (result.errors.pendingChangeId && result.errors.pendingChangeId.length > 0) {
-                    errorMsg = result.errors.pendingChangeId[0];
-                } else if (typeof result.errors === 'string') {
-                    errorMsg = result.errors;
-                }
+    const handleVerifyClientOtp = useCallback(async (formData) => {
+        try {
+            let code, pendingChangeId;
+            
+            if (formData instanceof FormData) {
+                code = formData.get('code') || formData.get('otp');
+                pendingChangeId = formData.get('pendingChangeId');
+            } 
+            else if (formData.target) {
+                const form = formData.target;
+                code = form.code?.value || form.otp?.value;
+                pendingChangeId = form.pendingChangeId?.value;
+            }
+            else {
+                code = formData.code || formData.otp;
+                pendingChangeId = formData.pendingChangeId;
             }
 
-            return { type: 'error', error: errorMsg };
+            if (!code || code.toString().trim().length === 0) {
+                return {
+                    type: 'error',
+                    error: "Le code OTP est requis"
+                };
+            }
+
+            const cleanCode = code.toString().trim();
+            
+            if (!/^\d{4,8}$/.test(cleanCode)) {
+                return {
+                    type: 'error',
+                    error: "Le code OTP doit contenir entre 4 et 8 chiffres"
+                };
+            }
+
+            if (!pendingChangeId) {
+                return {
+                    type: 'error',
+                    error: "ID de changement en attente manquant"
+                };
+            }
+
+            const changeId = String(pendingChangeId);
+            
+            const result = await validateOTP(changeId, cleanCode, entrepriseId);
+
+            if (result && result.success) {
+                return {
+                    type: 'success',
+                    message: result.data?.message || "Validation réussie"
+                };
+            } else {
+                let errorMsg = "Échec de la vérification OTP";
+
+                if (result?.error) {
+                    errorMsg = result.error;
+                } else if (result?.errors) {
+                    if (result.errors.otp && result.errors.otp.length > 0) {
+                        errorMsg = result.errors.otp[0];
+                    } else if (result.errors.pendingChangeId && result.errors.pendingChangeId.length > 0) {
+                        errorMsg = result.errors.pendingChangeId[0];
+                    } else if (typeof result.errors === 'string') {
+                        errorMsg = result.errors;
+                    }
+                }
+
+                return { type: 'error', error: errorMsg };
+            }
+        } catch (error) {
+            console.error("Erreur lors de la vérification OTP:", error);
+            return {
+                type: 'error',
+                error: error.message || "Échec de la vérification OTP"
+            };
         }
-    } catch (error) {
-        console.error("Erreur lors de la vérification OTP:", error);
-        return {
-            type: 'error',
-            error: error.message || "Échec de la vérification OTP"
-        };
-    }
-}, [entrepriseId]);
+    }, [entrepriseId]);
 
     const handleRemoveClientFromService = useCallback(async (formData) => {
         try {
@@ -338,11 +308,11 @@ const handleVerifyClientOtp = useCallback(async (formData) => {
         }
     }, []);
 
-     const handleRemoveAgentFromService = useCallback(async (formData) => {
+    const handleRemoveAgentFromService = useCallback(async (formData) => {
         try {
             const result = await removeAgentFromService(formData);
             if (result.type === 'success') {
-                toast.success(result.message || "Client retiré du service avec succès");
+                toast.success(result.message || "Agent retiré du service avec succès");
             } else if (result.type === 'error') {
                 toast.error(result.error || "Échec du retrait du service");
             }
@@ -386,43 +356,56 @@ const handleVerifyClientOtp = useCallback(async (formData) => {
     }, []);
 
     return (
-        <div className="p-2">
+        <div className="min-h-screen bg-gray-50 p-4 lg:p-6">
             <Toaster position="top-center" />
 
-            {/* Section des métriques */}
-            <MetricsCards 
-                agentsCount={agents.length} 
-                clientsCount={clients.length} 
-                servicesCount={services.length} 
-                entrepriseId={entrepriseId}
-                nomEntreprise={nomEntreprise}
-                services={services}
-            />
-
-            {/* Section principale avec les listes */}
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-                <div className="lg:col-span-3 space-y-6">
-                    {/* Liste des Agents */}
-                    <AgentsList 
-                        agents={agents} 
-                        onAgentClick={handleAgentClick} 
-                    />
-
-                    {/* Liste des Clients */}
-                    <ClientsList 
-                        clients={clients} 
-                        onClientClick={handleClientClick} 
-                    />
+            <div className="w-full max-w-full mx-auto space-y-6">
+                {/* Section du haut - Métriques et Gestion de compte */}
+                <div className="space-y-6">
+                    <div className="flex flex-col lg:flex-row gap-6">
+                        {/* 4 cartes de métriques */}
+                        <div className="flex-1">
+                            <MetricsCards 
+                                agentsCount={agents.length} 
+                                clientsCount={clients.length} 
+                                servicesCount={services.length}
+                                //gerantsCount={gerants.length}
+                                entrepriseId={entrepriseId}
+                                nomEntreprise={nomEntreprise}
+                                services={services}
+                            />
+                        </div>
+                        
+                        {/* Gestion de compte et Messagerie */}
+                        <div className="lg:w-[320px] space-y-4">
+                            <BalanceEntreprise 
+                                balances={balance} 
+                                entrepriseId={entrepriseId}
+                            />
+                        </div>
+                    </div>
                 </div>
 
-                {/* Panneau latéral avec services */}
-                <div className='mt-[-175px] space-y-6 lg:w-[300px]'>
-                    <div className="col-span-1">
-                        <BalanceEntreprise balances={balance} entrepriseId={entrepriseId}
-       />
+                {/* Section du bas - Listes dans l'ordre demandé */}
+                <div className="space-y-6">
+                    {/* Liste des Agents (en premier) */}
+                    <div>
+                        <AgentsList 
+                            agents={agents} 
+                            onAgentClick={handleAgentClick} 
+                        />
                     </div>
-                    <div className="space-y-6">
-                        {/* Liste des Services */}
+                    
+                    {/* Liste des Clients (en deuxième) */}
+                    <div>
+                        <ClientsList 
+                            clients={clients} 
+                            onClientClick={handleClientClick} 
+                        />
+                    </div>
+
+                    {/* Les Services (en troisième) */}
+                    <div>
                         <ServicesList 
                             services={services} 
                             onServiceClick={handleServiceClick} 
@@ -439,7 +422,6 @@ const handleVerifyClientOtp = useCallback(async (formData) => {
                     onClose={() => setIsServiceDialogOpen(false)}
                     onUpdate={handleUpdateService}
                     entrepriseId={entrepriseId}
-                    
                 />
             )}
 
@@ -467,9 +449,9 @@ const handleVerifyClientOtp = useCallback(async (formData) => {
                     onDelete={handleDeleteAgent}
                     verifyOtp={handleVerifyClientOtp}
                     entrepriseId={entrepriseId}
-                     onRemoveFromService={handleRemoveAgentFromService}
+                    onRemoveFromService={handleRemoveAgentFromService}
                     services={services}
-                     onAddService={handleAddServiceToAgent}
+                    onAddService={handleAddServiceToAgent}
                 />
             )}
 

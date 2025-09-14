@@ -1,4 +1,3 @@
-// components/AgentsList.jsx - Mise à jour pour passer toutes les props nécessaires
 import React, { useMemo } from 'react';
 import { Badge } from '@/components/ui/badge';
 import TableView from './TableView';
@@ -8,10 +7,8 @@ import useDateFilter from '../Hooks/useDateFilter';
 import useTableData from '../Hooks/useTableData';
 
 const AgentsList = ({ agents, onAgentClick }) => {
-  // Hook pour le filtrage par date
   const dateFilter = useDateFilter();
   
-  // Filtrage par date effectué AVANT useTableData pour éviter les boucles
   const dateFilteredAgents = useMemo(() => {
     if (!dateFilter.dateFilterActive) {
       return agents;
@@ -51,7 +48,6 @@ const AgentsList = ({ agents, onAgentClick }) => {
     dateFilter.filterItemsByDateRange
   ]);
 
-  // Hooks pour le tableau et le filtrage - utilise les agents DÉJÀ filtrés par date
   const {
     displayedData: displayedAgents,
     page: agentPage,
@@ -66,7 +62,6 @@ const AgentsList = ({ agents, onAgentClick }) => {
     filterField: { field: 'dejaPaye' }
   });
 
-  // Colonnes du tableau
   const agentColumns = useMemo(() => [
     {
       header: "Nom(s)",
@@ -77,19 +72,19 @@ const AgentsList = ({ agents, onAgentClick }) => {
     {
       header: "Prénom(s)",
       field: "prenom",
-      cellClassName: "text-sm text-gray-900",
+      cellClassName: "text-sm text-gray-700",
       defaultValue: "Lorem"
     },
     {
       header: "Email",
       field: "email",
-      cellClassName: "text-sm text-gray-500",
+      cellClassName: "text-sm text-gray-600",
       defaultValue: "ip.lorem@gmail.com"
     },
     {
       header: "Téléphone",
       field: "telephone",
-      cellClassName: "text-sm text-gray-500",
+      cellClassName: "text-sm text-gray-600",
       defaultValue: "778282828"
     },
     {
@@ -98,40 +93,30 @@ const AgentsList = ({ agents, onAgentClick }) => {
         agent.servicesAffecte && agent.servicesAffecte.length > 0 ? (
           <div className="flex flex-wrap gap-1">
             {agent.servicesAffecte.map((service, index) => (
-              <Badge key={index} variant="secondary" className="bg-gray-100">
+              <span key={index} className="text-sm text-gray-600">
                 {service.nomService}
-              </Badge>
+              </span>
             ))}
           </div>
         ) : (
-          <span className="text-sm text-gray-500"></span>
+          <span className="text-sm text-gray-600">Hello Word</span>
         )
       )
     },
     {
       header: "Rôle",
       field: "role",
-      cellClassName: "text-sm text-gray-500",
+      cellClassName: "text-sm text-gray-600",
       defaultValue: "Word"
-    },
-    {
-      header: "Paiement",
-      render: (agent) => (
-        <Badge className={agent.dejaPaye ? "bg-[#10C400] text-white" : "bg-[#6F7BFF] text-white"}>
-          {agent.dejaPaye ? "Deja Payés" : "À Payés"}
-        </Badge>
-      )
     }
   ], []);
 
-  // Options pour le filtre de paiement
   const paymentFilterOptions = useMemo(() => [
-    { value: 'all', label: 'Tout les Agents' },
+    { value: 'all', label: 'À Payer' },
     { value: 'true', label: 'Deja Payés' },
     { value: 'false', label: 'À Payés' }
   ], []);
 
-  // Message d'erreur personnalisé pour les données vides
   const getEmptyMessage = () => {
     if (agentSearchTerm) {
       return "Aucun agent ne correspond à votre recherche";
@@ -146,11 +131,10 @@ const AgentsList = ({ agents, onAgentClick }) => {
   };
 
   return (
-    <div>
-      <div className='flex justify-between items-center mb-2'>
-        <h2 className="text-xl font-semibold text-blue-500">Liste des Agents</h2>
+    <div className="bg-white rounded-lg shadow-sm p-4">
+      <div className='flex justify-between items-center mb-4'>
+        <h2 className="text-xl font-semibold text-[#00BFFF]">Liste des Agents</h2>
         <div className="flex space-x-2 items-center">
-          {/* Filtre de date - Assurez-vous de passer TOUTES les props nécessaires, y compris setDateFilterType */}
           <DateFilterComponent 
             dateFilterMode={dateFilter.dateFilterMode}
             setDateFilterMode={dateFilter.setDateFilterMode}
@@ -165,10 +149,9 @@ const AgentsList = ({ agents, onAgentClick }) => {
             handleSingleDateSelection={dateFilter.handleSingleDateSelection}
             handleRangeDateSelection={dateFilter.handleRangeDateSelection}
             applyFilter={dateFilter.applyFilter}
-            setDateFilterType={dateFilter.setDateFilterType} // ⚠️ Ajout de cette prop qui manquait 
+            setDateFilterType={dateFilter.setDateFilterType}
           />
           
-          {/* Filtre de recherche et statut */}
           <SearchFilter 
             searchTerm={agentSearchTerm}
             onSearchChange={setAgentSearchTerm}
@@ -176,11 +159,11 @@ const AgentsList = ({ agents, onAgentClick }) => {
             onFilterChange={setAgentPaymentFilter}
             filterOptions={paymentFilterOptions}
             searchPlaceholder="Rechercher un agent"
+            className="max-w-xs"
           />
         </div>
       </div>
 
-      {/* Tableau des agents */}
       <TableView 
         data={displayedAgents}
         columns={agentColumns}
@@ -189,6 +172,7 @@ const AgentsList = ({ agents, onAgentClick }) => {
         totalPages={agentTotalPages}
         onPageChange={setAgentPage}
         emptyMessage={getEmptyMessage()}
+        className="border-t-0"
       />
     </div>
   );
