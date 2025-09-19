@@ -57,7 +57,7 @@ export const register = async (state: any, formData: any) => {
         if (error.response) {
             return {
                 type: "error",
-                message: error.response.data?.message || `Erreur ${error.response.status}: ${error.response.statusText}`
+                message: error.response.data?.error || `Erreur ${error.response.status}: ${error.response.statusText}`
             };
         } else if (error.request) {
             return {

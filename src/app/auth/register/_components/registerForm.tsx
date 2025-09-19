@@ -152,10 +152,12 @@ const RegistrationForm = () => {
                                     </div>
 
                                     <div className="space-y-2">
-                                        <Label htmlFor="telephone" className="font-medium text-gray-700">Téléphone</Label>
+                                        <Label htmlFor="telephone" className="font-medium text-gray-700">Téléphone(veuillez Renseigner l'indicatif)</Label>
+                                        
                                         <div className="relative">
                                             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-500">
                                                 <Phone size={16} />
+                                                
                                             </div>
                                             <Input
                                                 id="telephone"
@@ -164,7 +166,7 @@ const RegistrationForm = () => {
                                                 value={formData.telephone}
                                                 onChange={handleInputChange}
                                                 className="pl-10 bg-gray-50 border-gray-200 focus:ring-blue-500"
-                                                placeholder="Entrez votre numéro de téléphone"
+                                                placeholder="+22177777777"
                                                 required
                                             />
                                         </div>
@@ -307,7 +309,8 @@ const RegistrationForm = () => {
                                             </div>
                                         </div>
                                          <div className="space-y-2">
-                                            <Label htmlFor="telephoneEntreprise" className="font-medium text-gray-700">Telephone</Label>
+                                            <Label htmlFor="telephoneEntreprise" className="font-medium text-gray-700">Telephone (veuillez Renseigner l'indicatif)</Label>
+                    
                                             <div className="relative">
                                                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-500">
                                                     <FileText size={16} />
@@ -318,7 +321,7 @@ const RegistrationForm = () => {
                                                     value={formData.telephoneEntreprise}
                                                     onChange={handleInputChange}
                                                     className="pl-10 bg-gray-50 border-gray-200 focus:ring-blue-500"
-                                                    placeholder="Entrez le numéro de téléphone"
+                                                    placeholder="+2217777777"
                                                     required
                                                 />
                                             </div>
