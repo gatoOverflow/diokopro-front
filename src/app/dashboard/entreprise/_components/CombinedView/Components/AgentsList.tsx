@@ -1,3 +1,4 @@
+// AgentsList.tsx
 import React, { useMemo } from 'react';
 import { Badge } from '@/components/ui/badge';
 import TableView from './TableView';
@@ -108,6 +109,26 @@ const AgentsList = ({ agents, onAgentClick }) => {
       field: "role",
       cellClassName: "text-sm text-gray-600",
       defaultValue: "Word"
+    },
+    {
+      header: "Fiche de Paie",
+      render: (agent) => {
+        if (agent.payslip) {
+          return (
+            <div className="text-sm">
+              <div className="font-medium text-gray-900">
+                {agent.payslip.totalAmount ? `${agent.payslip.totalAmount.toLocaleString()} FCFA` : 'N/A'}
+              </div>
+              {agent.payslip.period && (
+                <div className="text-xs text-gray-500">
+                  {agent.payslip.period}
+                </div>
+              )}
+            </div>
+          );
+        }
+        return <span className="text-sm text-gray-400">Non disponible</span>;
+      }
     }
   ], []);
 

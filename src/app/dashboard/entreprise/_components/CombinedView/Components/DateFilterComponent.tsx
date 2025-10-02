@@ -21,7 +21,7 @@ const DateFilterComponent = ({
   handleSingleDateSelection,
   handleRangeDateSelection,
   applyFilter,
-  setDateFilterType  // ⚠️ Assurez-vous que cette prop est passée au composant
+  setDateFilterType  
 }) => {
   const today = new Date();
   const [currentMonth, setCurrentMonth] = useState(today);
