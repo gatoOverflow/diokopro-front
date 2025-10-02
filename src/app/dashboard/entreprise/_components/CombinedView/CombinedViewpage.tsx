@@ -356,20 +356,19 @@ const CombinedView = ({
     }, []);
 
     return (
-        <div className="min-h-screen bg-gray-50 p-4 lg:p-6">
+        <div className="min-h-screen bg-gray-50 p-3 sm:p-4 md:p-5 lg:p-6">
             <Toaster position="top-center" />
 
-            <div className="w-full max-w-full mx-auto space-y-6">
+            <div className="w-full max-w-full mx-auto space-y-4 md:space-y-6">
                 {/* Section du haut - Métriques et Gestion de compte */}
-                <div className="space-y-6">
-                    <div className="flex flex-col lg:flex-row gap-6">
+                <div className="space-y-4 md:space-y-6">
+                    <div className="flex flex-col lg:flex-row gap-4 md:gap-6">
                         {/* 4 cartes de métriques */}
                         <div className="flex-1">
                             <MetricsCards 
                                 agentsCount={agents.length} 
                                 clientsCount={clients.length} 
                                 servicesCount={services.length}
-                                //gerantsCount={gerants.length}
                                 entrepriseId={entrepriseId}
                                 nomEntreprise={nomEntreprise}
                                 services={services}
@@ -377,7 +376,7 @@ const CombinedView = ({
                         </div>
                         
                         {/* Gestion de compte et Messagerie */}
-                        <div className="lg:w-[320px] space-y-4">
+                        <div className="w-full lg:w-[320px] space-y-4">
                             <BalanceEntreprise 
                                 balances={balance} 
                                 entrepriseId={entrepriseId}
@@ -387,7 +386,7 @@ const CombinedView = ({
                 </div>
 
                 {/* Section du bas - Listes dans l'ordre demandé */}
-                <div className="space-y-6">
+                <div className="space-y-4 md:space-y-6">
                     {/* Liste des Agents (en premier) */}
                     <div>
                         <AgentsList 

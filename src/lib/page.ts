@@ -128,13 +128,6 @@ const AcceptPage: Menu = {
             submenus: []
           }, // Ajout de la page commune
           {
-            href: "/dashboard/entreprise/superAdmin/historique",
-            label: "Historique",
-            active: pathname === "/dashboard/entreprise/superAdmin/historique",
-            icon: LayoutGrid,
-            submenus: []
-          }, // Ajout de la page commune
-          {
             href: "/dashboard/entreprise/superAdmin/candidature",
             label: "Messages",
             active: pathname === "/dashboard/entreprise/superAdmin/candidature",

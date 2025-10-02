@@ -69,7 +69,7 @@ const AgentsView: React.FC<GerantsByServiceViewProps> = ({
   };
 
   // Filter clients based on search term and active filter
-  const filteredAgents = agents.filter(agent => {
+  const filteredAgents = agents?.filter(agent => {
     const matchesSearch = 
       `${agent.nom} ${agent.prenom}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
       agent.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -83,10 +83,10 @@ const AgentsView: React.FC<GerantsByServiceViewProps> = ({
   });
 
   // Pagination calculations
-  const totalPages = Math.ceil(filteredAgents.length / ITEMS_PER_PAGE);
+  const totalPages = Math.ceil(filteredAgents?.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const endIndex = Math.min(startIndex + ITEMS_PER_PAGE, filteredAgents.length);
-  const currentAgents = filteredAgents.slice(startIndex, endIndex);
+  const endIndex = Math.min(startIndex + ITEMS_PER_PAGE, filteredAgents?.length);
+  const currentAgents = filteredAgents?.slice(startIndex, endIndex);
 
   return (
     <>
@@ -158,7 +158,7 @@ const AgentsView: React.FC<GerantsByServiceViewProps> = ({
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-                {currentAgents.length > 0 ? (
+                {currentAgents?.length > 0 ? (
                   currentAgents.map((agent, index) => (
                     <tr 
                       key={agent._id} 

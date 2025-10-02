@@ -6,7 +6,7 @@ import Historique from './_components/Historique';
 const ClientsByServicePage = async () => {
   // First fetch the enterprises to get the current enterprise ID
   const enterprises = await fetchJSON(GET_ALL_HISTORIQUE);
-  //console.log(enterprises);
+  //console.log("++++++++++++++",enterprises);
   
   const currentEnterpriseId = enterprises[0]?._id; // Assuming you want the first enterprise
   //console.log(currentEnterpriseId);
@@ -15,9 +15,7 @@ const ClientsByServicePage = async () => {
  
   
   return (
-    <Historique 
-     historiques={enterprises.payments}
-      entrepriseId={currentEnterpriseId}   />
+  <h1>Hello</h1>
   );
 };
 

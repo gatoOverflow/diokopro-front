@@ -33,6 +33,12 @@ import OtpInput from '../_Agent/OtpInput';
 import { ClientDialogProps } from '@/app/lib/types';
 import { useClientDialog } from './hooks/useClientDialog';
 
+// Hook personnalisé
+
+
+// Types
+
+
 const ClientDialog: React.FC<ClientDialogProps> = ({ 
   client, 
   entrepriseId,
@@ -163,13 +169,13 @@ const ClientDialog: React.FC<ClientDialogProps> = ({
       <Dialog open={isOpen} onOpenChange={(open) => {
         if (!open && !isVerifying) onClose();
       }}>
-        <DialogContent className="w-full max-w-[95vw] sm:max-w-lg md:max-w-2xl lg:max-w-4xl max-h-[95vh] overflow-y-auto mx-4">
+        <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
           {/* Affichage des détails de paiement */}
           {showPaymentDetails && selectedPayment ? (
             <>
               <DialogHeader>
-                <DialogTitle className="text-sm sm:text-base md:text-lg">Détails du paiement</DialogTitle>
-                <DialogDescription className="text-xs sm:text-sm">
+                <DialogTitle>Détails du paiement</DialogTitle>
+                <DialogDescription>
                   Informations sur le paiement effectué
                 </DialogDescription>
               </DialogHeader>
@@ -212,8 +218,8 @@ const ClientDialog: React.FC<ClientDialogProps> = ({
           ) : (
             <>
               <DialogHeader>
-                <DialogTitle className="text-sm sm:text-base md:text-lg">Détails du client</DialogTitle>
-                <DialogDescription className="text-xs sm:text-sm break-words">
+                <DialogTitle>Détails du client</DialogTitle>
+                <DialogDescription>
                   {client.nom} {client.prenom}
                 </DialogDescription>
               </DialogHeader>
@@ -228,18 +234,18 @@ const ClientDialog: React.FC<ClientDialogProps> = ({
                   }
                 }}
               >
-                <TabsList className="grid grid-cols-3 mb-2 sm:mb-4 h-8 sm:h-10">
-                  <TabsTrigger value="profile" className="text-xs sm:text-sm">Profil</TabsTrigger>
-                  <TabsTrigger value="payments" className="relative text-xs sm:text-sm">
+                <TabsList className="grid grid-cols-3 mb-4">
+                  <TabsTrigger value="profile">Profil</TabsTrigger>
+                  <TabsTrigger value="payments" className="relative">
                     Paiements
                     {paymentsCount > 0 && (
-                      <Badge variant="secondary" className="ml-1 h-4 px-1 text-xs">{paymentsCount}</Badge>
+                      <Badge variant="secondary" className="ml-1 h-5 px-1">{paymentsCount}</Badge>
                     )}
                   </TabsTrigger>
-                  <TabsTrigger value="references" className="relative text-xs sm:text-sm">
+                  <TabsTrigger value="references" className="relative">
                     Références
                     {client.references && client.references.length > 0 && (
-                      <Badge variant="secondary" className="ml-1 h-4 px-1 text-xs">{client.references.length}</Badge>
+                      <Badge variant="secondary" className="ml-1 h-5 px-1">{client.references.length}</Badge>
                     )}
                   </TabsTrigger>
                 </TabsList>
@@ -249,7 +255,7 @@ const ClientDialog: React.FC<ClientDialogProps> = ({
                     client={client}
                     isEditing={isEditing}
                     formData={formData}
-                    onCheckboxChange={handleCheckboxChange}
+                   onCheckboxChange={handleCheckboxChange}
                     onInputChange={handleInputChange}
                     services={services}
                     isAddingService={isAddingService}
@@ -279,43 +285,31 @@ const ClientDialog: React.FC<ClientDialogProps> = ({
                 </TabsContent>
               </Tabs>
               
-              <div className="flex flex-col sm:flex-row justify-between mt-4 gap-2">
+              <div className="flex justify-between mt-4 gap-2">
                 {!isEditing && onDelete && (
                   <Button
                     variant="destructive"
                     size="sm"
                     onClick={showDeleteConfirmation}
-                    className="w-full sm:w-auto text-xs sm:text-sm"
                   >
-                    <Trash2 className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                    <Trash2 className="h-4 w-4 mr-2" />
                     Supprimer
                   </Button>
                 )}
                 
-                <div className="flex gap-2 sm:ml-auto">
+                <div className="ml-auto flex gap-2">
                   {isEditing ? (
                     <>
-                      <Button 
-                        variant="outline" 
-                        onClick={() => setIsEditing(false)}
-                        className="flex-1 sm:flex-none text-xs sm:text-sm"
-                      >
+                      <Button variant="outline" onClick={() => setIsEditing(false)}>
                         Annuler
                       </Button>
-                      <Button 
-                        onClick={handleUpdateWrapper} 
-                        disabled={isVerifying}
-                        className="flex-1 sm:flex-none text-xs sm:text-sm"
-                      >
+                      <Button onClick={handleUpdateWrapper} disabled={isVerifying}>
                         {isVerifying ? "Enregistrement..." : "Enregistrer"}
                       </Button>
                     </>
                   ) : (
-                    <Button 
-                      onClick={() => setIsEditing(true)}
-                      className="w-full sm:w-auto text-xs sm:text-sm"
-                    >
-                      <Edit className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                    <Button onClick={() => setIsEditing(true)}>
+                      <Edit className="h-4 w-4 mr-2" />
                       Modifier
                     </Button>
                   )}
@@ -328,24 +322,21 @@ const ClientDialog: React.FC<ClientDialogProps> = ({
 
       {/* Boîte de dialogue de confirmation pour la suppression définitive */}
       <AlertDialog open={isDeleting} onOpenChange={setIsDeleting}>
-        <AlertDialogContent className="w-full max-w-[95vw] sm:max-w-md mx-4">
+        <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-sm sm:text-base">Êtes-vous sûr ?</AlertDialogTitle>
-            <AlertDialogDescription className="text-xs sm:text-sm">
+            <AlertDialogTitle>Êtes-vous sûr ?</AlertDialogTitle>
+            <AlertDialogDescription>
               Cette action est irréversible. Cela supprimera définitivement le client
               et toutes ses données associées.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter className="flex-col sm:flex-row gap-2">
-            <AlertDialogCancel 
-              onClick={() => setIsDeleting(false)}
-              className="w-full sm:w-auto text-xs sm:text-sm"
-            >
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setIsDeleting(false)}>
               Annuler
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeleteWrapper}
-              className="w-full sm:w-auto bg-red-500 hover:bg-red-600 text-xs sm:text-sm"
+              className="bg-red-500 hover:bg-red-600"
             >
               Supprimer définitivement
             </AlertDialogAction>
@@ -355,24 +346,21 @@ const ClientDialog: React.FC<ClientDialogProps> = ({
       
       {/* Boîte de dialogue de confirmation pour le retrait d'un service */}
       <AlertDialog open={isRemovingFromService} onOpenChange={setIsRemovingFromService}>
-        <AlertDialogContent className="w-full max-w-[95vw] sm:max-w-md mx-4">
+        <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-sm sm:text-base">Retirer du service</AlertDialogTitle>
-            <AlertDialogDescription className="text-xs sm:text-sm">
+            <AlertDialogTitle>Retirer du service</AlertDialogTitle>
+            <AlertDialogDescription>
               Êtes-vous sûr de vouloir retirer ce client du service sélectionné ?
               Cette action nécessitera une vérification OTP.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter className="flex-col sm:flex-row gap-2">
-            <AlertDialogCancel 
-              onClick={() => setIsRemovingFromService(false)}
-              className="w-full sm:w-auto text-xs sm:text-sm"
-            >
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setIsRemovingFromService(false)}>
               Annuler
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={() => handleRemoveServiceWrapper(selectedServiceId)}
-              className="w-full sm:w-auto bg-orange-500 hover:bg-orange-600 text-xs sm:text-sm"
+              className="bg-orange-500 hover:bg-orange-600"
             >
               Retirer du service
             </AlertDialogAction>

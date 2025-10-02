@@ -32,6 +32,9 @@ import AgentTransferDetails from './AgentTransferDetails';
 import OtpInput from '../_Agent/OtpInput';
 import { Agent, AgentDialogProps, NiveauService, OperationType, VirementRecu } from '@/app/lib/types';
 
+// Types
+
+
 const AgentDialog: React.FC<AgentDialogProps> = ({ 
   agent, 
   entrepriseId,
@@ -84,6 +87,7 @@ const AgentDialog: React.FC<AgentDialogProps> = ({
         dateProchainVirement: agent.dateProchainVirement || null,
         frequencePaiement: agent.frequencePaiement || 'mensuel',
         intervallePaiement: agent.intervallePaiement || 1,
+        
         jourPaiement: agent.jourPaiement || 1,
         wallet: agent.wallet || '',
         aPayer: agent.aPayer || false,
@@ -109,35 +113,40 @@ const AgentDialog: React.FC<AgentDialogProps> = ({
   }, [isEditing]);
 
   // Handlers
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  
+const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     
+    // Gestion spéciale pour la date de prochain virement
     if (name === 'dateProchainVirement') {
-      setFormData(prev => ({ 
-        ...prev, 
-        [name]: value || null 
-      }));
-    } else if (name === 'salaire' || name === 'intervallePaiement' || name === 'jourPaiement') {
-      setFormData(prev => ({ 
-        ...prev, 
-        [name]: value ? Number(value) : '' 
-      }));
-    } else {
-      setFormData(prev => ({ 
-        ...prev, 
-        [name]: value 
-      }));
+        setFormData(prev => ({ 
+            ...prev, 
+            [name]: value || null 
+        }));
     }
-  };
+    // Gestion pour les champs numériques
+    else if (name === 'salaire' || name === 'intervallePaiement' || name === 'jourPaiement') {
+        setFormData(prev => ({ 
+            ...prev, 
+            [name]: value ? Number(value) : '' 
+        }));
+    }
+    // Autres champs
+    else {
+        setFormData(prev => ({ 
+            ...prev, 
+            [name]: value 
+        }));
+    }
+};
 
-  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, checked } = e.target;
     setFormData(prev => ({ 
-      ...prev, 
-      [name]: checked 
+        ...prev, 
+        [name]: checked 
     }));
-  };
-
+};
   const handleServiceChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedId = e.target.value;
     setSelectedServiceId(selectedId);
@@ -176,7 +185,7 @@ const AgentDialog: React.FC<AgentDialogProps> = ({
     setIsRemovingFromService(true);
   };
 
-  // Opérations principales
+  // Opérations principales (simplifiées)
   const handleUpdate = async () => {
     if (!agent || !onUpdate) return;
     
@@ -194,16 +203,16 @@ const AgentDialog: React.FC<AgentDialogProps> = ({
         setPendingChangeId(result.data.pendingChangeId);
         setIsEditing(false);
         setShowOtpVerification(true);
-        toast.info("Code OTP envoyé à l'administrateur");
+        toast.info("OTP code sent to administrator");
       } else if (result?.type === 'success') {
-        toast.success("Agent mis à jour avec succès !");
+        toast.success("Agent updated successfully!");
         onClose();
         router.refresh();
       } else {
-        toast.error(result?.error || "Erreur lors de la mise à jour");
+        toast.error(result?.error || "Error during update");
       }
     } catch (error) {
-      toast.error("Une erreur est survenue");
+      toast.error("An error occurred");
     } finally {
       setIsVerifying(false);
     }
@@ -211,7 +220,7 @@ const AgentDialog: React.FC<AgentDialogProps> = ({
 
   const handleAddService = async () => {
     if (!agent || !onAddService || !selectedServiceId || !selectedNiveauService) {
-      toast.error("Veuillez sélectionner un service et un niveau");
+      toast.error("Please select a service and level");
       return;
     }
     
@@ -232,16 +241,16 @@ const AgentDialog: React.FC<AgentDialogProps> = ({
       if (pendingId) {
         setPendingChangeId(pendingId);
         setShowOtpVerification(true);
-        toast.info("Code OTP envoyé à l'administrateur");
+        toast.info("OTP code sent to administrator");
       } else if (result?.type === 'success') {
-        toast.success("Service ajouté avec succès !");
+        toast.success("Service added successfully!");
         onClose();
         router.refresh();
       } else {
-        toast.error(result?.error || "Erreur lors de l'ajout du service");
+        toast.error(result?.error || "Error adding service");
       }
     } catch (error) {
-      toast.error("Une erreur est survenue");
+      toast.error("An error occurred");
     } finally {
       setIsVerifying(false);
     }
@@ -260,16 +269,16 @@ const AgentDialog: React.FC<AgentDialogProps> = ({
       if (result?.data?.pendingChangeId) {
         setPendingChangeId(result.data.pendingChangeId);
         setShowOtpVerification(true);
-        toast.info("Code OTP envoyé à l'administrateur");
+        toast.info("OTP code sent to administrator");
       } else if (result?.type === 'success') {
-        toast.success("Agent supprimé avec succès !");
+        toast.success("Agent deleted successfully!");
         onClose();
         router.refresh();
       } else {
-        toast.error(result?.error || "Erreur lors de la suppression");
+        toast.error(result?.error || "Error during deletion");
       }
     } catch (error) {
-      toast.error("Une erreur est survenue");
+      toast.error("An error occurred");
     } finally {
       setIsVerifying(false);
     }
@@ -292,31 +301,31 @@ const AgentDialog: React.FC<AgentDialogProps> = ({
       if (result?.data?.pendingChangeId) {
         setPendingChangeId(result.data.pendingChangeId);
         setShowOtpVerification(true);
-        toast.info("Code OTP envoyé à l'administrateur");
+        toast.info("OTP code sent to administrator");
       } else if (result?.type === 'success') {
-        toast.success("Agent retiré du service !");
+        toast.success("Agent removed from service!");
         onClose();
         router.refresh();
       } else {
-        toast.error(result?.error || "Erreur lors du retrait du service");
+        toast.error(result?.error || "Error removing service");
       }
     } catch (error) {
-      toast.error("Une erreur est survenue");
+      toast.error("An error occurred");
     } finally {
       setIsVerifying(false);
     }
   };
 
-  const handleOtpVerification = async () => {
+const handleOtpVerification = async () => {
     if (!pendingChangeId || !otpCode || otpCode.length !== 6) {
-      toast.error("Veuillez entrer un code OTP valide à 6 chiffres");
+      toast.error("Please enter a valid 6-digit OTP code");
       return;
     }
 
     setIsVerifying(true);
     try {
       const result = await verifyOtp({
-        code: otpCode,
+        code: otpCode, // Changé de 'otp' à 'code' pour correspondre à CombinedView
         pendingChangeId,
         actionType: operationType,
         serviceId: ['removeFromService', 'addService'].includes(operationType) ? selectedServiceId : undefined,
@@ -326,19 +335,19 @@ const AgentDialog: React.FC<AgentDialogProps> = ({
       
       if (result?.success || result?.type === 'success') {
         const messages = {
-          update: "Agent mis à jour avec succès !",
-          delete: "Agent supprimé avec succès !",
-          removeFromService: "Agent retiré du service !",
-          addService: "Service ajouté avec succès !"
+          update: "Agent updated successfully!",
+          delete: "Agent deleted successfully!",
+          removeFromService: "Agent removed from service!",
+          addService: "Service added successfully!"
         };
         toast.success(messages[operationType]);
         onClose();
         router.refresh();
       } else {
-        toast.error(result?.error || "Échec de la vérification OTP");
+        toast.error(result?.error || "OTP verification failed");
       }
     } catch (error) {
-      toast.error("Échec de la vérification");
+      toast.error("Verification failed");
     } finally {
       setIsVerifying(false);
     }
@@ -361,14 +370,12 @@ const AgentDialog: React.FC<AgentDialogProps> = ({
       <Dialog open={isOpen} onOpenChange={(open) => {
         if (!open && !isVerifying) onClose();
       }}>
-        <DialogContent className="w-full max-w-[95vw] sm:max-w-lg md:max-w-2xl lg:max-w-4xl max-h-[95vh] overflow-y-auto mx-4">
+        <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
           {showTransferDetails && selectedTransfer ? (
             <>
               <DialogHeader>
-                <DialogTitle className="text-sm sm:text-base md:text-lg">Détails du virement</DialogTitle>
-                <DialogDescription className="text-xs sm:text-sm">
-                  Informations sur le virement reçu
-                </DialogDescription>
+                <DialogTitle>Transfer Details</DialogTitle>
+                <DialogDescription>Information about the transfer received</DialogDescription>
               </DialogHeader>
               
               <AgentTransferDetails 
@@ -386,31 +393,29 @@ const AgentDialog: React.FC<AgentDialogProps> = ({
                 isLoading={isVerifying}
                 title={(() => {
                   const titles = {
-                    update: "Vérification OTP - Modification",
-                    delete: "Vérification OTP - Suppression", 
-                    removeFromService: "Vérification OTP - Retrait du service",
-                    addService: "Vérification OTP - Ajout de service"
+                    update: "OTP Verification - Modification",
+                    delete: "OTP Verification - Deletion", 
+                    removeFromService: "OTP Verification - Service Removal",
+                    addService: "OTP Verification - Service Addition"
                   };
-                  return titles[operationType] || "Vérification OTP";
+                  return titles[operationType] || "OTP Verification";
                 })()}
                 description={(() => {
                   const descriptions = {
-                    update: "Un code OTP a été envoyé pour confirmer la modification de l'agent.",
-                    delete: "Un code OTP a été envoyé pour confirmer la suppression définitive.",
-                    removeFromService: "Un code OTP a été envoyé pour confirmer le retrait du service.",
-                    addService: "Un code OTP a été envoyé pour confirmer l'ajout du service."
+                    update: "An OTP code has been sent to confirm agent modification.",
+                    delete: "An OTP code has been sent to confirm permanent deletion.",
+                    removeFromService: "An OTP code has been sent to confirm service removal.",
+                    addService: "An OTP code has been sent to confirm service addition."
                   };
-                  return descriptions[operationType] || "Un code de vérification a été envoyé.";
+                  return descriptions[operationType] || "A verification code has been sent.";
                 })()}
               />
             </div>
           ) : (
             <>
               <DialogHeader>
-                <DialogTitle className="text-sm sm:text-base md:text-lg">Détails de l'agent</DialogTitle>
-                <DialogDescription className="text-xs sm:text-sm break-words">
-                  {agent.nom} {agent.prenom}
-                </DialogDescription>
+                <DialogTitle>Agent Details</DialogTitle>
+                <DialogDescription>{agent.nom} {agent.prenom}</DialogDescription>
               </DialogHeader>
               
               <Tabs 
@@ -418,12 +423,12 @@ const AgentDialog: React.FC<AgentDialogProps> = ({
                 onValueChange={(value) => !isEditing && setActiveTab(value)}
                 className="w-full"
               >
-                <TabsList className="grid grid-cols-2 mb-2 sm:mb-4 h-8 sm:h-10">
-                  <TabsTrigger value="profile" className="text-xs sm:text-sm">Profil</TabsTrigger>
-                  <TabsTrigger value="transfers" className="relative text-xs sm:text-sm">
-                    Virements
+                <TabsList className="grid grid-cols-2 mb-4">
+                  <TabsTrigger value="profile">Profile</TabsTrigger>
+                  <TabsTrigger value="transfers" className="relative">
+                    Transfers
                     {transfersCount > 0 && (
-                      <Badge variant="secondary" className="ml-1 h-4 px-1 text-xs">
+                      <Badge variant="secondary" className="ml-1 h-5 px-1">
                         {transfersCount}
                       </Badge>
                     )}
@@ -459,44 +464,28 @@ const AgentDialog: React.FC<AgentDialogProps> = ({
                 </TabsContent>
               </Tabs>
               
-              <div className="flex flex-col sm:flex-row justify-between mt-4 gap-2">
+              <div className="flex justify-between mt-4 gap-2">
                 {!isEditing && onDelete && (
-                  <Button 
-                    variant="destructive" 
-                    size="sm" 
-                    onClick={showDeleteConfirmation}
-                    className="w-full sm:w-auto text-xs sm:text-sm"
-                  >
-                    <Trash2 className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-                    Supprimer
+                  <Button variant="destructive" size="sm" onClick={showDeleteConfirmation}>
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Delete
                   </Button>
                 )}
                 
-                <div className="flex gap-2 sm:ml-auto">
+                <div className="ml-auto flex gap-2">
                   {isEditing ? (
                     <>
-                      <Button 
-                        variant="outline" 
-                        onClick={() => setIsEditing(false)}
-                        className="flex-1 sm:flex-none text-xs sm:text-sm"
-                      >
-                        Annuler
+                      <Button variant="outline" onClick={() => setIsEditing(false)}>
+                        Cancel
                       </Button>
-                      <Button 
-                        onClick={handleUpdate} 
-                        disabled={isVerifying}
-                        className="flex-1 sm:flex-none text-xs sm:text-sm"
-                      >
-                        {isVerifying ? "Enregistrement..." : "Enregistrer"}
+                      <Button onClick={handleUpdate} disabled={isVerifying}>
+                        {isVerifying ? "Saving..." : "Save"}
                       </Button>
                     </>
                   ) : (
-                    <Button 
-                      onClick={() => setIsEditing(true)}
-                      className="w-full sm:w-auto text-xs sm:text-sm"
-                    >
-                      <Edit className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-                      Modifier
+                    <Button onClick={() => setIsEditing(true)}>
+                      <Edit className="h-4 w-4 mr-2" />
+                      Edit
                     </Button>
                   )}
                 </div>
@@ -508,44 +497,40 @@ const AgentDialog: React.FC<AgentDialogProps> = ({
 
       {/* Dialogues de confirmation */}
       <AlertDialog open={isDeleting} onOpenChange={setIsDeleting}>
-        <AlertDialogContent className="w-full max-w-[95vw] sm:max-w-md mx-4">
+        <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-sm sm:text-base">Êtes-vous sûr ?</AlertDialogTitle>
-            <AlertDialogDescription className="text-xs sm:text-sm">
-              Cette action supprimera définitivement l'agent et toutes les données associées.
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete the agent and all associated data.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter className="flex-col sm:flex-row gap-2">
-            <AlertDialogCancel className="w-full sm:w-auto text-xs sm:text-sm">
-              Annuler
-            </AlertDialogCancel>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeleteAgent}
-              className="w-full sm:w-auto bg-red-500 hover:bg-red-600 text-xs sm:text-sm"
+              className="bg-red-500 hover:bg-red-600"
             >
-              Supprimer définitivement
+              Delete permanently
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
       
       <AlertDialog open={isRemovingFromService} onOpenChange={setIsRemovingFromService}>
-        <AlertDialogContent className="w-full max-w-[95vw] sm:max-w-md mx-4">
+        <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-sm sm:text-base">Retirer du service</AlertDialogTitle>
-            <AlertDialogDescription className="text-xs sm:text-sm">
-              Retirer cet agent du service sélectionné ? Cela nécessite une vérification OTP.
+            <AlertDialogTitle>Remove from service</AlertDialogTitle>
+            <AlertDialogDescription>
+              Remove this agent from the selected service? This requires OTP verification.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter className="flex-col sm:flex-row gap-2">
-            <AlertDialogCancel className="w-full sm:w-auto text-xs sm:text-sm">
-              Annuler
-            </AlertDialogCancel>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => handleRemoveFromService(selectedServiceId)}
-              className="w-full sm:w-auto bg-orange-500 hover:bg-orange-600 text-xs sm:text-sm"
+              className="bg-orange-500 hover:bg-orange-600"
             >
-              Retirer du service
+              Remove from service
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

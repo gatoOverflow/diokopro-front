@@ -33,8 +33,8 @@ const SidebarDashboard = ({ children, currentUser }: { children: React.ReactNode
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton
-                  size="lg"
-                  className="flex items-center justify-center data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground "
+                  size="default"
+                  className="flex items-center justify-center w-full "
                 >
                   <div className="w-full max-w-[120px]">
                     <Image
@@ -63,7 +63,7 @@ const SidebarDashboard = ({ children, currentUser }: { children: React.ReactNode
       </Sidebar>
       <SidebarInset>
         <Navbar />
-        <div id="main" className=" px-10 py-6 bg-gray-100 h-full">
+        <div id="main" className="">
           {children}
         </div>
       </SidebarInset>

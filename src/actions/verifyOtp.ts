@@ -18,7 +18,7 @@ export const verifyOtp = async (state: any, formData: FormData) => {
       otp,
     });
 
-    console.log("OTP verification response:", res.data);
+    //console.log("OTP verification response:", res.data);
 
     // Vérifier si la réponse est valide
     if (!res.data || !res.data.user) {

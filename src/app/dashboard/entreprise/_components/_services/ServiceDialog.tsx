@@ -14,7 +14,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { X, Trash2 } from 'lucide-react';
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { validateOTP, updateService, deleteService } from "@/actions/service";
+import { validateOTP, updateService, deleteService } from "@/actions/service"; // Ajout de l'import deleteService
 import OtpInput from '../_Agent/OtpInput';
 import {
   AlertDialog,
@@ -32,7 +32,7 @@ interface ServiceDialogProps {
   isOpen: boolean;
   onClose: () => void;
   onUpdate: (updatedService: any) => void;
-  onDelete?: (serviceId: string) => void;
+  onDelete?: (serviceId: string) => void; // Ajout de la prop onDelete
   entrepriseId?: string;
 }
 
@@ -123,7 +123,11 @@ const ServiceDialog: React.FC<ServiceDialogProps> = ({
       setUpdatedServiceData(updatedServiceData);
       setDeleteOperation(false);
 
+     // console.log("🔄 Appel updateService avec:", updatedServiceData);
+
       const response = await updateService(updatedServiceData);
+
+    //  console.log("📨 Réponse updateService:", response);
 
       if (response?.data?.pendingChangeId) {
         toast.success("Demande de modification envoyée ! Veuillez entrer le code OTP.");
@@ -164,6 +168,7 @@ const ServiceDialog: React.FC<ServiceDialogProps> = ({
     }
   };
 
+  // Nouvelle fonction pour gérer la suppression
   const handleDelete = async () => {
     if (!service || !service._id) return;
 
@@ -181,9 +186,14 @@ const ServiceDialog: React.FC<ServiceDialogProps> = ({
         return;
       }
 
+      // Marquer que nous sommes en train de supprimer pour l'OTP
       setDeleteOperation(true);
 
+     // console.log("🗑️ Appel deleteService avec:", deleteData);
+
       const response = await deleteService(deleteData);
+
+    //  console.log("📨 Réponse deleteService:", response);
 
       if (response?.data?.pendingChangeId) {
         toast.success("Demande de suppression envoyée ! Veuillez entrer le code OTP.");
@@ -192,10 +202,12 @@ const ServiceDialog: React.FC<ServiceDialogProps> = ({
       } else if (response?.type === "success") {
         toast.success("Service supprimé avec succès !");
         
+        // Si une fonction onDelete est fournie, l'appeler
         if (onDelete) {
           onDelete(service._id);
         }
 
+        // Fermer le dialogue et rafraîchir la page
         handleClose();
         setTimeout(() => {
           refreshPage();
@@ -292,26 +304,26 @@ const ServiceDialog: React.FC<ServiceDialogProps> = ({
   return (
     <>
       <Dialog open={isOpen} onOpenChange={handleClose}>
-        <DialogContent className="w-full max-w-[95vw] sm:max-w-lg md:max-w-2xl lg:max-w-4xl max-h-[95vh] overflow-y-auto mx-4">
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-              <span className="text-sm sm:text-base md:text-lg">
+            <DialogTitle className="flex justify-between items-center">
+              <span>
                 {showOtpVerification ? `Vérification OTP - ${deleteOperation ? "Suppression" : "Modification"} du service` :
                   (isEditing ? "Modifier le service" : "Détails du service")}
               </span>
               <DialogClose asChild>
-                <Button variant="ghost" size="icon" className="h-6 w-6 sm:h-8 sm:w-8 rounded-full flex-shrink-0">
-                  <X className="h-3 w-3 sm:h-4 sm:w-4" />
+                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full">
+                  <X className="h-4 w-4" />
                 </Button>
               </DialogClose>
             </DialogTitle>
-            <DialogDescription className="text-xs sm:text-sm">
+            <DialogDescription>
               {showOtpVerification ? `Veuillez saisir le code OTP pour confirmer la ${deleteOperation ? "suppression" : "modification"}` :
                 (isEditing ? "Modifiez les informations du service" : "Informations complètes sur le service")}
             </DialogDescription>
           </DialogHeader>
 
-          <div className="grid gap-3 sm:gap-4 py-2 sm:py-4">
+          <div className="grid gap-4 py-4">
             {showOtpVerification ? (
               <OtpInput
                 length={6}
@@ -326,82 +338,70 @@ const ServiceDialog: React.FC<ServiceDialogProps> = ({
               />
             ) : isEditing ? (
               <>
-                {/* Layout responsive pour les champs de formulaire */}
-                <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-2 sm:gap-4">
-                  <Label htmlFor="nomService" className="text-left sm:text-right text-sm font-medium">
-                    Nom:
-                  </Label>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="nomService" className="text-right">Nom:</Label>
                   <Input
                     id="nomService"
                     value={nomService}
                     onChange={(e) => setNomService(e.target.value)}
-                    className="col-span-1 sm:col-span-3 text-sm"
+                    className="col-span-3"
                     disabled={isLoading}
                   />
                 </div>
-                
-                <div className="grid grid-cols-1 sm:grid-cols-4 items-start gap-2 sm:gap-4">
-                  <Label htmlFor="description" className="text-left sm:text-right text-sm font-medium sm:pt-2">
-                    Description:
-                  </Label>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="description" className="text-right">Description:</Label>
                   <Textarea
                     id="description"
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
-                    className="col-span-1 sm:col-span-3 text-sm min-h-[80px]"
+                    className="col-span-3"
                     disabled={isLoading}
                   />
                 </div>
 
-                {/* Niveaux Disponibles - Layout adaptatif */}
-                <div className="space-y-3 sm:space-y-4">
-                  <h4 className="font-medium text-sm sm:text-base">Niveaux Disponibles</h4>
+                {/* Niveaux Disponibles */}
+                <div className="space-y-4">
                   {niveauxDisponibles.map((niveau, index) => (
-                    <div key={index} className="space-y-3 p-3 sm:p-4 border rounded-lg bg-gray-50">
-                      <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-2 sm:gap-4">
-                        <Label htmlFor={`niveau-nom-${index}`} className="text-left sm:text-right text-sm font-medium">
-                          Nom du niveau :
-                        </Label>
-                        <Input
-                          id={`niveau-nom-${index}`}
-                          className="col-span-1 sm:col-span-3 text-sm"
-                          value={niveau.nom}
-                          placeholder="Nom du niveau"
-                          onChange={(e) => {
-                            const updated = [...niveauxDisponibles];
-                            updated[index].nom = e.target.value;
-                            setNiveauxDisponibles(updated);
-                          }}
-                          disabled={isLoading}
-                        />
-                      </div>
+                    <div key={index} className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor={`niveau-nom-${index}`} className="text-right">
+                        Nom du niveau :
+                      </Label>
+                      <Input
+                        id={`niveau-nom-${index}`}
+                        className="col-span-3"
+                        value={niveau.nom}
+                        placeholder="Nom du niveau"
+                        onChange={(e) => {
+                          const updated = [...niveauxDisponibles];
+                          updated[index].nom = e.target.value;
+                          setNiveauxDisponibles(updated);
+                        }}
+                        disabled={isLoading}
+                      />
 
-                      <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-2 sm:gap-4">
-                        <Label htmlFor={`niveau-tarif-${index}`} className="text-left sm:text-right text-sm font-medium">
-                          Tarif :
-                        </Label>
-                        <Input
-                          id={`niveau-tarif-${index}`}
-                          type="number"
-                          className="col-span-1 sm:col-span-3 text-sm"
-                          value={niveau.tarif}
-                          placeholder="Tarif en FCFA"
-                          onChange={(e) => {
-                            const updated = [...niveauxDisponibles];
-                            updated[index].tarif = parseInt(e.target.value, 10) || 0;
-                            setNiveauxDisponibles(updated);
-                          }}
-                          disabled={isLoading}
-                        />
-                      </div>
+                      <Label htmlFor={`niveau-tarif-${index}`} className="text-right">
+                        Tarif :
+                      </Label>
+                      <Input
+                        id={`niveau-tarif-${index}`}
+                        type="number"
+                        className="col-span-3"
+                        value={niveau.tarif}
+                        placeholder="Tarif en FCFA"
+                        onChange={(e) => {
+                          const updated = [...niveauxDisponibles];
+                          updated[index].tarif = parseInt(e.target.value, 10) || 0;
+                          setNiveauxDisponibles(updated);
+                        }}
+                        disabled={isLoading}
+                      />
 
-                      <div className="flex justify-end">
+                      <div className="col-span-4 flex justify-end mt-1">
                         <Button
                           variant="destructive"
                           size="sm"
                           onClick={() => removeNiveau(index)}
                           disabled={isLoading}
-                          className="text-xs"
                         >
                           Supprimer
                         </Button>
@@ -411,7 +411,7 @@ const ServiceDialog: React.FC<ServiceDialogProps> = ({
 
                   <Button
                     onClick={addNiveau}
-                    className="w-full sm:w-auto bg-[#ee7606] hover:bg-[#d56a05] text-sm"
+                    className="mt-2 bg-[#ee7606] hover:bg-[#d56a05]"
                     disabled={isLoading}
                   >
                     Ajouter un niveau
@@ -420,90 +420,79 @@ const ServiceDialog: React.FC<ServiceDialogProps> = ({
               </>
             ) : (
               <>
-                {/* Mode affichage - Layout responsive */}
-                <div className="space-y-3 sm:space-y-4">
-                  <div className="grid grid-cols-1 sm:grid-cols-4 gap-2 sm:gap-4">
-                    <div className="font-semibold text-left sm:text-right text-sm">Nom:</div>
-                    <div className="col-span-1 sm:col-span-3 text-sm break-words">{service.nomService}</div>
-                  </div>
-                  
-                  <div className="grid grid-cols-1 sm:grid-cols-4 gap-2 sm:gap-4">
-                    <div className="font-semibold text-left sm:text-right text-sm">Description:</div>
-                    <div className="col-span-1 sm:col-span-3 text-sm break-words">{service.description || "-"}</div>
-                  </div>
-                  
-                  <div className="grid grid-cols-1 sm:grid-cols-4 gap-2 sm:gap-4">
-                    <div className="font-semibold text-left sm:text-right text-sm">Tarif de base:</div>
-                    <div className="col-span-1 sm:col-span-3 text-sm">{service.tarifactionBase?.toLocaleString() || "-"} FCFA</div>
-                  </div>
-                  
-                  <div className="grid grid-cols-1 sm:grid-cols-4 gap-2 sm:gap-4">
-                    <div className="font-semibold text-left sm:text-right text-sm">Gérants:</div>
-                    <div className="col-span-1 sm:col-span-3 text-sm">
-                      {service.gerants?.map((gerant, index) => (
-                        <div key={index} className="break-words">
-                          {gerant.prenom} - {gerant.nom}
-                        </div>
-                      )) || "-"}
-                    </div>
-                  </div>
-                  
-                  <div className="grid grid-cols-1 sm:grid-cols-4 gap-2 sm:gap-4">
-                    <div className="font-semibold text-left sm:text-right text-sm">Niveaux disponibles:</div>
-                    <div className="col-span-1 sm:col-span-3 space-y-1">
-                      {service.niveauxDisponibles?.length > 0 ? 
-                        service.niveauxDisponibles.map((niveau, index) => (
-                          <div key={index} className="text-sm break-words">
-                            {niveau.nom} - {niveau.tarif} FCFA
-                          </div>
-                        )) : 
-                        <div className="text-sm">Aucun niveau disponible</div>
-                      }
-                    </div>
-                  </div>
-
-                  {service.createdAt && (
-                    <div className="grid grid-cols-1 sm:grid-cols-4 gap-2 sm:gap-4">
-                      <div className="font-semibold text-left sm:text-right text-sm">Date de création:</div>
-                      <div className="col-span-1 sm:col-span-3 text-sm">{new Date(service.createdAt).toLocaleDateString('fr-FR')}</div>
-                    </div>
-                  )}
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <div className="font-semibold text-right">Nom:</div>
+                  <div className="col-span-3">{service.nomService}</div>
                 </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <div className="font-semibold text-right">Description:</div>
+                  <div className="col-span-3">{service.description || "-"}</div>
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <div className="font-semibold text-right">Tarif de base:</div>
+                  <div className="col-span-3">{service.tarifactionBase?.toLocaleString() || "-"} FCFA</div>
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <div className="font-semibold text-right">Gérants:</div>
+                  <div className="col-span-3">{service.gerants?.map((gerant, index) => (
+                    <div key={index}>
+                      {gerant.prenom} - {gerant.nom}
+                    </div>
+                  )) || "-"}</div>
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <div className="font-semibold text-right">Niveaux disponibles:</div>
+                  <div className="col-span-3 space-y-1">
+                    {service.niveauxDisponibles?.length > 0 ? 
+                      service.niveauxDisponibles.map((niveau, index) => (
+                        <div key={index}>
+                          {niveau.nom} - {niveau.tarif} FCFA
+                        </div>
+                      )) : 
+                      <div>Aucun niveau disponible</div>
+                    }
+                  </div>
+                </div>
+
+                {service.createdAt && (
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <div className="font-semibold text-right">Date de création:</div>
+                    <div className="col-span-3">{new Date(service.createdAt).toLocaleDateString('fr-FR')}</div>
+                  </div>
+                )}
               </>
             )}
           </div>
 
           {!showOtpVerification && (
-            <div className="flex flex-col sm:flex-row justify-between mt-4 gap-2">
-              {/* Bouton de suppression */}
+            <div className="flex justify-between mt-4 gap-2">
+              {/* Bouton de suppression uniquement visible en mode affichage */}
               {!isEditing && (
                 <Button
                   variant="destructive"
                   onClick={() => setIsDeleting(true)}
                   disabled={isLoading}
                   size="sm"
-                  className="w-full sm:w-auto text-xs sm:text-sm"
                 >
-                  <Trash2 className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                  <Trash2 className="h-4 w-4 mr-2" />
                   Supprimer
                 </Button>
               )}
               
-              <div className="flex gap-2 sm:ml-auto">
+              <div className="ml-auto flex gap-2">
                 {isEditing ? (
                   <>
                     <Button
                       variant="outline"
                       onClick={() => setIsEditing(false)}
                       disabled={isLoading}
-                      className="flex-1 sm:flex-none text-xs sm:text-sm"
                     >
                       Annuler
                     </Button>
                     <Button
                       onClick={handleUpdate}
                       disabled={isLoading}
-                      className="flex-1 sm:flex-none bg-[#ee7606] hover:bg-[#d56a05] text-xs sm:text-sm"
+                      className="bg-[#ee7606] hover:bg-[#d56a05]"
                     >
                       {isLoading ? "Enregistrement..." : "Enregistrer"}
                     </Button>
@@ -511,7 +500,7 @@ const ServiceDialog: React.FC<ServiceDialogProps> = ({
                 ) : (
                   <Button 
                     onClick={() => setIsEditing(true)}
-                    className="w-full sm:w-auto bg-[#ee7606] hover:bg-[#d56a05] text-xs sm:text-sm"
+                    className="bg-[#ee7606] hover:bg-[#d56a05]"
                   >
                     Modifier
                   </Button>
@@ -524,26 +513,22 @@ const ServiceDialog: React.FC<ServiceDialogProps> = ({
 
       {/* Boîte de dialogue de confirmation pour la suppression */}
       <AlertDialog open={isDeleting} onOpenChange={setIsDeleting}>
-        <AlertDialogContent className="w-full max-w-[95vw] sm:max-w-md mx-4">
+        <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-sm sm:text-base">Confirmer la suppression</AlertDialogTitle>
-            <AlertDialogDescription className="text-xs sm:text-sm">
+            <AlertDialogTitle>Confirmer la suppression</AlertDialogTitle>
+            <AlertDialogDescription>
               Êtes-vous sûr de vouloir supprimer ce service ? Cette action est irréversible 
               et supprimera toutes les données associées au service.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter className="flex-col sm:flex-row gap-2">
-            <AlertDialogCancel 
-              onClick={() => setIsDeleting(false)} 
-              disabled={isLoading}
-              className="w-full sm:w-auto text-xs sm:text-sm"
-            >
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setIsDeleting(false)} disabled={isLoading}>
               Annuler
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
               disabled={isLoading}
-              className="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white text-xs sm:text-sm"
+              className="bg-red-600 hover:bg-red-700 text-white"
             >
               {isLoading ? "Suppression..." : "Supprimer définitivement"}
             </AlertDialogAction>

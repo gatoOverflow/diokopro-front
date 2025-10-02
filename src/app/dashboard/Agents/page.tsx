@@ -8,9 +8,7 @@ const GerantsPage = async () => {
   
   const currentEnterpriseId = enterprises[0]?._id; // Assuming you want the first enterprise
 
-  if (!currentEnterpriseId) {
-    throw new Error("No enterprise found");
-  }
+
   const agentsResponse = await fetchJSON(`${GET_ALL_AGENTS}/${currentEnterpriseId}`);
 
   

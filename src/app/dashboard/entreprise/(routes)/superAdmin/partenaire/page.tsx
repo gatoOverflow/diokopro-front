@@ -14,6 +14,8 @@ import BalanceEntreprise from '@/app/dashboard/entreprise/_components/Balance/Ba
 const CombinedPage = async () => {
   // Fetch the enterprises to get the current enterprise ID
   const enterprises = await fetchJSON(ALL_ENTERPRISES_ENDPOINT);
+  //console.log(enterprises);
+  
 const balance =await fetchJSON(`${BALANCE_ENDPOINT_FOR_ALL_ENTREPRISE}`)
 const BalanceEntreprise=balance.totalSolde
 
