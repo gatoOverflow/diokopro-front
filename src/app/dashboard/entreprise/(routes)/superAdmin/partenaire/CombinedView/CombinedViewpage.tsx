@@ -60,6 +60,7 @@ const CombinedViewTest = ({
                    agentsCount={agentsResponse} 
                    clientsCount={clientsResponse}
                    entrepriseCount={getNumbersEntreprise}
+                   
                   />
                 </div>
             {/* Section principale avec les listes */}
