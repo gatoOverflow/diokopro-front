@@ -2,7 +2,7 @@
 
 import { z } from "zod";
 import { createdOrUpdated } from "@/lib/api";
-import { ADD_AGENT_TO_NEW_SERVICE_URL, ADD_CLIENT_TO_NEW_SERVICE_URL, CLIENT_URL, DELETE_AGENT_URL_FOR_A_SERVICE, DELETE_CLIENT_URL, DELETE_CLIENT_URL_FOR_A_SERVICE, UPDATE_CLIENT_URL } from "./endpoint";
+import { ADD_AGENT_TO_NEW_SERVICE_URL, ADD_CLIENT_TO_NEW_SERVICE_URL, CLIENT_URL, DELETE_AGENT_URL_FOR_A_SERVICE, DELETE_CLIENT_URL, DELETE_CLIENT_URL_FOR_A_SERVICE, GET_AGENT_PAYSLIP, UPDATE_CLIENT_URL } from "./endpoint";
 import axios from "axios";
 import { cookies } from "next/headers";
 
@@ -479,7 +479,47 @@ export async function deleteClient(formData) {
     };
   }
 }
+// @/actions/Agent.js
+export const sendAgentPaySlip = async (entrepriseId, agentId, options = {}) => {
+  try {
+    const apiUrl = `${GET_AGENT_PAYSLIP}/${entrepriseId}/agent/${agentId}`;
+    
+    const response = await createdOrUpdated({
+      url: apiUrl,
+      data: { options }, // Envoyer les options dans le body
+      updated: false
+    });
 
+    // Le backend retourne { message: "Bulletin de paie envoyé avec succès." }
+    if (response && response.message) {
+      return {
+        type: 'success',
+        message: response.message,
+        data: response
+      };
+    }
+
+    return {
+      type: 'error',
+      error: response.error || "Échec de l'envoi du bulletin de paie"
+    };
+  } catch (error) {
+    console.error("Erreur lors de l'envoi du bulletin de paie:", error);
+    
+    // Gérer les erreurs HTTP
+    if (error.response?.data?.message) {
+      return {
+        type: 'error',
+        error: error.response.data.message
+      };
+    }
+    
+    return {
+      type: 'error',
+      error: error.message || "Erreur lors de l'envoi du bulletin de paie"
+    };
+  }
+};
 
 export const addServiceToAgent = async (formData) => {
  // console.log("🚀 addServiceToClient - Début de la fonction");

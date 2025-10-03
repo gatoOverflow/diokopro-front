@@ -36,13 +36,13 @@ const CombinedViewTest = ({
 
 
 
-  
 
 
 
 
 
-    
+
+
 
 
 
@@ -51,37 +51,38 @@ const CombinedViewTest = ({
         <div className="p-2">
 
 
-          
- <div className=' space-y-6 lg:w-[300px]'>
-                    <div className="col-span-1 ">
-                        <BalanceEntrepriseAllEntreprise totalSolde={balance}  />
-                    </div>
-                  <MetricsCardsEntreprise
-                   agentsCount={agentsResponse} 
-                   clientsCount={clientsResponse}
-                   entrepriseCount={getNumbersEntreprise}
-                  />
+
+            <div className=' space-y-6 lg:w-[300px]'>
+                <div className="col-span-1 ">
+                    <BalanceEntrepriseAllEntreprise totalSolde={balance} />
                 </div>
+                <MetricsCardsEntreprise
+                    agentsCount={agentsResponse}
+                    clientsCount={clientsResponse}
+                    entrepriseCount={getNumbersEntreprise}
+
+                />
+            </div>
             {/* Section principale avec les listes */}
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
                 <div className="lg:col-span-3 space-y-6">
                     {/* Liste des Agents */}
-                    <AllEntreprise 
-                        agents={agents} 
-                   totalGerants={nombreTotalGerants}
-  onGerantClick={handleGerantClick}
-  searchTerm={termeRecherche}
+                    <AllEntreprise
+                        agents={agents}
+                        totalGerants={nombreTotalGerants}
+                        onGerantClick={handleGerantClick}
+                        searchTerm={termeRecherche}
                     />
 
                     {/* Liste des Clients */}
-                  
+
                 </div>
 
                 {/* Panneau latéral avec services */}
-               
+
             </div>
 
-          
+
         </div>
     );
 };
