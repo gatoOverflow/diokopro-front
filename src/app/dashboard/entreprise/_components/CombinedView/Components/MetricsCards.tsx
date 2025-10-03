@@ -6,11 +6,12 @@ import CreateServiceModal from '@/app/dashboard/_Service/_components/service';
 import CreateGerantModal from '@/app/dashboard/AgentEntre/_components/test';
 
 
-const MetricsCards = ({ 
-  agentsCount, 
-  clientsCount, 
-  servicesCount, 
-  entrepriseId, 
+const MetricsCards = ({
+  agentsCount,
+  clientsCount,
+  servicesCount,
+  totalMasseSalariale,
+  entrepriseId,
   nomEntreprise,
   services
 }) => {
@@ -31,7 +32,7 @@ const MetricsCards = ({
           <CreateClientModal services={services} entrepriseId={entrepriseId} />
         </div>
       </div>
-
+     
       <div className="bg-white p-9 rounded-md shadow-xl">
         <h3 className="text-lg font-semibold">Total Services</h3>
         <div className="flex items-center justify-between mt-1">
@@ -45,6 +46,13 @@ const MetricsCards = ({
         <div className="flex items-center justify-between mt-1">
           <p className="text-3xl font-bold text-[#0cadec]">{agentsCount}</p>
           <CreateGerantModal enterprises={[{ _id: entrepriseId, nomEntreprise }]} />
+        </div>
+      </div>
+       <div className="bg-white p-9 rounded-md shadow-xl">
+        <h3 className="text-lg font-semibold">Total Masse Salarial</h3>
+        <div className="flex items-center justify-between mt-1">
+          <p className="text-3xl font-bold text-[#0cadec]">{totalMasseSalariale}</p>
+
         </div>
       </div>
     </div>
