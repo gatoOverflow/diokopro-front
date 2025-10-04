@@ -38,20 +38,16 @@ const EntrepriseInactive: React.FC<EntrepriseListProps> = ({
     const [choisisSearchTerm, setChoisisSearchTerm] = useState('');
     const [rejetesSearchTerm, setRejetesSearchTerm] = useState('');
     
-    // État pour la pagination par type de panneau
     const [postulantPage, setPostulantPage] = useState(1);
     const [choisisPage, setChoisisPage] = useState(1);
     const [rejetesPage, setRejetesPage] = useState(1);
     
-    // Nombre d'éléments par page
     const itemsPerPage = 3;
 
-    // Filtrer les entreprises avec pagination
     const getFilteredEntreprises = (status: 'postulants' | 'choisis' | 'rejetes', page: number) => {
         let filtered = entreprises;
         let searchTerm = '';
         
-        // Sélectionner le terme de recherche approprié pour ce panneau
         switch (status) {
             case 'postulants':
                 filtered = entreprises.filter(e => !e.estActif);
@@ -62,12 +58,11 @@ const EntrepriseInactive: React.FC<EntrepriseListProps> = ({
                 searchTerm = choisisSearchTerm;
                 break;
             case 'rejetes':
-                filtered = entreprises.filter(e => !e.estActif); // Ajustez selon votre logique
+                filtered = entreprises.filter(e => !e.estActif);
                 searchTerm = rejetesSearchTerm;
                 break;
         }
 
-        // Appliquer le filtre de recherche
         if (searchTerm) {
             filtered = filtered.filter(entreprise =>
                 entreprise.nomEntreprise.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -77,10 +72,7 @@ const EntrepriseInactive: React.FC<EntrepriseListProps> = ({
             );
         }
 
-        // Calculer le nombre total de pages pour ce statut
         const totalPages = Math.ceil(filtered.length / itemsPerPage);
-        
-        // Appliquer la pagination
         const startIndex = (page - 1) * itemsPerPage;
         const paginatedData = filtered.slice(startIndex, startIndex + itemsPerPage);
         
@@ -184,7 +176,7 @@ const EntrepriseInactive: React.FC<EntrepriseListProps> = ({
 
     if (isLoading) {
         return (
-            <div className="min-h-screen bg-gray-50 p-6">
+            <div className="min-h-screen bg-gray-50 p-3 sm:p-6">
                 <div className="max-w-7xl mx-auto">
                     <Skeleton className="h-8 w-full mb-4" />
                     <Skeleton className="h-8 w-full mb-4" />
@@ -196,7 +188,7 @@ const EntrepriseInactive: React.FC<EntrepriseListProps> = ({
 
     if (error) {
         return (
-            <div className="min-h-screen bg-gray-50 p-6">
+            <div className="min-h-screen bg-gray-50 p-3 sm:p-6">
                 <div className="max-w-7xl mx-auto">
                     <div className="text-red-500 p-6">Erreur: {error}</div>
                 </div>
@@ -204,9 +196,7 @@ const EntrepriseInactive: React.FC<EntrepriseListProps> = ({
         );
     }
 
-    // Render table panel
     const renderPanel = (title: string, status: 'postulants' | 'choisis' | 'rejetes') => {
-        // Déterminer la page actuelle pour ce panneau
         let currentPage;
         let setPage;
 
@@ -228,21 +218,21 @@ const EntrepriseInactive: React.FC<EntrepriseListProps> = ({
                 setPage = () => {};
         }
         
-        // Récupérer les données paginées
         const { data: filteredEntreprises, totalPages } = getFilteredEntreprises(status, currentPage);
         
         return (
             <div className="bg-white rounded-lg shadow-2xl w-full">
-                <div className="flex items-center p-4 border-b border-gray-200">
-                    <h2 className="text-lg font-medium text-blue-500">
+                {/* Header avec recherche */}
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 p-3 sm:p-4 border-b border-gray-200">
+                    <h2 className="text-base sm:text-lg font-medium text-blue-500 whitespace-nowrap">
                         {title}
                     </h2>
-                    <div className="ml-auto">
+                    <div className="w-full sm:ml-auto sm:w-auto">
                         <div className="relative">
-                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-5 text-gray-400" />
+                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                             <input
                                 type="text"
-                                placeholder="Rechercher une transaction"
+                                placeholder="Rechercher..."
                                 value={
                                     status === 'postulants' 
                                         ? postulantSearchTerm 
@@ -253,7 +243,7 @@ const EntrepriseInactive: React.FC<EntrepriseListProps> = ({
                                 onChange={(e) => {
                                     if (status === 'postulants') {
                                         setPostulantSearchTerm(e.target.value);
-                                        setPostulantPage(1); // Réinitialiser à la première page lors de la recherche
+                                        setPostulantPage(1);
                                     } else if (status === 'choisis') {
                                         setChoisisSearchTerm(e.target.value);
                                         setChoisisPage(1);
@@ -262,14 +252,14 @@ const EntrepriseInactive: React.FC<EntrepriseListProps> = ({
                                         setRejetesPage(1);
                                     }
                                 }}
-                                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                                className="w-full sm:w-64 pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
                             />
                         </div>
                     </div>
                 </div>
 
-                {/* En-têtes de tableau */}
-                <div className="flex w-full justify-between px-4 py-3 border-b border-gray-200">
+                {/* En-têtes de tableau - cachés sur mobile */}
+                <div className="hidden md:flex w-full justify-between px-4 py-3 border-b border-gray-200">
                     <div className="font-semibold text-gray-900">Société</div>
                     <div className="font-semibold text-gray-900">NINEA/RCCM</div>
                 </div>
@@ -278,47 +268,55 @@ const EntrepriseInactive: React.FC<EntrepriseListProps> = ({
                 <div className="min-h-[200px] max-h-[400px] overflow-y-auto">
                     {filteredEntreprises.length > 0 ? (
                         filteredEntreprises.map((entreprise) => (
-                            <div key={entreprise._id} className="flex w-full items-center py-3 border-b border-gray-100 hover:bg-gray-50">
-                                <div className="w-1/2 pl-4">
+                            <div key={entreprise._id} className="flex flex-col md:flex-row w-full md:items-center p-3 md:py-3 border-b border-gray-100 hover:bg-gray-50 gap-3">
+                                {/* Section Société */}
+                                <div className="w-full md:w-1/2 md:pl-4">
                                     <div className="flex items-center space-x-3">
-                                        <div className="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center">
+                                        <div className="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center flex-shrink-0">
                                             <User className="w-5 h-5 text-white" />
                                         </div>
-                                        <div>
-                                            <div className="font-medium text-gray-900">{entreprise.nomEntreprise}</div>
-                                            <div className="text-sm text-gray-500">{entreprise.representéPar}</div>
+                                        <div className="min-w-0 flex-1">
+                                            <div className="font-medium text-gray-900 truncate">{entreprise.nomEntreprise}</div>
+                                            <div className="text-sm text-gray-500 truncate">{entreprise.representéPar}</div>
                                         </div>
                                     </div>
                                 </div>
-                                <div className="w-1/2 text-gray-700 pr-4 flex justify-between items-center">
-                                    <span>{entreprise.ninea}</span>
-                                    {status === 'postulants' && (
-                                        <div className="flex space-x-2">
-                                            <button
-                                                onClick={(e) => openAcceptDialog(e, entreprise)}
-                                                className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-1 text-sm rounded"
-                                            >
-                                                Accepter
-                                            </button>
-                                            <button
-                                                onClick={(e) => openRejectDialog(e, entreprise)}
-                                                className="bg-red-500 hover:bg-red-600 text-white px-4 py-1 text-sm rounded"
-                                            >
-                                                Refuser
-                                            </button>
+                                
+                                {/* Section NINEA et Actions */}
+                                <div className="w-full md:w-1/2 md:pr-4">
+                                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+                                        <div className="text-gray-700 text-sm md:text-base">
+                                            <span className="md:hidden font-medium">NINEA: </span>
+                                            <span>{entreprise.ninea}</span>
                                         </div>
-                                    )}
+                                        {status === 'postulants' && (
+                                            <div className="flex gap-2 w-full sm:w-auto">
+                                                <button
+                                                    onClick={(e) => openAcceptDialog(e, entreprise)}
+                                                    className="flex-1 sm:flex-none bg-blue-500 hover:bg-blue-600 text-white px-3 sm:px-4 py-1.5 sm:py-1 text-xs sm:text-sm rounded transition-colors"
+                                                >
+                                                    Accepter
+                                                </button>
+                                                <button
+                                                    onClick={(e) => openRejectDialog(e, entreprise)}
+                                                    className="flex-1 sm:flex-none bg-red-500 hover:bg-red-600 text-white px-3 sm:px-4 py-1.5 sm:py-1 text-xs sm:text-sm rounded transition-colors"
+                                                >
+                                                    Refuser
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                         ))
                     ) : (
-                        <div className="flex justify-center items-center h-32 text-gray-500">
+                        <div className="flex justify-center items-center h-32 text-gray-500 text-sm">
                             Aucune entreprise trouvée
                         </div>
                     )}
                 </div>
 
-                {/* Utilisation du composant Pagination personnalisé */}
+                {/* Pagination */}
                 <Pagination 
                     currentPage={currentPage} 
                     totalPages={totalPages} 
@@ -329,23 +327,23 @@ const EntrepriseInactive: React.FC<EntrepriseListProps> = ({
     };
 
     return (
-        <div className="flex p-6 bg-gray-50">
-            {/* Structure à trois panneaux avec largeurs identiques */}
-            <div className="grid grid-cols-2 gap-4 w-full">
-                {/* Panneau de gauche - Postulants */}
-                <div>
+        <div className="flex p-3 sm:p-4 lg:p-6 bg-gray-50">
+            {/* Grille responsive: 1 colonne sur mobile, 2 colonnes sur desktop */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 w-full">
+                {/* Panneau Postulants */}
+                <div className="w-full">
                     {renderPanel("Postulants", "postulants")}
                 </div>
 
                 {/* Colonne de droite - Choisis et Rejetés */}
-                <div className="flex flex-col gap-4">
+                <div className="flex flex-col gap-4 w-full">
                     {/* Panneau Choisis */}
-                    <div>
+                    <div className="w-full">
                         {renderPanel("Choisis", "choisis")}
                     </div>
 
                     {/* Panneau Rejetés */}
-                    <div>
+                    <div className="w-full">
                         {renderPanel("Rejetés", "rejetes")}
                     </div>
                 </div>
@@ -353,12 +351,12 @@ const EntrepriseInactive: React.FC<EntrepriseListProps> = ({
 
             {/* Dialogue de confirmation */}
             <Dialog open={open} onOpenChange={setOpen}>
-                <DialogContent className="sm:max-w-md">
+                <DialogContent className="sm:max-w-md mx-4 max-w-[calc(100%-2rem)]">
                     <DialogHeader>
-                        <DialogTitle>
+                        <DialogTitle className="text-base sm:text-lg">
                             {actionType === 'accept' ? 'Accepter l\'entreprise' : 'Refuser l\'entreprise'}
                         </DialogTitle>
-                        <DialogDescription>
+                        <DialogDescription className="text-sm">
                             {selectedEntreprise && (
                                 <>
                                     {actionType === 'accept'
@@ -379,7 +377,7 @@ const EntrepriseInactive: React.FC<EntrepriseListProps> = ({
                                 id="raisonRefus"
                                 value={raisonRefus}
                                 onChange={(e) => setRaisonRefus(e.target.value)}
-                                className="w-full p-2 border border-gray-300 rounded-md"
+                                className="w-full p-2 border border-gray-300 rounded-md text-sm"
                                 rows={3}
                                 placeholder="Entrez la raison du refus..."
                                 required
@@ -388,15 +386,15 @@ const EntrepriseInactive: React.FC<EntrepriseListProps> = ({
                     )}
 
                     {updateMessage && (
-                        <div className={`py-2 px-3 rounded ${updateMessage.type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                        <div className={`py-2 px-3 rounded text-sm ${updateMessage.type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
                             }`}>
                             {updateMessage.message}
                         </div>
                     )}
 
-                    <DialogFooter className="sm:justify-end">
+                    <DialogFooter className="flex-col sm:flex-row gap-2 sm:justify-end">
                         <DialogClose asChild>
-                            <Button type="button" variant="outline">
+                            <Button type="button" variant="outline" className="w-full sm:w-auto">
                                 Annuler
                             </Button>
                         </DialogClose>
@@ -405,7 +403,7 @@ const EntrepriseInactive: React.FC<EntrepriseListProps> = ({
                             onClick={actionType === 'accept' ? handleUpdateStatus : handleRefuse}
                             disabled={isSubmitting}
                             variant={actionType === 'accept' ? "default" : "destructive"}
-                            className={actionType === 'accept' ? "bg-green-600 hover:bg-green-700" : ""}
+                            className={`w-full sm:w-auto ${actionType === 'accept' ? "bg-green-600 hover:bg-green-700" : ""}`}
                         >
                             {isSubmitting ? 'En cours...' : actionType === 'accept' ? 'Accepter' : 'Refuser'}
                         </Button>

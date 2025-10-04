@@ -1,4 +1,3 @@
-// AgentsList.tsx
 import React, { useMemo } from 'react';
 import { Badge } from '@/components/ui/badge';
 import TableView from './TableView';
@@ -7,7 +6,7 @@ import DateFilterComponent from './DateFilterComponent';
 import useDateFilter from '../Hooks/useDateFilter';
 import useTableData from '../Hooks/useTableData';
 
-const AgentsList = ({ agents, onAgentClick }) => {
+const AgentsList = ({ agents, onAgentClick, onSendPaySlip }) => {
   const dateFilter = useDateFilter();
   
   const dateFilteredAgents = useMemo(() => {
@@ -112,25 +111,19 @@ const AgentsList = ({ agents, onAgentClick }) => {
     },
     {
       header: "Fiche de Paie",
-      render: (agent) => {
-        if (agent.payslip) {
-          return (
-            <div className="text-sm">
-              <div className="font-medium text-gray-900">
-                {agent.payslip.totalAmount ? `${agent.payslip.totalAmount.toLocaleString()} FCFA` : 'N/A'}
-              </div>
-              {agent.payslip.period && (
-                <div className="text-xs text-gray-500">
-                  {agent.payslip.period}
-                </div>
-              )}
-            </div>
-          );
-        }
-        return <span className="text-sm text-gray-400">Non disponible</span>;
-      }
+      render: (agent) => (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onSendPaySlip(agent._id);
+          }}
+          className="px-3 py-1.5 text-sm font-medium bg-[#00BFFF] text-white rounded-md hover:bg-[#00A5E0] transition-colors duration-200 shadow-sm"
+        >
+          Envoyer
+        </button>
+      )
     }
-  ], []);
+  ], [onSendPaySlip]);
 
   const paymentFilterOptions = useMemo(() => [
     { value: 'all', label: 'À Payer' },

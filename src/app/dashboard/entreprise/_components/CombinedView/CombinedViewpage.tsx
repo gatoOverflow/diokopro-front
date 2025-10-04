@@ -7,7 +7,7 @@ import ServiceDialog from '../_services/ServiceDialog';
 import ClientDialog from '../_clients/ClientDialog';
 import AgentDialog from '../_Agent/AgentDialog';
 import GerantDialog from '../_gerant/GerantDialog';
-import { updateClient, deleteClient, removeClientFromService, addServiceToClient, addServiceToAgent, removeAgentFromService } from '@/actions/clientreq';
+import { updateClient, deleteClient, removeClientFromService, addServiceToClient, addServiceToAgent, removeAgentFromService, sendAgentPaySlip } from '@/actions/clientreq';
 import { validateOTP } from '@/actions/service';
 import { updatedGerant } from '@/actions/gerant';
 import { deleteAgent, updatedAgent } from '@/actions/Agent';
@@ -27,7 +27,8 @@ const CombinedView = ({
     gerants,
     clientNotTopayer,
     entrepriseId,
-    nomEntreprise
+    nomEntreprise,
+    salaire
 }) => {
     // États pour les éléments sélectionnés
     const [selectedService, setSelectedService] = useState(null);
@@ -61,6 +62,23 @@ const CombinedView = ({
         setSelectedGerant(gerant);
         setIsGerantDialogOpen(true);
     }, []);
+
+    const handleSendPaySlip = useCallback(async (agentId) => {
+        try {
+            const result = await sendAgentPaySlip(entrepriseId, agentId);
+            
+            if (result.type === 'success') {
+                toast.success(result.message || "Bulletin de paie envoyé avec succès");
+            } else if (result.type === 'error') {
+                toast.error(result.error || "Échec de l'envoi du bulletin de paie");
+            }
+            
+            return result;
+        } catch (error) {
+            toast.error("Une erreur est survenue lors de l'envoi du bulletin de paie");
+            return { type: 'error', error: "Une erreur est survenue" };
+        }
+    }, [entrepriseId]);
 
     const handleAddServiceToAgent = useCallback(async (data) => {
         try {
@@ -366,13 +384,14 @@ const CombinedView = ({
                         {/* 4 cartes de métriques */}
                         <div className="flex-1">
                             <MetricsCards 
-                                agentsCount={agents.length} 
-                                clientsCount={clients.length} 
-                                servicesCount={services.length}
-                                entrepriseId={entrepriseId}
-                                nomEntreprise={nomEntreprise}
-                                services={services}
-                            />
+    agentsCount={agents.length} 
+    clientsCount={clients.length} 
+    servicesCount={services.length}
+    totalMasseSalariale={salaire?.totalMasseSalariale}  // ou salaire?.count selon votre API
+    entrepriseId={entrepriseId}
+    nomEntreprise={nomEntreprise}
+    services={services}
+/>
                         </div>
                         
                         {/* Gestion de compte et Messagerie */}
@@ -391,7 +410,8 @@ const CombinedView = ({
                     <div>
                         <AgentsList 
                             agents={agents} 
-                            onAgentClick={handleAgentClick} 
+                            onAgentClick={handleAgentClick}
+                            onSendPaySlip={handleSendPaySlip}
                         />
                     </div>
                     
