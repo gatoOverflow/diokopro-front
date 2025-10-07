@@ -58,7 +58,6 @@ export const ROLEPAGES = {
     /^\/dashboard\/profile\/[^/]+(\/changePassWord)?$/
   ],
   superAdmin: [
-    "/dashboard/subOrganizer",
     "/dashboard/entreprise/superAdmin/candidature",
      "/dashboard/entreprise/superAdmin/historique",
      "/dashboard/entreprise/superAdmin/partenaire",

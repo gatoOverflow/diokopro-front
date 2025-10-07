@@ -200,7 +200,7 @@ const CreateClientModal = ({ services = [], entrepriseId = "" }: CreateClientMod
     switch (formData.frequencePaiement) {
       case 'mensuel':
         if (formData.jourPaiement < 1 || formData.jourPaiement > 31) {
-          newErrors.jourPaiement = ["Le jour du mois doit être entre 1 et 31"];
+          newErrors.jourPaiement = ["Le  mois doit être entre 1 et 12"];
           hasErrors = true;
         }
         break;
@@ -405,7 +405,7 @@ const CreateClientModal = ({ services = [], entrepriseId = "" }: CreateClientMod
       case 'mensuel':
         return (
           <div>
-            <label className="block mb-1 font-medium text-gray-700">Jour du mois</label>
+            <label className="block mb-1 font-medium text-gray-700">Mois</label>
             <input
               type="number"
               name="jourPaiement"
@@ -416,7 +416,7 @@ const CreateClientModal = ({ services = [], entrepriseId = "" }: CreateClientMod
               className={`border ${errors.jourPaiement ? 'border-red-500' : 'border-gray-300'} rounded-md p-2 w-full focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
             />
             {getFieldError('jourPaiement')}
-            <span className="text-xs text-gray-500 mt-1 block">Jour du mois (1-31) où le paiement sera effectué</span>
+            {/* <span className="text-xs text-gray-500 mt-1 block">Jour du mois (1-31) où le paiement sera effectué</span> */}
           </div>
         );
       /* case 'hebdomadaire':
