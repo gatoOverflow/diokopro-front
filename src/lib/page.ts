@@ -72,6 +72,7 @@ const AcceptPage: Menu = {
             icon: CalendarCheck,
             submenus: []
           },
+          
           {
             href: "/dashboard/Gerants",
             label: "Gerant",
@@ -79,8 +80,16 @@ const AcceptPage: Menu = {
             icon: CalendarCheck,
             submenus: []
           },
+           
           commonPage, // Ajout de la page commune
-          paiementsPage // Ajout de la page paiements
+          //paiementsPage // Ajout de la page paiements
+           {
+            href: "/dashboard/entreprise/paiements",
+            label: "Paiements",
+            active: pathname === "/dashboard/entreprise/paiements",
+            icon: CreditCard,
+            submenus: []
+          },
         ]
       },
     ];
