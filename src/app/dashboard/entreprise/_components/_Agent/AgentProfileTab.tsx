@@ -69,7 +69,7 @@ const AgentProfileTab: React.FC<AgentProfileTabProps> = ({
       case 'mensuel':
         return (
           <div className="grid grid-cols-4 items-center gap-4">
-            <div className="font-semibold text-right">Mois:</div>
+            <div className="font-semibold text-right">Intervalle (Mois)</div>
             <div className="col-span-3">
               <Input
                 type="number"

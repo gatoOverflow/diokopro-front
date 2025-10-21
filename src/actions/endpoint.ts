@@ -30,6 +30,7 @@ export const UPDATE_SERVICE_URL = `${API_URL}/updateService`
 export const getEntreprise = `${API_URL}/getEntreprise`
 export const CLIENT_URL =`${API_URL}/createClient/entreprise`
 export const GET_ALL_CLIENT_URL =`${API_URL}/entreprises`
+export const GET_ENTREPRISE_URL =`${API_URL}/getEntreprise`
 export const GET_ALL_CLIENT_TO_NOT_PAY_URL =`${API_URL}/getAllClientsWhoDidNotPay/entreprise`
 export const GET_ALL_NUMBER_ENTREPRISE =`${API_URL}/authSuper/getAllEntreprisesCount`
 export const GET_ALL_CLIENT_TO_PAY_URL =`${API_URL}/getAllClientsWhoPayed/entreprise`
