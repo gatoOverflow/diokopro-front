@@ -90,6 +90,13 @@ const AcceptPage: Menu = {
             icon: CreditCard,
             submenus: []
           },
+          {
+            href: "/dashboard/entreprise/transactions",
+            label: "Historique des transactions",
+            active: pathname === "/dashboard/entreprise/transactions",
+            icon: CreditCard,
+            submenus: []
+          },
         ]
       },
     ];

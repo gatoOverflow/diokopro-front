@@ -398,7 +398,7 @@ const CreateAgentModal = ({ services = [], entrepriseId = "" }: CreateAgentModal
       case 'mensuel':
         return (
           <div>
-            <label className="block mb-1 font-medium text-gray-700">Mois</label>
+            <label className="block mb-1 font-medium text-gray-700">Intervalle (Mois)</label>
             <input
               type="number"
               name="jourPaiement"
