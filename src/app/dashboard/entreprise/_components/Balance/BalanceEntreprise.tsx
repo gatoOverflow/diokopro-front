@@ -1,3 +1,5 @@
+"use client";
+
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Textarea } from '@/components/ui/textarea'
@@ -7,7 +9,9 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useState } from 'react'
 import { CreditCard, Minus, Plus, Send, Loader2, AlertCircle, CheckCircle } from 'lucide-react'
-import {  envoyerMessage, rechargeCompte, retraitCompte } from '@/actions/Balance'
+import { envoyerMessage, rechargeCompte, retraitCompte } from '@/actions/Balance'
+import OtpInput from '../_Agent/OtpInput';
+import { validateOTP } from '@/actions/service';
 
 
 interface Balance {
@@ -24,6 +28,11 @@ export default function BalanceEntreprise({ balances, entrepriseId, onBalanceUpd
   const [isRechargeOpen, setIsRechargeOpen] = useState(false)
   const [isRetraitOpen, setIsRetraitOpen] = useState(false)
   const [isMessageOpen, setIsMessageOpen] = useState(false)
+  
+  // États pour OTP
+  const [showOtpStep, setShowOtpStep] = useState(false)
+  const [otpCode, setOtpCode] = useState('')
+  const [pendingChangeId, setPendingChangeId] = useState('')
   
   const [rechargeAmount, setRechargeAmount] = useState('')
   const [retraitData, setRetraitData] = useState({
@@ -47,6 +56,7 @@ export default function BalanceEntreprise({ balances, entrepriseId, onBalanceUpd
     setTimeout(() => setNotification({ type: null, message: '' }), 5000)
   }
 
+  // Demander la recharge
   const handleRecharge = async () => {
     if (!rechargeAmount || isNaN(Number(rechargeAmount)) || Number(rechargeAmount) <= 0) {
       showNotification('error', 'Veuillez entrer un montant valide')
@@ -60,29 +70,126 @@ export default function BalanceEntreprise({ balances, entrepriseId, onBalanceUpd
 
     setLoading(true)
     try {
-      const result = await rechargeCompte(entrepriseId, {
+      const response = await rechargeCompte(entrepriseId, {
         montant: Number(rechargeAmount)
       })
 
-      if (result.type === 'success') {
-        showNotification('success', result.message)
-        if (result.data?.data?.paymentUrl) {
-          window.open(result.data.data.paymentUrl, '_blank')
+   
+
+      // Gérer tous les cas possibles de réponse (comme dans CreateServiceModal)
+      if (response.type === "success" && response.data?.pendingChangeId) {
+        // Cas où la recharge nécessite une validation OTP
+        showNotification('success', 'Code OTP envoyé à l\'administrateur')
+        setPendingChangeId(response.data.pendingChangeId)
+        setShowOtpStep(true)
+      } else if (response.message && response.pendingChangeId) {
+        // Format de réponse alternatif du middleware
+        showNotification('success', 'Code OTP envoyé à l\'administrateur')
+        setPendingChangeId(response.pendingChangeId)
+        setShowOtpStep(true)
+      } else if (response.type === "success") {
+        // Cas où la recharge a été créée sans besoin de validation OTP
+        showNotification('success', response.message || 'Lien de recharge créé avec succès')
+        if (response.data?.data?.paymentUrl) {
+          window.open(response.data.data.paymentUrl, '_blank')
         }
-        setRechargeAmount('')
-        setIsRechargeOpen(false)
-        if (onBalanceUpdate) onBalanceUpdate()
-      } else if (result.errors) {
-        const errorMessages = Object.values(result.errors).flat().join(', ')
+        resetRechargeModal()
+      } else if (response.errors) {
+        // Cas d'erreurs de validation
+        const errorMessages = Object.values(response.errors).flat().join(', ')
         showNotification('error', errorMessages)
       } else {
-        showNotification('error', result.error || 'Erreur lors de la création du lien de recharge')
+        // Autres cas d'erreur
+        showNotification('error', response.error || 'Erreur lors de la recharge')
       }
     } catch (error) {
       showNotification('error', 'Erreur de connexion')
       console.error('Erreur recharge:', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  // Vérifier l'OTP et finaliser la recharge
+  const handleVerifyOtp = async () => {
+    if (!otpCode || otpCode.length !== 6) {
+      showNotification('error', 'Veuillez entrer un code OTP valide à 6 chiffres')
+      return
+    }
+
+    if (!entrepriseId) {
+      showNotification('error', 'Entreprise non disponible')
+      return
+    }
+
+    setLoading(true)
+    try {
+      
+
+      // Appeler la fonction de validation OTP (similaire à validateOTP dans CreateServiceModal)
+      const response = await validateOTP(pendingChangeId, otpCode, entrepriseId)
+
+     
+
+      if (response.success) {
+        showNotification('success', 'Lien de paiement envoyé via WhatsApp !')
+        resetRechargeModal()
+        if (onBalanceUpdate) onBalanceUpdate()
+      } else {
+        showNotification('error', response.error || 'Code OTP invalide ou expiré')
+        if (response.errors) {
+          Object.values(response.errors).forEach((errorArray: any) => {
+            errorArray.forEach((error: string) => {
+              showNotification('error', error)
+            })
+          })
+        }
+      }
+    } catch (error) {
+      showNotification('error', 'Échec de la vérification du code OTP')
+      console.error('Erreur vérification OTP:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Renvoyer le code OTP
+  const handleResendOtp = async () => {
+    setLoading(true)
+    try {
+      // Renvoyer la demande de recharge pour obtenir un nouveau code
+      const response = await rechargeCompte(entrepriseId!, {
+        montant: Number(rechargeAmount)
+      })
+
+      if (response.type === 'success' || response.pendingChangeId) {
+        showNotification('success', 'Code OTP renvoyé')
+        setOtpCode('')
+      } else {
+        showNotification('error', 'Erreur lors du renvoi du code')
+      }
+    } catch (error) {
+      showNotification('error', 'Erreur de connexion')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Réinitialiser la modal de recharge
+  const resetRechargeModal = () => {
+    setIsRechargeOpen(false)
+    setShowOtpStep(false)
+    setOtpCode('')
+    setPendingChangeId('')
+    setRechargeAmount('')
+  }
+
+  // Fermer la modal et réinitialiser
+  const handleCloseRechargeDialog = (open: boolean) => {
+    if (!open) {
+      resetRechargeModal()
+    } else {
+      setIsRechargeOpen(true)
     }
   }
 
@@ -211,47 +318,73 @@ export default function BalanceEntreprise({ balances, entrepriseId, onBalanceUpd
               </div>
               <div className="flex gap-2">
                 {/* Bouton Alimenter */}
-                <Dialog open={isRechargeOpen} onOpenChange={setIsRechargeOpen}>
+                <Dialog open={isRechargeOpen} onOpenChange={handleCloseRechargeDialog}>
                   <DialogTrigger asChild>
                     <Button className="flex-1 bg-[#FF8D3C] hover:bg-[#FF8D3C]/90 text-white">
                       <Plus className="w-4 h-4 mr-1" />
                       Alimenter
                     </Button>
                   </DialogTrigger>
-                  <DialogContent>
+                  <DialogContent className="max-w-lg">
                     <DialogHeader>
-                      <DialogTitle>Alimenter le compte</DialogTitle>
+                      <DialogTitle>
+                        {showOtpStep ? 'Vérification de sécurité' : 'Alimenter le compte'}
+                      </DialogTitle>
                       <DialogDescription>
-                        Entrez le montant que vous souhaitez recharger
+                        {showOtpStep 
+                          ? 'Entrez le code de vérification envoyé à l\'administrateur'
+                          : 'Entrez le montant que vous souhaitez recharger'
+                        }
                       </DialogDescription>
                     </DialogHeader>
-                    <div className="space-y-4">
-                      <div>
-                        <Label htmlFor="recharge-amount">Montant (FCFA)</Label>
-                        <Input
-                          id="recharge-amount"
-                          type="number"
-                          placeholder="Entrez le montant"
-                          value={rechargeAmount}
-                          onChange={(e) => setRechargeAmount(e.target.value)}
+
+                    {!showOtpStep ? (
+                      // Étape 1: Saisie du montant
+                      <div className="space-y-4">
+                        <div>
+                          <Label htmlFor="recharge-amount">Montant (FCFA)</Label>
+                          <Input
+                            id="recharge-amount"
+                            type="number"
+                            placeholder="Entrez le montant"
+                            value={rechargeAmount}
+                            onChange={(e) => setRechargeAmount(e.target.value)}
+                            disabled={loading}
+                          />
+                        </div>
+                        <Button 
+                          onClick={handleRecharge} 
+                          disabled={loading || !rechargeAmount}
+                          className="w-full bg-[#FF8D3C] hover:bg-[#FF8D3C]/90"
+                        >
+                          {loading ? (
+                            <>
+                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                              Traitement...
+                            </>
+                          ) : (
+                            'Continuer'
+                          )}
+                        </Button>
+                      </div>
+                    ) : (
+                      // Étape 2: Vérification OTP
+                      <div className="py-4">
+                        <OtpInput
+                          length={6}
+                          onComplete={(otp) => setOtpCode(otp)}
+                          onSubmit={handleVerifyOtp}
+                          onResend={handleResendOtp}
                           disabled={loading}
+                          isLoading={loading}
+                          loadingText="Vérification en cours..."
+                          buttonText="Envoyer le lien via WhatsApp"
+                          title="Vérification OTP - Recharge du compte"
+                          description={`Un code OTP a été envoyé pour confirmer la recharge de ${Number(rechargeAmount).toLocaleString()} FCFA. Le lien de paiement sera envoyé via WhatsApp après validation.`}
+                          timerDuration={60}
                         />
                       </div>
-                      <Button 
-                        onClick={handleRecharge} 
-                        disabled={loading || !rechargeAmount}
-                        className="w-full bg-[#FF8D3C] hover:bg-[#FF8D3C]/90"
-                      >
-                        {loading ? (
-                          <>
-                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                            Création en cours...
-                          </>
-                        ) : (
-                          'Créer le lien de paiement'
-                        )}
-                      </Button>
-                    </div>
+                    )}
                   </DialogContent>
                 </Dialog>
 
@@ -381,7 +514,8 @@ export default function BalanceEntreprise({ balances, entrepriseId, onBalanceUpd
                     />
                   </div>
                   <Button 
-                    onClick={handleSendMessage}disabled={loading || !messageData.titre || !messageData.message}
+                    onClick={handleSendMessage}
+                    disabled={loading || !messageData.titre || !messageData.message}
                     className="w-full bg-[#FF8D3C] hover:bg-[#FF8D3C]/90"
                   >
                     {loading ? (
