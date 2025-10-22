@@ -28,34 +28,70 @@ const MessageSchema = z.object({
 // Action pour recharger le compte
 export const rechargeCompte = async (
   entrepriseId: string,
-  formData: { montant: number }
+  formData: { montant: number; otpCode?: string; resendOtp?: boolean }
 ) => {
   try {
-    const validation = RechargeSchema.safeParse(formData);
+    
 
+    const validation = RechargeSchema.safeParse(formData);
+    
     if (!validation.success) {
+      console.error('❌ [rechargeCompte] Erreur de validation', validation.error.flatten().fieldErrors);
       return {
         type: "error",
         errors: validation.error.flatten().fieldErrors,
       };
     }
 
+   
+
     const response = await createdOrUpdated({
       url: `${RECHARGE_COMPTE_ENTREPRISE}/${entrepriseId}`,
       data: validation.data,
     });
-//console.log(response);
 
+    
+
+    // Si le backend retourne un pendingChangeId, c'est qu'il faut valider avec OTP
+    if (response?.pendingChangeId) {
+   
+      return {
+        type: "success",
+        requiresOtp: true,
+        message: response.message || "Code OTP envoyé à l'administrateur",
+        data: response, // Contient le pendingChangeId
+      };
+    }
+
+    // Vérifier si le backend demande un OTP explicitement
+    if (response?.requiresOtp || response?.data?.requiresOtp) {
+      return {
+        type: "success",
+        requiresOtp: true,
+        message: "Code OTP envoyé à l'administrateur",
+        data: response,
+      };
+    }
     return {
       type: "success",
       message: "Lien de recharge créé avec succès",
       data: response,
     };
   } catch (error) {
-    console.error("Erreur dans rechargeCompte:", error);
+    console.error('💥 [rechargeCompte] Erreur complète:', {
+      message: error?.message,
+      response: error?.response,
+      responseData: error?.response?.data,
+      status: error?.response?.status,
+      fullError: error
+    });
 
     if (error?.response?.data?.message) {
-      return { type: "error", error: error.response.data.message };
+      console.error('❌ [rechargeCompte] Message d\'erreur du backend:', error.response.data.message);
+      return { 
+        type: "error", 
+        error: error.response.data.message 
+      };
     }
 
     return {
