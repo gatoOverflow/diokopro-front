@@ -23,6 +23,7 @@ const AgentSchema = z.object({
   adresse: z.string().min(1, { message: "L'adresse est obligatoire" }),
   salaire: z.number(),
   nin: z.string().optional(),
+  fonction:z.string().optional(),
    niveauxDisponibles: z.array(NiveauSchema).optional(),
    wallet: z.string().min(1, { message: "Le portefeuille est obligatoire" }),
   // Nouveaux champs pour les paiements
