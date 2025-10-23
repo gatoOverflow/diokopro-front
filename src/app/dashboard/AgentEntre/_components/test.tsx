@@ -22,6 +22,7 @@ interface CreateGerantModalProps {
 const CreateGerantModal = ({ enterprises = [], defaultEntrepriseId = "" }: CreateGerantModalProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [showRecap, setShowRecap] = useState(false); // ✅ Nouvel état pour le récapitulatif
   const [formData, setFormData] = useState({
     nom: "",
     prenom: "",
@@ -57,6 +58,8 @@ const CreateGerantModal = ({ enterprises = [], defaultEntrepriseId = "" }: Creat
   const [errors, setErrors] = useState<{[key: string]: string[]}>({});
 
   const handleSubmit = async () => {
+  
+    
     // Vérification des champs
     const newErrors: {[key: string]: string[]} = {};
     let hasErrors = false;
@@ -105,30 +108,33 @@ const CreateGerantModal = ({ enterprises = [], defaultEntrepriseId = "" }: Creat
     }
 
     if (hasErrors) {
+      //console.log("❌ Erreurs trouvées:", newErrors);
       setErrors(newErrors);
       toast.error("Veuillez remplir tous les champs obligatoires");
       return;
     }
 
-    //console.log(newErrors);
+    // ✅ Afficher le récapitulatif au lieu de soumettre
+    //console.log("✅ Validation réussie, affichage du récapitulatif");
+    setShowRecap(true);
+  };
 
+  // ✅ Nouvelle fonction pour la soumission finale après validation du récapitulatif
+  const handleFinalSubmit = async () => {
     setIsLoading(true);
     try {
-      //console.log("Envoi des données pour création du gérant:", formData);
       const response = await createGerant(formData);
-      //console.log("Réponse API création gérant:", response); // Debug log
   
       // Vérifier si la réponse inclut un ID de changement en attente (nécessitant une vérification OTP)
       if (
         (response.type === "success" && response.data?.pendingChangeId) || 
         (response.pendingChangeId)
       ) {
-      
         const changeId = response.data?.pendingChangeId || response.pendingChangeId;
         toast.success("Demande de création envoyée ! Veuillez entrer le code OTP envoyé à l'administrateur");
         setPendingChangeId(changeId);
         setShowOtpVerification(true);
-        //console.log("OTP Verification activée, pendingChangeId:", changeId); // Debug log
+        setShowRecap(false); // Fermer le récapitulatif
       } else if (response.type === "success") {
         // Cas où le gérant a été créé sans besoin de validation OTP
         toast.success("Gérant créé avec succès !");
@@ -141,15 +147,18 @@ const CreateGerantModal = ({ enterprises = [], defaultEntrepriseId = "" }: Creat
             toast.error(error);
           });
         });
+        setShowRecap(false); // Retour au formulaire en cas d'erreur
       } else {
         // Autres cas d'erreur
         toast.error(response.error || "Une erreur est survenue lors de la création du gérant");
         setErrors({ global: [response.error || "Une erreur est survenue"] });
+        setShowRecap(false);
       }
     } catch (error) {
       console.error("Erreur lors de la création du gérant:", error);
       toast.error("Une erreur inattendue est survenue");
       setErrors({ global: ["Une erreur inattendue est survenue"] });
+      setShowRecap(false);
     } finally {
       setIsLoading(false);
     }
@@ -163,10 +172,8 @@ const CreateGerantModal = ({ enterprises = [], defaultEntrepriseId = "" }: Creat
 
     setIsLoading(true);
     try {
-      //console.log("Validation OTP:", { pendingChangeId, otpCode: code, entrepriseId: formData.entrepriseId });
       // Vérification OTP avec le pendingChangeId
       const response = await validateOTP(pendingChangeId, code, formData.entrepriseId);
-      //console.log("Réponse API validation OTP:", response); // Debug log
       
       if (response.success) {
         toast.success("Gérant validé avec succès !");
@@ -198,6 +205,7 @@ const CreateGerantModal = ({ enterprises = [], defaultEntrepriseId = "" }: Creat
   const resetModal = () => {
     setIsOpen(false);
     setShowOtpVerification(false);
+    setShowRecap(false); // ✅ Réinitialiser le récapitulatif
     setOtpCode("");
     setPendingChangeId("");
     setErrors({});
@@ -237,10 +245,10 @@ const CreateGerantModal = ({ enterprises = [], defaultEntrepriseId = "" }: Creat
 
       {isOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-3xl overflow-y-auto">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-3xl overflow-y-auto max-h-[90vh]">
             <div className="flex justify-between items-center">
               <h2 className="text-2xl font-bold mb-6">
-                {showOtpVerification ? "Vérification du gérant" : "Créer un gérant"}
+                {showOtpVerification ? "Vérification du gérant" : showRecap ? "Récapitulatif" : "Créer un gérant"}
               </h2>
               <Button onClick={resetModal} className="text-gray-600 hover:text-gray-800">
                 <CircleX className="w-6 h-6" />
@@ -253,7 +261,9 @@ const CreateGerantModal = ({ enterprises = [], defaultEntrepriseId = "" }: Creat
               </div>
             )}
 
+            {/* ✅ Logique corrigée : 3 états possibles */}
             {showOtpVerification ? (
+              // ÉTAT 3 : Vérification OTP
               <OtpInput
                 length={6}
                 onComplete={(code) => {
@@ -265,7 +275,77 @@ const CreateGerantModal = ({ enterprises = [], defaultEntrepriseId = "" }: Creat
                 title="Vérification OTP - Création du gérant"
                 description="Un code OTP a été envoyé pour confirmer la création du gérant. Veuillez saisir le code à 6 chiffres reçu par l'administrateur."
               />
+            ) : showRecap ? (
+              // ÉTAT 2 : Récapitulatif
+              <div className="p-6">
+                <div className="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6">
+                  <h3 className="font-bold text-lg text-blue-800 mb-2">📋 Récapitulatif des informations du gérant</h3>
+                  <p className="text-sm text-blue-700">Veuillez vérifier les informations avant de confirmer la création du gérant.</p>
+                </div>
+
+                {/* Informations personnelles */}
+                <div className="mb-6 bg-gray-50 rounded-lg p-4">
+                  <h4 className="font-semibold text-gray-700 mb-3 flex items-center">
+                    <span className="bg-orange-500 text-white rounded-full w-6 h-6 flex items-center justify-center mr-2 text-sm">1</span>
+                    Informations personnelles
+                  </h4>
+                  <div className="ml-8 grid grid-cols-2 gap-3">
+                    <p className="text-gray-800"><span className="font-medium">Nom :</span> {formData.nom}</p>
+                    <p className="text-gray-800"><span className="font-medium">Prénom :</span> {formData.prenom}</p>
+                    <p className="text-gray-800"><span className="font-medium">Email :</span> {formData.email}</p>
+                    <p className="text-gray-800"><span className="font-medium">Téléphone :</span> {formData.telephone}</p>
+                  </div>
+                </div>
+
+                {/* Informations de connexion */}
+                <div className="mb-6 bg-gray-50 rounded-lg p-4">
+                  <h4 className="font-semibold text-gray-700 mb-3 flex items-center">
+                    <span className="bg-orange-500 text-white rounded-full w-6 h-6 flex items-center justify-center mr-2 text-sm">2</span>
+                    Informations de connexion
+                  </h4>
+                  <div className="ml-8 space-y-2">
+                    <p className="text-gray-800"><span className="font-medium">Identifiant :</span> {formData.email}</p>
+                    <p className="text-gray-800"><span className="font-medium">Mot de passe :</span> ••••••••</p>
+                  </div>
+                </div>
+
+                {/* Entreprise associée */}
+                {enterprises.length > 0 && formData.entrepriseId && (
+                  <div className="mb-6 bg-gray-50 rounded-lg p-4">
+                    <h4 className="font-semibold text-gray-700 mb-3 flex items-center">
+                      <span className="bg-orange-500 text-white rounded-full w-6 h-6 flex items-center justify-center mr-2 text-sm">3</span>
+                      Entreprise
+                    </h4>
+                    <div className="ml-8">
+                      <p className="text-gray-800">
+                        <span className="font-medium">Entreprise associée :</span>{" "}
+                        {enterprises.find(e => e._id === formData.entrepriseId)?.nomEntreprise || "Non définie"}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Boutons d'action */}
+                <div className="flex justify-between mt-6">
+                  <Button
+                    onClick={() => setShowRecap(false)}
+                    className="px-6 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50"
+                    type="button"
+                  >
+                    ← Retour
+                  </Button>
+                  <Button
+                    onClick={handleFinalSubmit}
+                    disabled={isLoading}
+                    className="px-6 py-2 bg-[#ee7606] hover:bg-[#d56a05] text-white rounded-md disabled:bg-opacity-70 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-opacity-50"
+                    type="button"
+                  >
+                    {isLoading ? "Chargement..." : "✓ Confirmer et Créer"}
+                  </Button>
+                </div>
+              </div>
             ) : (
+              // ÉTAT 1 : Formulaire
               <div className="space-y-4">
                 <div>
                   <label className="block mb-1 font-medium text-gray-700">Nom <span className="text-red-500">*</span></label>
@@ -346,7 +426,7 @@ const CreateGerantModal = ({ enterprises = [], defaultEntrepriseId = "" }: Creat
                     disabled={isLoading}
                     className="px-6 py-2 bg-[#ee7606] text-white rounded-md hover:bg-[#d56a05] disabled:bg-opacity-70 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-opacity-50"
                   >
-                    {isLoading ? "Chargement..." : "Créer"}
+                    {isLoading ? "Chargement..." : "Suivant"}
                   </button>
                 </div>
               </div>
