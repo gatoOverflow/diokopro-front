@@ -38,6 +38,7 @@ const CreateAgentModal = ({ services = [], entrepriseId = "" }: CreateAgentModal
     telephone: "",
     adresse: "",
     nin: "",
+    fonction: "", // ✅ Nouveau champ pour le poste/fonction
     serviceId: "",
     nomService: "",
     entrepriseId: entrepriseId,
@@ -148,6 +149,7 @@ const CreateAgentModal = ({ services = [], entrepriseId = "" }: CreateAgentModal
       telephone: "",
       adresse: "",
       nin: "",
+      fonction: "", // ✅ Réinitialiser fonction
       serviceId: "",
       nomService: "",
       entrepriseId: entrepriseId,
@@ -567,6 +569,7 @@ const CreateAgentModal = ({ services = [], entrepriseId = "" }: CreateAgentModal
                     <p className="text-gray-800"><span className="font-medium">Téléphone :</span> {formData.telephone}</p>
                     <p className="text-gray-800 col-span-2"><span className="font-medium">Adresse :</span> {formData.adresse}</p>
                     {formData.nin && <p className="text-gray-800 col-span-2"><span className="font-medium">NIN :</span> {formData.nin}</p>}
+                    {formData.fonction && <p className="text-gray-800 col-span-2"><span className="font-medium">Fonction :</span> {formData.fonction}</p>}
                   </div>
                 </div>
 
@@ -651,7 +654,7 @@ const CreateAgentModal = ({ services = [], entrepriseId = "" }: CreateAgentModal
                 </div>
                  <div>
   <label className="block mb-1 font-medium text-gray-700">
-    Portefeuille mobile (optionnel)
+    Portefeuille mobile
   </label>
   <Select.Root value={formData.wallet} onValueChange={handleWalletChange}>
     <Select.Trigger className={`w-full border ${errors.wallet ? 'border-red-500' : 'border-gray-300'} rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 flex items-center justify-between`}>
@@ -812,6 +815,22 @@ const CreateAgentModal = ({ services = [], entrepriseId = "" }: CreateAgentModal
                       } rounded-md p-2`}
                   />
                   {getFieldError('nin')}
+                </div>
+
+                {/* ✅ Nouveau champ : Nom de la fonction */}
+                <div>
+                  <label className="block mb-1 font-medium text-gray-700">Nom de la fonction</label>
+                  <input
+                    type="text"
+                    name="fonction"
+                    value={formData.fonction}
+                    onChange={handleChange}
+                    placeholder="Ex: Développeur, Commercial, Manager..."
+                    className={`w-full border ${errors.fonction ? 'border-red-500' : 'border-gray-300'
+                      } rounded-md p-2`}
+                  />
+                  {getFieldError('fonction')}
+                  <span className="text-xs text-gray-500 mt-1">Poste ou fonction occupée par l'agent</span>
                 </div>
 
                 {/* Section des paramètres de paiement */}
