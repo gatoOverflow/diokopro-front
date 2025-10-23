@@ -19,6 +19,7 @@ interface CreateServiceModalProps {
 const CreateServiceModal = ({ enterprises }: CreateServiceModalProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [showRecap, setShowRecap] = useState(false); // ✅ Nouvel état pour le récapitulatif
   const [niveaux, setNiveaux] = useState([{ nom: "standard", tarif: 0 }]);
   const [formData, setFormData] = useState({
     nomService: "",
@@ -58,6 +59,8 @@ const CreateServiceModal = ({ enterprises }: CreateServiceModalProps) => {
   };
 
   const handleSubmit = async () => {
+   
+    
     // Réinitialiser les erreurs
     setErrors({});
     const newErrors: {[key: string]: string[]} = {};
@@ -87,53 +90,56 @@ const CreateServiceModal = ({ enterprises }: CreateServiceModalProps) => {
     }
 
     if (hasErrors) {
+      //console.log("❌ Erreurs trouvées:", newErrors);
       setErrors(newErrors);
       toast.error("Veuillez remplir tous les champs obligatoires");
       return;
     }
 
+    // ✅ Afficher le récapitulatif au lieu de soumettre
+    //console.log("✅ Validation réussie, affichage du récapitulatif");
+    setShowRecap(true);
+  };
+
+  // ✅ Nouvelle fonction pour la soumission finale après validation du récapitulatif
+  const handleFinalSubmit = async () => {
     setIsLoading(true);
     try {
-     // console.log("Envoi des données pour création du service:", {...formData, niveaux, enterpriseId});
       const response = await createService(enterpriseId, {
         ...formData,
         niveauxDisponibles: niveaux,
       });
-      //console.log("Réponse API création service:", response);
 
       // Gérer tous les cas possibles de réponse
       if (response.type === "success" && response.data?.pendingChangeId) {
-        // Cas où le service a été créé mais nécessite une validation OTP
         toast.success("Demande de création envoyée ! Veuillez entrer le code OTP envoyé à l'administrateur");
-       
         setPendingChangeId(response.data.pendingChangeId);
         setShowOtpVerification(true);
-       // console.log("OTP Verification activée, pendingChangeId:", response.data.pendingChangeId);
+        setShowRecap(false); // Fermer le récapitulatif
       } else if (response.message && response.pendingChangeId) {
-        // Format de réponse alternatif du middleware requireOTPValidation
         toast.success("Demande de création envoyée ! Veuillez entrer le code OTP envoyé à l'administrateur");
         setPendingChangeId(response.pendingChangeId);
         setShowOtpVerification(true);
-        //console.log("OTP Verification activée, pendingChangeId:", response.pendingChangeId);
+        setShowRecap(false);
       } else if (response.type === "success") {
-        // Cas où le service a été créé sans besoin de validation OTP
         toast.success("Service créé avec succès !");
         resetModal();
       } else if (response.errors) {
-        // Cas d'erreurs de validation
         setErrors(response.errors);
         Object.values(response.errors).forEach((errorArray: any) => {
           errorArray.forEach((error: string) => {
             toast.error(error);
           });
         });
+        setShowRecap(false); // Retour au formulaire en cas d'erreur
       } else {
-        // Autres cas d'erreur
         toast.error(response.error || "Une erreur est survenue lors de la création du service");
+        setShowRecap(false);
       }
     } catch (error) {
       console.error("Erreur lors de la création du service:", error);
       toast.error("Une erreur inattendue est survenue");
+      setShowRecap(false);
     } finally {
       setIsLoading(false);
     }
@@ -152,10 +158,7 @@ const CreateServiceModal = ({ enterprises }: CreateServiceModalProps) => {
 
     setIsLoading(true);
     try {
-     // console.log("Validation OTP:", { pendingChangeId, otpCode, entrepriseId: enterpriseId });
-      // Vérification OTP avec le pendingChangeId et l'entrepriseId
       const response = await validateOTP(pendingChangeId, otpCode, enterpriseId);
-     // console.log("Réponse API validation OTP:", response);
       
       if (response.success) {
         toast.success("Service validé avec succès !");
@@ -163,7 +166,6 @@ const CreateServiceModal = ({ enterprises }: CreateServiceModalProps) => {
       } else {
         toast.error(response.error || "Code OTP invalide ou expiré");
         
-        // Si des erreurs de validation sont présentes, les afficher
         if (response.errors) {
           Object.values(response.errors).forEach((errorArray: any) => {
             errorArray.forEach((error: string) => {
@@ -187,6 +189,7 @@ const CreateServiceModal = ({ enterprises }: CreateServiceModalProps) => {
   const resetModal = () => {
     setIsOpen(false);
     setShowOtpVerification(false);
+    setShowRecap(false); // ✅ Réinitialiser le récapitulatif
     setOtpCode("");
     setPendingChangeId("");
     setFormData({ nomService: "", description: "", tarifactionBase: 0 });
@@ -215,17 +218,95 @@ const CreateServiceModal = ({ enterprises }: CreateServiceModalProps) => {
      
       {isOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-3xl overflow-y-auto">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-3xl overflow-y-auto max-h-[90vh]">
             <div className="flex justify-between items-center">
               <h2 className="text-2xl font-bold mb-6">
-                {showOtpVerification ? "Vérification du service" : "Créer un service"}
+                {showOtpVerification ? "Vérification du service" : showRecap ? "Récapitulatif" : "Créer un service"}
               </h2>
               <Button onClick={resetModal} className="text-gray-600 hover:text-gray-800">
                 <CircleX className="w-6 h-6" />
               </Button>
             </div>
 
-            {!showOtpVerification ? (
+            {/* ✅ Logique corrigée : 3 états possibles */}
+            {showOtpVerification ? (
+              // ÉTAT 3 : Vérification OTP
+              <div>
+                <OtpInput
+                  length={6}
+                  onComplete={(code) => {
+                    setOtpCode(code);
+                  }}
+                  onSubmit={handleOtpVerification}
+                  disabled={isLoading}
+                  isLoading={isLoading}
+                  title="Vérification OTP - Création du service"
+                  description="Un code OTP a été envoyé pour confirmer la création du service. Veuillez saisir le code à 6 chiffres reçu par l'administrateur."
+                />
+              </div>
+            ) : showRecap ? (
+              // ÉTAT 2 : Récapitulatif
+              <div className="p-6">
+                <div className="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6">
+                  <h3 className="font-bold text-lg text-blue-800 mb-2">📋 Récapitulatif du service</h3>
+                  <p className="text-sm text-blue-700">Veuillez vérifier les informations avant de confirmer la création du service.</p>
+                </div>
+
+                {/* Informations du service */}
+                <div className="mb-6 bg-gray-50 rounded-lg p-4">
+                  <h4 className="font-semibold text-gray-700 mb-3 flex items-center">
+                    <span className="bg-orange-500 text-white rounded-full w-6 h-6 flex items-center justify-center mr-2 text-sm">1</span>
+                    Informations générales
+                  </h4>
+                  <div className="ml-8 space-y-2">
+                    <p className="text-gray-800"><span className="font-medium">Nom du service :</span> {formData.nomService}</p>
+                    <p className="text-gray-800"><span className="font-medium">Description :</span> {formData.description}</p>
+                    <p className="text-gray-800"><span className="font-medium">Tarif de base :</span> {formData.tarifactionBase} FCFA</p>
+                  </div>
+                </div>
+
+                {/* Niveaux de service */}
+                <div className="mb-6 bg-gray-50 rounded-lg p-4">
+                  <h4 className="font-semibold text-gray-700 mb-3 flex items-center">
+                    <span className="bg-orange-500 text-white rounded-full w-6 h-6 flex items-center justify-center mr-2 text-sm">2</span>
+                    Niveaux de service ({niveaux.filter(n => n.nom.trim() !== "").length})
+                  </h4>
+                  <div className="ml-8 space-y-3">
+                    {niveaux.filter(n => n.nom.trim() !== "").map((niveau, index) => (
+                      <div key={index} className="flex items-center justify-between bg-white p-3 rounded border border-gray-200">
+                        <div>
+                          <p className="font-medium text-gray-800">{niveau.nom}</p>
+                          <p className="text-sm text-gray-600">Tarif : {niveau.tarif} FCFA</p>
+                        </div>
+                        <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs font-medium">
+                          Niveau {index + 1}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Boutons d'action */}
+                <div className="flex justify-between mt-6">
+                  <Button
+                    onClick={() => setShowRecap(false)}
+                    className="px-6 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50"
+                    type="button"
+                  >
+                    ← Retour
+                  </Button>
+                  <Button
+                    onClick={handleFinalSubmit}
+                    disabled={isLoading}
+                    className="px-6 py-2 bg-[#ee7606] hover:bg-[#d56a05] text-white rounded-md disabled:bg-opacity-70 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-opacity-50"
+                    type="button"
+                  >
+                    {isLoading ? "Chargement..." : "✓ Confirmer et Créer"}
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              // ÉTAT 1 : Formulaire
               <div className="space-y-4">
                 <div>
                   <label className="block mb-1 font-medium text-gray-700">Nom du service <span className="text-red-500">*</span></label>
@@ -332,23 +413,9 @@ const CreateServiceModal = ({ enterprises }: CreateServiceModalProps) => {
                     disabled={isLoading} 
                     className="px-6 py-2 bg-[#ee7606] hover:bg-[#d56a05] text-white rounded-md disabled:bg-opacity-70"
                   >
-                    {isLoading ? "Chargement..." : "Créer"}
+                    {isLoading ? "Chargement..." : "Suivant"}
                   </Button>
                 </div>
-              </div>
-            ) : (
-              <div>
-                <OtpInput
-                  length={6}
-                  onComplete={(code) => {
-                    setOtpCode(code);
-                  }}
-                  onSubmit={handleOtpVerification}
-                  disabled={isLoading}
-                  isLoading={isLoading}
-                  title="Vérification OTP - Création du service"
-                  description="Un code OTP a été envoyé pour confirmer la création du service. Veuillez saisir le code à 6 chiffres reçu par l'administrateur."
-                />
               </div>
             )}
           </div>

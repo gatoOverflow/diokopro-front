@@ -87,7 +87,7 @@ const AgentDialog: React.FC<AgentDialogProps> = ({
         dateProchainVirement: agent.dateProchainVirement || null,
         frequencePaiement: agent.frequencePaiement || 'mensuel',
         intervallePaiement: agent.intervallePaiement || 1,
-        
+        fonction:agent.fonction,
         jourPaiement: agent.jourPaiement || 1,
         wallet: agent.wallet || '',
         aPayer: agent.aPayer || false,

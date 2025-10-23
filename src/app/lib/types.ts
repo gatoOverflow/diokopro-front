@@ -193,7 +193,7 @@ export interface Agent {
   jourPaiement?: number;
   wallet?: string;
   aPayer?: boolean;
-  
+  fonction?: string;
   dateCreation?: string;
   entrepriseId?: string;
   servicesAffecte?: Service[];
