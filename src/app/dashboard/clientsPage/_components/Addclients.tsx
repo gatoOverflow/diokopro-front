@@ -36,6 +36,7 @@ const CreateClientModal = ({ services = [], entrepriseId = "" }: CreateClientMod
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<ValidationErrors>({});
+  const [showRecap, setShowRecap] = useState(false); // ✅ Nouvel état pour le récapitulatif
   const [selectedServiceNiveaux, setSelectedServiceNiveaux] = useState<NiveauService[]>([]);
   const [formData, setFormData] = useState({
     nom: "",
@@ -141,6 +142,7 @@ const CreateClientModal = ({ services = [], entrepriseId = "" }: CreateClientMod
   const resetModal = () => {
     setIsOpen(false);
     setShowOtpVerification(false);
+    setShowRecap(false); // ✅ Réinitialiser le récapitulatif
     setOtpCode("");
     setPendingChangeId("");
     setFormData({
@@ -234,6 +236,8 @@ const CreateClientModal = ({ services = [], entrepriseId = "" }: CreateClientMod
   };
 
   const handleSubmit = async () => {
+  
+    
     setErrors({});
 
     if (!validateForm()) return;
@@ -257,10 +261,17 @@ const CreateClientModal = ({ services = [], entrepriseId = "" }: CreateClientMod
       }
     }
 
+    // ✅ Afficher le récapitulatif au lieu de soumettre
+    //console.log("✅ Validation réussie, affichage du récapitulatif");
+    setShowRecap(true);
+  };
+
+  // ✅ Nouvelle fonction pour la soumission finale après validation du récapitulatif
+  const handleFinalSubmit = async () => {
     setIsLoading(true);
     
     try {
-      const response = await createClient(finalFormData);
+      const response = await createClient(formData);
 
       if (response.success || response.type === "success") {
         if (response.data?.pendingChangeId || response.pendingChangeId) {
@@ -530,7 +541,109 @@ const CreateClientModal = ({ services = [], entrepriseId = "" }: CreateClientMod
               </div>
             )}
 
-            {!showOtpVerification ? (
+            {/* ✅ Logique corrigée : 3 états possibles */}
+            {showOtpVerification ? (
+              // ÉTAT 3 : Vérification OTP
+              <div>
+                <OtpInput
+                  length={6}
+                  onComplete={(code) => {
+                    setOtpCode(code);
+                  }}
+                  onSubmit={handleOtpVerification}
+                  disabled={isLoading}
+                  isLoading={isLoading}
+                  title="Vérification OTP - Création du client"
+                  description="Un code OTP a été envoyé pour confirmer la création du client. Veuillez saisir le code à 6 chiffres reçu par l'administrateur."
+                />
+              </div>
+            ) : showRecap ? (
+              // ÉTAT 2 : Récapitulatif
+              <div className="p-6">
+                <div className="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6">
+                  <h3 className="font-bold text-lg text-blue-800 mb-2">📋 Récapitulatif des informations</h3>
+                  <p className="text-sm text-blue-700">Veuillez vérifier les informations avant de confirmer l'ajout du client.</p>
+                </div>
+
+                {/* Informations du service */}
+                <div className="mb-6 bg-gray-50 rounded-lg p-4">
+                  <h4 className="font-semibold text-gray-700 mb-3 flex items-center">
+                    <span className="bg-orange-500 text-white rounded-full w-6 h-6 flex items-center justify-center mr-2 text-sm">1</span>
+                    Service
+                  </h4>
+                  <div className="ml-8">
+                    <p className="text-gray-800"><span className="font-medium">Service :</span> {formData.nomService || services.find(s => s._id === formData.serviceId)?.nomService}</p>
+                    <p className="text-gray-800"><span className="font-medium">Niveau de service :</span> {selectedServiceNiveaux.find(n => n._id === formData.niveauService)?.nom || formData.niveauService}</p>
+                  </div>
+                </div>
+
+                {/* Informations personnelles */}
+                <div className="mb-6 bg-gray-50 rounded-lg p-4">
+                  <h4 className="font-semibold text-gray-700 mb-3 flex items-center">
+                    <span className="bg-orange-500 text-white rounded-full w-6 h-6 flex items-center justify-center mr-2 text-sm">2</span>
+                    Informations personnelles
+                  </h4>
+                  <div className="ml-8 grid grid-cols-2 gap-3">
+                    <p className="text-gray-800"><span className="font-medium">Nom :</span> {formData.nom}</p>
+                    <p className="text-gray-800"><span className="font-medium">Prénom :</span> {formData.prenom}</p>
+                    <p className="text-gray-800"><span className="font-medium">Email :</span> {formData.email}</p>
+                    <p className="text-gray-800"><span className="font-medium">Téléphone :</span> {formData.telephone}</p>
+                    <p className="text-gray-800 col-span-2"><span className="font-medium">Adresse :</span> {formData.adresse}</p>
+                    {formData.nin && <p className="text-gray-800 col-span-2"><span className="font-medium">NIN :</span> {formData.nin}</p>}
+                  </div>
+                </div>
+
+                {/* Paramètres de paiement */}
+                <div className="mb-6 bg-gray-50 rounded-lg p-4">
+                  <h4 className="font-semibold text-gray-700 mb-3 flex items-center">
+                    <span className="bg-orange-500 text-white rounded-full w-6 h-6 flex items-center justify-center mr-2 text-sm">3</span>
+                    Paramètres de paiement
+                  </h4>
+                  <div className="ml-8 grid grid-cols-2 gap-3">
+                    {formData.salaire && <p className="text-gray-800"><span className="font-medium">Montant :</span> {formData.salaire} FCFA</p>}
+                    <p className="text-gray-800"><span className="font-medium">Fréquence :</span> {formData.frequencePaiement}</p>
+                    {formData.frequencePaiement === 'mensuel' && (
+                      <p className="text-gray-800"><span className="font-medium">Jour du mois :</span> {formData.jourPaiement}</p>
+                    )}
+                    {formData.frequencePaiement === 'hebdomadaire' && (
+                      <p className="text-gray-800"><span className="font-medium">Jour :</span> {['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'][formData.jourPaiement]}</p>
+                    )}
+                    {(['journalier', 'horaire', 'minute'].includes(formData.frequencePaiement)) && (
+                      <p className="text-gray-800"><span className="font-medium">Intervalle :</span> {formData.intervallePaiement} {formData.frequencePaiement === 'journalier' ? 'jour(s)' : formData.frequencePaiement === 'horaire' ? 'heure(s)' : 'minute(s)'}</p>
+                    )}
+                    {formData.dateProgrammee && (
+                      <p className="text-gray-800 col-span-2"><span className="font-medium">Date programmée :</span> {new Date(formData.dateProgrammee).toLocaleString('fr-FR')}</p>
+                    )}
+                    <p className="text-gray-800 col-span-2">
+                      <span className="font-medium">Statut de paiement :</span> 
+                      <span className={`ml-2 px-3 py-1 rounded-full text-sm ${formData.aFAirePayer ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                        {formData.aFAirePayer ? '✅ Client à faire payer' : '❌ Client non facturé'}
+                      </span>
+                    </p>
+                  </div>
+                </div>
+
+                {/* Boutons d'action */}
+                <div className="flex justify-between mt-6">
+                  <Button
+                    onClick={() => setShowRecap(false)}
+                    className="px-6 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50"
+                    type="button"
+                  >
+                    ← Retour
+                  </Button>
+                  <Button
+                    onClick={handleFinalSubmit}
+                    disabled={isLoading}
+                    className="px-6 py-2 bg-[#ee7606] hover:bg-[#d56a05] text-white rounded-md disabled:bg-opacity-70 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-opacity-50"
+                    type="button"
+                  >
+                    {isLoading ? "Chargement..." : "✓ Confirmer et Ajouter"}
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              // ÉTAT 1 : Formulaire
               <div className="space-y-4">
                 <div>
                   <label className="block mb-1 font-medium text-gray-700">Service <span className="text-red-500">*</span></label>
@@ -780,23 +893,9 @@ const CreateClientModal = ({ services = [], entrepriseId = "" }: CreateClientMod
                     className="px-6 py-2 bg-[#ee7606] hover:bg-[#d56a05] text-white rounded-md disabled:bg-opacity-70 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-opacity-50"
                     type="button"
                   >
-                    {isLoading ? "Chargement..." : "Ajouter"}
+                    {isLoading ? "Chargement..." : "Suivant"}
                   </Button>
                 </div>
-              </div>
-            ) : (
-              <div>
-                <OtpInput
-                  length={6}
-                  onComplete={(code) => {
-                    setOtpCode(code);
-                  }}
-                  onSubmit={handleOtpVerification}
-                  disabled={isLoading}
-                  isLoading={isLoading}
-                  title="Vérification OTP - Création du client"
-                  description="Un code OTP a été envoyé pour confirmer la création du client. Veuillez saisir le code à 6 chiffres reçu par l'administrateur."
-                />
               </div>
             )}
           </div>

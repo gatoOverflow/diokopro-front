@@ -273,6 +273,21 @@ const AgentProfileTab: React.FC<AgentProfileTabProps> = ({
       </div>
 
       <div className="grid grid-cols-4 items-center gap-4">
+        <div className="font-semibold text-right">Fonction:</div>
+        <div className="col-span-3">
+          {isEditing ? (
+            <Input
+              name="fonction"
+              value={formData.fonction || ''}
+              onChange={onInputChange}
+            />
+          ) : (
+            agent.fonction || "-"
+          )}
+        </div>
+      </div>
+
+      <div className="grid grid-cols-4 items-center gap-4">
         <div className="font-semibold text-right">NIN:</div>
         <div className="col-span-3">
           {isEditing ? (
