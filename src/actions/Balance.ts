@@ -104,38 +104,74 @@ export const rechargeCompte = async (
 // Action pour effectuer un retrait
 export const retraitCompte = async (
   entrepriseId: string,
-  formData: { montant: number; numAdmin: string; wallet: string }
+  formData: { montant: number; numAdmin: string; wallet: string; otpCode?: string; resendOtp?: boolean }
 ) => {
+
+
   try {
     const validation = RetraitSchema.safeParse(formData);
-
     if (!validation.success) {
+      console.error('❌ [retraitCompte] Validation échouée:', validation.error.flatten().fieldErrors);
       return {
         type: "error",
         errors: validation.error.flatten().fieldErrors,
       };
     }
 
+
     const response = await createdOrUpdated({
       url: `${DEBITER_COMPTE_ENTREPRISE}/${entrepriseId}`,
       data: validation.data,
     });
 
+
+    // Si le backend retourne un pendingChangeId, c'est qu'il faut valider avec OTP
+    if (response?.pendingChangeId) {
+      
+      return {
+        type: "success",
+        requiresOtp: true,
+        message: response.message || "Code OTP envoyé à l'administrateur",
+        data: response, // Contient le pendingChangeId
+      };
+    }
+
+    // Vérifier si le backend demande un OTP explicitement
+    if (response?.requiresOtp || response?.data?.requiresOtp) {
+      return {
+        type: "success",
+        requiresOtp: true,
+        message: "Code OTP envoyé à l'administrateur",
+        data: response,
+      };
+    }
+
+    
     return {
       type: "success",
       message: "Retrait effectué avec succès",
       data: response,
     };
-  } catch (error) {
-    console.error("Erreur dans retraitCompte:", error);
+  } catch (error: any) {
+    console.error('💥 [retraitCompte] Erreur attrapée:', error);
 
     if (error?.response?.data?.message) {
-      return { type: "error", error: error.response.data.message };
+      console.error('❌ [retraitCompte] Message d\'erreur du backend:', error.response.data.message);
+      return { 
+        type: "error", 
+        error: error.response.data.message 
+      };
     }
 
-    return { type: "error", error: "Erreur lors du retrait" };
+    return {
+      type: "error",
+      error: "Erreur lors du retrait",
+    };
+  } finally {
+    console.log('📌 [retraitCompte] Fin de la fonction retraitCompte');
   }
 };
+
 
 // Action pour créditer le compte (à adapter selon ton API)
 
