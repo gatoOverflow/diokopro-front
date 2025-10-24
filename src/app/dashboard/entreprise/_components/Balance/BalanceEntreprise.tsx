@@ -13,7 +13,6 @@ import { envoyerMessage, rechargeCompte, retraitCompte } from '@/actions/Balance
 import OtpInput from '../_Agent/OtpInput';
 import { validateOTP } from '@/actions/service';
 
-
 interface Balance {
   balance: number;
 }
@@ -29,10 +28,11 @@ export default function BalanceEntreprise({ balances, entrepriseId, onBalanceUpd
   const [isRetraitOpen, setIsRetraitOpen] = useState(false)
   const [isMessageOpen, setIsMessageOpen] = useState(false)
   
-  // États pour OTP
+  // États pour OTP - Utilisés pour RECHARGE ET RETRAIT
   const [showOtpStep, setShowOtpStep] = useState(false)
   const [otpCode, setOtpCode] = useState('')
   const [pendingChangeId, setPendingChangeId] = useState('')
+  const [otpType, setOtpType] = useState<'recharge' | 'retrait'>('recharge') // Pour différencier le type d'opération
   
   const [rechargeAmount, setRechargeAmount] = useState('')
   const [retraitData, setRetraitData] = useState({
@@ -56,6 +56,8 @@ export default function BalanceEntreprise({ balances, entrepriseId, onBalanceUpd
     setTimeout(() => setNotification({ type: null, message: '' }), 5000)
   }
 
+  // ==================== RECHARGE ====================
+  
   // Demander la recharge
   const handleRecharge = async () => {
     if (!rechargeAmount || isNaN(Number(rechargeAmount)) || Number(rechargeAmount) <= 0) {
@@ -74,18 +76,18 @@ export default function BalanceEntreprise({ balances, entrepriseId, onBalanceUpd
         montant: Number(rechargeAmount)
       })
 
-   
-
-      // Gérer tous les cas possibles de réponse (comme dans CreateServiceModal)
+      // Gérer tous les cas possibles de réponse
       if (response.type === "success" && response.data?.pendingChangeId) {
         // Cas où la recharge nécessite une validation OTP
         showNotification('success', 'Code OTP envoyé à l\'administrateur')
         setPendingChangeId(response.data.pendingChangeId)
+        setOtpType('recharge')
         setShowOtpStep(true)
       } else if (response.message && response.pendingChangeId) {
         // Format de réponse alternatif du middleware
         showNotification('success', 'Code OTP envoyé à l\'administrateur')
         setPendingChangeId(response.pendingChangeId)
+        setOtpType('recharge')
         setShowOtpStep(true)
       } else if (response.type === "success") {
         // Cas où la recharge a été créée sans besoin de validation OTP
@@ -110,71 +112,6 @@ export default function BalanceEntreprise({ balances, entrepriseId, onBalanceUpd
     }
   }
 
-  // Vérifier l'OTP et finaliser la recharge
-  const handleVerifyOtp = async () => {
-    if (!otpCode || otpCode.length !== 6) {
-      showNotification('error', 'Veuillez entrer un code OTP valide à 6 chiffres')
-      return
-    }
-
-    if (!entrepriseId) {
-      showNotification('error', 'Entreprise non disponible')
-      return
-    }
-
-    setLoading(true)
-    try {
-      
-
-      // Appeler la fonction de validation OTP (similaire à validateOTP dans CreateServiceModal)
-      const response = await validateOTP(pendingChangeId, otpCode, entrepriseId)
-
-     
-
-      if (response.success) {
-        showNotification('success', 'Lien de paiement envoyé via WhatsApp !')
-        resetRechargeModal()
-        if (onBalanceUpdate) onBalanceUpdate()
-      } else {
-        showNotification('error', response.error || 'Code OTP invalide ou expiré')
-        if (response.errors) {
-          Object.values(response.errors).forEach((errorArray: any) => {
-            errorArray.forEach((error: string) => {
-              showNotification('error', error)
-            })
-          })
-        }
-      }
-    } catch (error) {
-      showNotification('error', 'Échec de la vérification du code OTP')
-      console.error('Erreur vérification OTP:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  // Renvoyer le code OTP
-  const handleResendOtp = async () => {
-    setLoading(true)
-    try {
-      // Renvoyer la demande de recharge pour obtenir un nouveau code
-      const response = await rechargeCompte(entrepriseId!, {
-        montant: Number(rechargeAmount)
-      })
-
-      if (response.type === 'success' || response.pendingChangeId) {
-        showNotification('success', 'Code OTP renvoyé')
-        setOtpCode('')
-      } else {
-        showNotification('error', 'Erreur lors du renvoi du code')
-      }
-    } catch (error) {
-      showNotification('error', 'Erreur de connexion')
-    } finally {
-      setLoading(false)
-    }
-  }
-
   // Réinitialiser la modal de recharge
   const resetRechargeModal = () => {
     setIsRechargeOpen(false)
@@ -193,6 +130,9 @@ export default function BalanceEntreprise({ balances, entrepriseId, onBalanceUpd
     }
   }
 
+  // ==================== RETRAIT ====================
+  
+  // Demander le retrait
   const handleRetrait = async () => {
     if (!retraitData.montant || !retraitData.numAdmin) {
       showNotification('error', 'Veuillez remplir tous les champs obligatoires')
@@ -223,10 +163,18 @@ export default function BalanceEntreprise({ balances, entrepriseId, onBalanceUpd
       })
 
       if (result.type === 'success') {
-        showNotification('success', result.message)
-        setRetraitData({ montant: '', numAdmin: '', wallet: 'orange-money-senegal' })
-        setIsRetraitOpen(false)
-        if (onBalanceUpdate) onBalanceUpdate()
+        if (result.requiresOtp) {
+          // Le backend demande une validation OTP
+          showNotification('success', result.message || 'Code OTP envoyé à l\'administrateur')
+          setPendingChangeId(result.data?.pendingChangeId || '')
+          setOtpType('retrait')
+          setShowOtpStep(true)
+        } else {
+          // Retrait effectué avec succès sans OTP
+          showNotification('success', result.message || 'Retrait effectué avec succès')
+          resetRetraitModal()
+          if (onBalanceUpdate) onBalanceUpdate()
+        }
       } else if (result.errors) {
         const errorMessages = Object.values(result.errors).flat().join(', ')
         showNotification('error', errorMessages)
@@ -241,6 +189,135 @@ export default function BalanceEntreprise({ balances, entrepriseId, onBalanceUpd
     }
   }
 
+  // Réinitialiser la modal de retrait
+  const resetRetraitModal = () => {
+    setIsRetraitOpen(false)
+    setShowOtpStep(false)
+    setOtpCode('')
+    setPendingChangeId('')
+    setRetraitData({ montant: '', numAdmin: '', wallet: '' })
+  }
+
+  // Fermer la modal et réinitialiser
+  const handleCloseRetraitDialog = (open: boolean) => {
+    if (!open) {
+      resetRetraitModal()
+    } else {
+      setIsRetraitOpen(true)
+    }
+  }
+
+  // ==================== OTP COMMUN POUR RECHARGE ET RETRAIT ====================
+  
+  // Vérifier l'OTP - Utilisé pour RECHARGE ET RETRAIT
+// ==================== OTP COMMUN POUR RECHARGE ET RETRAIT ====================
+  
+// Vérifier l'OTP - Utilisé pour RECHARGE ET RETRAIT
+const handleVerifyOtp = async () => {
+ 
+  
+  if (!otpCode || otpCode.length !== 6) {
+    showNotification('error', 'Veuillez entrer un code OTP valide à 6 chiffres')
+    return
+  }
+
+  if (!entrepriseId) {
+    showNotification('error', 'Entreprise non disponible')
+    return
+  }
+
+  setLoading(true)
+  try {
+    if (otpType === 'recharge') {
+      console.log('💳 Validation OTP pour RECHARGE')
+      // Validation OTP pour recharge
+      const response = await validateOTP(pendingChangeId, otpCode, entrepriseId)
+    
+
+      if (response.success) {
+        showNotification('success', 'Lien de paiement envoyé via WhatsApp !')
+        resetRechargeModal()
+        if (onBalanceUpdate) onBalanceUpdate()
+      } else {
+        showNotification('error', response.error || 'Code OTP invalide ou expiré')
+        if (response.errors) {
+          Object.values(response.errors).forEach((errorArray: any) => {
+            errorArray.forEach((error: string) => {
+              showNotification('error', error)
+            })
+          })
+        }
+      }
+    } else if (otpType === 'retrait') {
+      const response = await validateOTP(pendingChangeId, otpCode, entrepriseId)
+    
+
+      if (response.success) {
+        showNotification('success', 'Retrait effectué avec succès')
+        resetRetraitModal()
+        if (onBalanceUpdate) onBalanceUpdate()
+      } else {
+        showNotification('error', response.error || 'Code OTP invalide ou expiré')
+        if (response.errors) {
+          Object.values(response.errors).forEach((errorArray: any) => {
+            errorArray.forEach((error: string) => {
+              showNotification('error', error)
+            })
+          })
+        }
+      }
+    }
+  } catch (error) {
+    console.error('💥 Erreur lors de la vérification OTP:', error)
+    showNotification('error', 'Échec de la vérification du code OTP')
+  } finally {
+    setLoading(false)
+    console.log('🏁 [handleVerifyOtp] Fin de la fonction')
+  }
+}
+
+  // Renvoyer le code OTP - Utilisé pour RECHARGE ET RETRAIT
+  const handleResendOtp = async () => {
+    setLoading(true)
+    try {
+      if (otpType === 'recharge') {
+        // Renvoyer OTP pour recharge
+        const response = await rechargeCompte(entrepriseId!, {
+          montant: Number(rechargeAmount),
+          resendOtp: true
+        })
+
+        if (response.type === 'success' || response.pendingChangeId) {
+          showNotification('success', 'Code OTP renvoyé')
+          setOtpCode('')
+        } else {
+          showNotification('error', 'Erreur lors du renvoi du code')
+        }
+      } else if (otpType === 'retrait') {
+        // Renvoyer OTP pour retrait
+        const result = await retraitCompte(entrepriseId!, {
+          montant: Number(retraitData.montant),
+          numAdmin: retraitData.numAdmin,
+          wallet: retraitData.wallet,
+          resendOtp: true
+        })
+
+        if (result.type === 'success') {
+          showNotification('success', 'Code OTP renvoyé')
+          setOtpCode('')
+        } else {
+          showNotification('error', 'Erreur lors du renvoi du code')
+        }
+      }
+    } catch (error) {
+      showNotification('error', 'Erreur de connexion')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // ==================== MESSAGE ====================
+  
   const handleSendMessage = async () => {
     if (!messageData.titre || !messageData.message) {
       showNotification('error', 'Veuillez remplir tous les champs')
@@ -337,7 +414,7 @@ export default function BalanceEntreprise({ balances, entrepriseId, onBalanceUpd
                         }
                       </DialogDescription>
                     </DialogHeader>
-
+                    
                     {!showOtpStep ? (
                       // Étape 1: Saisie du montant
                       <div className="space-y-4">
@@ -389,7 +466,7 @@ export default function BalanceEntreprise({ balances, entrepriseId, onBalanceUpd
                 </Dialog>
 
                 {/* Bouton Débiter */}
-                <Dialog open={isRetraitOpen} onOpenChange={setIsRetraitOpen}>
+                <Dialog open={isRetraitOpen} onOpenChange={handleCloseRetraitDialog}>
                   <DialogTrigger asChild>
                     <Button className="flex-1 bg-[#FF8D3C] hover:bg-[#FF8D3C]/90 text-white">
                       <Minus className="w-4 h-4 mr-1" />
@@ -398,68 +475,94 @@ export default function BalanceEntreprise({ balances, entrepriseId, onBalanceUpd
                   </DialogTrigger>
                   <DialogContent>
                     <DialogHeader>
-                      <DialogTitle>Retrait du compte</DialogTitle>
+                      <DialogTitle>
+                        {showOtpStep ? 'Vérification de sécurité' : 'Retrait du compte'}
+                      </DialogTitle>
                       <DialogDescription>
-                        Effectuer un retrait vers un portefeuille mobile
+                        {showOtpStep 
+                          ? 'Entrez le code de vérification envoyé à l\'administrateur'
+                          : 'Effectuer un retrait vers un portefeuille mobile'
+                        }
                       </DialogDescription>
                     </DialogHeader>
-                    <div className="space-y-4">
-                      <div>
-                        <Label htmlFor="retrait-amount">Montant (FCFA)</Label>
-                        <Input
-                          id="retrait-amount"
-                          type="number"
-                          placeholder="Entrez le montant"
-                          value={retraitData.montant}
-                          onChange={(e) => setRetraitData({...retraitData, montant: e.target.value})}
-                          disabled={loading}
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="phone-number">Numéro de téléphone</Label>
-                        <Input
-                          id="phone-number"
-                          type="tel"
-                          placeholder="+221xxxxxxxxx"
-                          value={retraitData.numAdmin}
-                          onChange={(e) => setRetraitData({...retraitData, numAdmin: e.target.value})}
-                          disabled={loading}
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="wallet">Portefeuille</Label>
-                        <Select 
-                          value={retraitData.wallet} 
-                          onValueChange={(value) => setRetraitData({...retraitData, wallet: value})}
-                          disabled={loading}
+                    
+                    {!showOtpStep ? (
+                      // Étape 1: Formulaire de retrait
+                      <div className="space-y-4">
+                        <div>
+                          <Label htmlFor="retrait-amount">Montant (FCFA)</Label>
+                          <Input
+                            id="retrait-amount"
+                            type="number"
+                            placeholder="Entrez le montant"
+                            value={retraitData.montant}
+                            onChange={(e) => setRetraitData({...retraitData, montant: e.target.value})}
+                            disabled={loading}
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="phone-number">Numéro de téléphone</Label>
+                          <Input
+                            id="phone-number"
+                            type="tel"
+                            placeholder="+221xxxxxxxxx"
+                            value={retraitData.numAdmin}
+                            onChange={(e) => setRetraitData({...retraitData, numAdmin: e.target.value})}
+                            disabled={loading}
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="wallet">Portefeuille</Label>
+                          <Select 
+                            value={retraitData.wallet} 
+                            onValueChange={(value) => setRetraitData({...retraitData, wallet: value})}
+                            disabled={loading}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Sélectionnez un portefeuille" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {walletOptions.map((option) => (
+                                <SelectItem key={option.value} value={option.value}>
+                                  {option.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <Button 
+                          onClick={handleRetrait} 
+                          disabled={loading || !retraitData.montant || !retraitData.numAdmin}
+                          className="w-full bg-[#FF8D3C] hover:bg-[#FF8D3C]/90"
                         >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Sélectionnez un portefeuille" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {walletOptions.map((option) => (
-                              <SelectItem key={option.value} value={option.value}>
-                                {option.label}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                          {loading ? (
+                            <>
+                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                              Traitement...
+                            </>
+                          ) : (
+                            'Effectuer le retrait'
+                          )}
+                        </Button>
                       </div>
-                      <Button 
-                        onClick={handleRetrait} 
-                        disabled={loading || !retraitData.montant || !retraitData.numAdmin}
-                        className="w-full bg-[#FF8D3C] hover:bg-[#FF8D3C]/90"
-                      >
-                        {loading ? (
-                          <>
-                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                            Retrait en cours...
-                          </>
-                        ) : (
-                          'Effectuer le retrait'
-                        )}
-                      </Button>
-                    </div>
+                    ) : (
+                      // Étape 2: Vérification OTP pour retrait (utilise la même fonction handleVerifyOtp)
+                      <div className="py-4">
+                        <OtpInput
+                          length={6}
+                          onComplete={(otp) => setOtpCode(otp)}
+                          onSubmit={handleVerifyOtp}
+                          onResend={handleResendOtp}
+                          disabled={loading}
+                          isLoading={loading}
+                          loadingText="Vérification en cours..."
+                          buttonText="Valider le retrait"
+                          title="Vérification OTP - Retrait"
+                          description={`Un code OTP a été envoyé pour confirmer le retrait de ${Number(retraitData.montant).toLocaleString()} FCFA vers ${retraitData.numAdmin}.`}
+                          timerDuration={60}
+                        />
+                      </div>
+                    )}
                   </DialogContent>
                 </Dialog>
               </div>
