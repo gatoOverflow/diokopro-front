@@ -3,7 +3,7 @@ import { Card } from '@/components/ui/card';
 import CreateAgentModal from '@/app/dashboard/AgentPage/_components/AddAgents';
 import CreateClientModal from '@/app/dashboard/clientsPage/_components/Addclients';
 import CreateServiceModal from '@/app/dashboard/_Service/_components/service';
-import CreateGerantModal from '@/app/dashboard/AgentEntre/_components/test';
+import CreateGerantModal from '@/app/dashboard/AgentEntre/_components/AgentEntreprise';
 
 
 const MetricsCardsEntreprise = ({ 

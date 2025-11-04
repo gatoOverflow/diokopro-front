@@ -6,7 +6,7 @@ import AgentsView from './_components/AgentsView';
 const GerantsPage = async () => {
   const enterprises = await fetchJSON(ENTERPRISES_ENDPOINT);
   
-  const currentEnterpriseId = enterprises[0]?._id; // Assuming you want the first enterprise
+  const currentEnterpriseId = enterprises[0]?._id; 
 
 
   const agentsResponse = await fetchJSON(`${GET_ALL_AGENTS}/${currentEnterpriseId}`);

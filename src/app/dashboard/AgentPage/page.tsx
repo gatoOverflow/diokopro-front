@@ -15,11 +15,11 @@ const AgentPage = async () => {
     throw new Error("No enterprise found");
   }
   
-  // Then fetch services with enterprise ID
+
   const servicesData = await fetchJSON(`${GET_ALL_SERVICE}/${currentEnterpriseId}`);
   
-  // Add entrepriseId to each service
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  
+
   const services = servicesData.map((service: any) => ({
     ...service,
     entrepriseId: currentEnterpriseId

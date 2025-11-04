@@ -16,10 +16,10 @@ const EntrepriseDetailsPage = async ({ params }: Props) => {
   const { id } = resolvedParams;
   
   const currentUser = await getAuthenticatedUser();
-  //console.log("+++++++++", currentUser);
+ 
   
   const entreprise = await fetchJSON(`${getEntreprise}/${id}`);
-  //console.log('Données entreprise:', entreprise);
+
 
   return (
     <div className="p-6">
