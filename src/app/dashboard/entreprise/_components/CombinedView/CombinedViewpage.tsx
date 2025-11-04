@@ -28,7 +28,8 @@ const CombinedView = ({
     clientNotTopayer,
     entrepriseId,
     nomEntreprise,
-    salaire
+    salaire,
+    waitingpaiement
 }) => {
     // États pour les éléments sélectionnés
     const [selectedService, setSelectedService] = useState(null);
@@ -387,7 +388,8 @@ const CombinedView = ({
     agentsCount={agents.length} 
     clientsCount={clients.length} 
     servicesCount={services.length}
-    totalMasseSalariale={salaire?.totalMasseSalariale}  // ou salaire?.count selon votre API
+    totalMasseSalariale={salaire?.totalMasseSalariale}  
+    totalPaiementsAttendus={waitingpaiement?.totalPaiementsAttendus}
     entrepriseId={entrepriseId}
     nomEntreprise={nomEntreprise}
     services={services}

@@ -46,7 +46,7 @@ import { updateClient, deleteClient, removeClientFromService } from '@/actions/c
 import { validateOTP } from '@/actions/service';
 import { updatedGerant } from '@/actions/gerant';
 import { deleteAgent, updatedAgent } from '@/actions/Agent';
-import CreateGerantModal from '../../AgentEntre/_components/test';
+import CreateGerantModal from '../../AgentEntre/_components/AgentEntreprise';
 
 const CombinedView = ({
     services,
