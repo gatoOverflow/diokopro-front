@@ -49,20 +49,15 @@ const ITEMS_PER_PAGE = 10;
 
 const GerantsView: React.FC<GerantsByServiceViewProps> = ({ 
   gerants = [], // Provide default empty array
-  services = [], // Provide default empty array
-  entrepriseId,
-  currentUser
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
   const [activeFilter, setActiveFilter] = useState('tous');
-  const router = useRouter();
 
-  // Fonction pour vérifier si un gérant est nouveau (créé il y a moins d'un jour)
   const isNewAgent = (dateCreation: string): boolean => {
     const creationDate = new Date(dateCreation);
     const now = new Date();
-    const oneDayInMs = 24 * 60 * 60 * 1000; // 24 heures en millisecondes
+    const oneDayInMs = 24 * 60 * 60 * 1000; 
     
     return now.getTime() - creationDate.getTime() < oneDayInMs;
   };

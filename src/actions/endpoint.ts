@@ -59,6 +59,9 @@ export const ASSIGN_MANAGER_URL=`${API_URL}/matchGerantToService/entreprise`
 export const GET_ALL_GERANTS=`${API_URL}/getAllAgentsEntreprise`
 export const GET_ALL_GERANTS_BY_ENTREPRISE=`${API_URL}/getAllGerants/entreprise`
 export const GET_MASSE_SALARIALE = `${API_URL}/getMasseSalariale`;
+export const GET_MASSE_PAIEMENT_ATTENDUS = `${API_URL}/getPaiementsAttendus`;
+
+
 export const RECHARGE_COMPTE_ENTREPRISE=`${API_URL}/recharge-compte-otp/entreprise`
 export const DEBITER_COMPTE_ENTREPRISE=`${API_URL}/retirer-compte-otp/entreprise`
 export const REFUSE_ENTREPRISE_URL=`${API_URL}/authSuper/DisableEntreprise`

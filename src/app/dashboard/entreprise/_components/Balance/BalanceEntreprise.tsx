@@ -455,7 +455,7 @@ const handleVerifyOtp = async () => {
                           disabled={loading}
                           isLoading={loading}
                           loadingText="Vérification en cours..."
-                          buttonText="Envoyer le lien via WhatsApp"
+                          buttonText="Valider"
                           title="Vérification OTP - Recharge du compte"
                           description={`Un code OTP a été envoyé pour confirmer la recharge de ${Number(rechargeAmount).toLocaleString()} FCFA. Le lien de paiement sera envoyé via WhatsApp après validation.`}
                           timerDuration={60}

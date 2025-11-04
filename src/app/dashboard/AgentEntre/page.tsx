@@ -1,5 +1,5 @@
 import { fetchJSON } from '@/lib/api'
-import CreateGerantModal from './_components/test'
+import CreateGerantModal from './_components/AgentEntreprise'
 import { ENTERPRISES_ENDPOINT } from '@/actions/endpoint'
 
 

@@ -109,7 +109,7 @@ const AgentsList = ({ agents, onAgentClick, onSendPaySlip }) => {
       cellClassName: "text-sm text-gray-600",
       defaultValue: "Word"
     },
-    {
+   /*  {
       header: "Fiche de Paie",
       render: (agent) => (
         <button
@@ -122,7 +122,7 @@ const AgentsList = ({ agents, onAgentClick, onSendPaySlip }) => {
           Envoyer
         </button>
       )
-    }
+    } */
   ], [onSendPaySlip]);
 
   const paymentFilterOptions = useMemo(() => [
