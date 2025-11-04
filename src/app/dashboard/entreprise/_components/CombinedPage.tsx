@@ -1,6 +1,6 @@
 // page.tsx (Server Component)
 import { fetchJSON } from '@/lib/api';
-import { ENTERPRISES_ENDPOINT, GET_ALL_SERVICE, GET_ALL_CLIENT_URL, GET_ALL_AGENTS, GET_ALL_GERANTS, GET_ALL_AGENTS_TO_PAY, GET_ALL_AGENTS_TO_NOT_PAY, GET_ALL_CLIENT_TO_NOT_PAY_URL, BALANCE_ENDPOINT, GET_MASSE_SALARIALE } from '@/actions/endpoint';
+import { ENTERPRISES_ENDPOINT, GET_ALL_SERVICE, GET_ALL_CLIENT_URL, GET_ALL_AGENTS, GET_ALL_GERANTS, GET_ALL_AGENTS_TO_PAY, GET_ALL_AGENTS_TO_NOT_PAY, GET_ALL_CLIENT_TO_NOT_PAY_URL, BALANCE_ENDPOINT, GET_MASSE_SALARIALE, GET_MASSE_PAIEMENT_ATTENDUS } from '@/actions/endpoint';
 import CombinedView from './CombinedView/CombinedViewpage';
 
 // Ajoutez cette constante dans votre fichier endpoint.js
@@ -35,7 +35,9 @@ const CombinedPage = async () => {
   
   // 🆕 Fetch masse salariale
   const salaire = await fetchJSON(`${GET_MASSE_SALARIALE}/${currentEnterpriseId}`);
-      console.log(salaire);
+       const waitingpaiement = await fetchJSON(`${GET_MASSE_PAIEMENT_ATTENDUS}/${currentEnterpriseId}`);
+       //console.log(waitingpaiement);
+       
       
   return (
     <div>
@@ -51,7 +53,8 @@ const CombinedPage = async () => {
         serviceId={''}
         nomEntreprise={nomEntreprise}
         balance={balance}
-        salaire={salaire}  // 🆕 Passez la masse salariale
+        salaire={salaire}  
+        waitingpaiement={waitingpaiement}
       />
     </div>
   );

@@ -8,7 +8,6 @@ const PaymentsPage = async () => {
   const currentEnterpriseId = enterprises[0]?._id;
  
   
-  // Récupérer les paiements via la route spécifique
   const paymentsResponse = await fetchJSON(PAYMENT_FOR_ALL_AGENTS_ENTREPRISE);
   const payments = paymentsResponse.data || [];
   

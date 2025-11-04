@@ -5,16 +5,12 @@ import AffecterGerantServiceModal from './_components/AffecterGerantServiceModal
 const ServiceManagerPage = async () => {
   // Fetch the enterprise first
   const enterprises = await fetchJSON(ENTERPRISES_ENDPOINT);
-  const currentEnterpriseId = enterprises[0]?._id; // Assuming you want the first enterprise
+  const currentEnterpriseId = enterprises[0]?._id; 
   
-  if (!currentEnterpriseId) {
-    throw new Error("No enterprise found");
-  }
-  
-  // Fetch services with enterprise ID
+
   const servicesData = await fetchJSON(`${GET_ALL_SERVICE}/${currentEnterpriseId}`);
   
-  // Add entrepriseId to each service
+ 
   const services = servicesData.map((service: any) => ({
     ...service,
     entrepriseId: currentEnterpriseId
@@ -35,8 +31,6 @@ const ServiceManagerPage = async () => {
           entrepriseId={currentEnterpriseId} 
         />
       </div>
-      
-      {/* Autres composants ou informations liés aux services et gérants */}
     </div>
   )
 }

@@ -7,12 +7,9 @@ const ClientsPage = async () => {
   // Fetch the enterprises to get the current enterprise ID
   const enterprises = await fetchJSON(ENTERPRISES_ENDPOINT);
   
-  const currentEnterpriseId = enterprises[0]?._id; // Assuming you want the first enterprise
+  const currentEnterpriseId = enterprises[0]?._id; 
   
-  if (!currentEnterpriseId) {
-    throw new Error("No enterprise found");
-  }
-  
+
   // Fetch all clients for this enterprise
   const clientsResponse = await fetchJSON(`${GET_ALL_CLIENT_URL}/${currentEnterpriseId}/clients`);
   const clients = clientsResponse.data || [];

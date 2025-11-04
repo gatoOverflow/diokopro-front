@@ -7,10 +7,7 @@ const ClientsByServicePage = async () => {
   const enterprises = await fetchJSON(ENTERPRISES_ENDPOINT);
   const currentEnterpriseId = enterprises[0]?._id;
   
-  if (!currentEnterpriseId) {
-    throw new Error("No enterprise found");
-  }
-  
+ 
   // Récupérer les données de l'entreprise avec les transactions
   const entrepriseData = await fetchJSON(`${GET_ENTREPRISE_URL}/${currentEnterpriseId}`);
   const transactions = entrepriseData?.transactions || [];
