@@ -87,7 +87,7 @@ const AgentsList = ({ agents, onAgentClick, onSendPaySlip }) => {
       cellClassName: "text-sm text-gray-600",
       defaultValue: "778282828"
     },
-    {
+    /* {
       header: "Services",
       render: (agent) => (
         agent.servicesAffecte && agent.servicesAffecte.length > 0 ? (
@@ -102,7 +102,7 @@ const AgentsList = ({ agents, onAgentClick, onSendPaySlip }) => {
           <span className="text-sm text-gray-600">Hello Word</span>
         )
       )
-    },
+    }, */
     {
       header: "Rôle",
       field: "role",
