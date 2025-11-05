@@ -418,7 +418,7 @@ const AgentProfileTab: React.FC<AgentProfileTabProps> = ({
         </div>
 
         {/* Texte explicatif en mode édition - aligné avec le calendrier */}
-        {formData.dateProchainVirement && formData.frequencePaiement && formData.frequencePaiement !== 'unique' && (
+        {/* {formData.dateProchainVirement && formData.frequencePaiement && formData.frequencePaiement !== 'unique' && (
           <div className="ml-6 text-xs text-blue-600 bg-blue-50 p-3 rounded-lg border border-blue-200">
             <div className="flex items-center mb-1">
               <Calendar className="w-3 h-3 mr-1" />
@@ -481,7 +481,7 @@ const AgentProfileTab: React.FC<AgentProfileTabProps> = ({
               }
             })()}
           </div>
-        )}
+        )} */}
       </div>
     ) : (
       <div className="flex flex-col space-y-2">
