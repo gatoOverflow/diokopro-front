@@ -386,6 +386,7 @@ const CombinedView = ({
                         <div className="flex-1">
                             <MetricsCards 
     agentsCount={agents.length} 
+    gerantsCount={gerants.length}
     clientsCount={clients.length} 
     servicesCount={services.length}
     totalMasseSalariale={salaire?.totalMasseSalariale}  

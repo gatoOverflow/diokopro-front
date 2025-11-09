@@ -14,6 +14,7 @@ const CombinedViewTest = ({
     termeRecherche,
     clients,
     agentsResponse,
+    gerantsResponse,
     clientsResponse,
     agentNotTopayer,
     getNumbersEntreprise,
@@ -58,6 +59,7 @@ const CombinedViewTest = ({
                 </div>
                 <MetricsCardsEntreprise
                     agentsCount={agentsResponse}
+                    gerantsCount={gerantsResponse}
                     clientsCount={clientsResponse}
                     entrepriseCount={getNumbersEntreprise}
 
