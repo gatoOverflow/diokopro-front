@@ -39,8 +39,6 @@ const CreateAgentModal = ({ services = [], entrepriseId = "" }: CreateAgentModal
     adresse: "",
     nin: "",
     fonction: "", // ✅ Nouveau champ pour le poste/fonction
-    serviceId: "",
-    nomService: "",
     entrepriseId: entrepriseId,
     // Nouveaux champs pour les paiements
     salaire: "",
@@ -150,8 +148,6 @@ const CreateAgentModal = ({ services = [], entrepriseId = "" }: CreateAgentModal
       adresse: "",
       nin: "",
       fonction: "", // ✅ Réinitialiser fonction
-      serviceId: "",
-      nomService: "",
       entrepriseId: entrepriseId,
       salaire: "",
       wallet: "", 
@@ -177,11 +173,7 @@ const CreateAgentModal = ({ services = [], entrepriseId = "" }: CreateAgentModal
     const newErrors: ValidationErrors = {};
     let hasErrors = false;
 
-    // Vérification de chaque champ obligatoire
-    if (!formData.serviceId) {
-      newErrors.serviceId = ["Le service est requis"];
-      hasErrors = true;
-    }
+   
 
     if (!formData.nom || formData.nom.trim() === "") {
       newErrors.nom = ["Le nom est requis"];
@@ -251,7 +243,7 @@ const CreateAgentModal = ({ services = [], entrepriseId = "" }: CreateAgentModal
     }
 
     // Si entrepriseId est vide et qu'un service est sélectionné, essayer d'utiliser une valeur par défaut
-    if (!formData.entrepriseId && formData.serviceId) {
+    if (!formData.entrepriseId) {
       const defaultEntrepriseId = getDefaultEntrepriseId();
 
       if (defaultEntrepriseId) {
@@ -388,18 +380,14 @@ const CreateAgentModal = ({ services = [], entrepriseId = "" }: CreateAgentModal
 
       setFormData({
         ...formData,
-        serviceId: selectedService._id,
-        nomService: selectedService.nomService,
         entrepriseId: serviceEntrepriseId,
       });
 
-      setErrors((prev) => ({ ...prev, serviceId: [] }));
+      setErrors((prev) => ({ ...prev }));
     } else {
       // Garder l'entrepriseId existant même si le service est réinitialisé
       setFormData({
         ...formData,
-        serviceId: "",
-        nomService: "",
         // Nous ne réinitialisons pas entrepriseId ici pour le conserver
       });
     }
@@ -546,7 +534,7 @@ const CreateAgentModal = ({ services = [], entrepriseId = "" }: CreateAgentModal
                 </div>
 
                 {/* Informations du service */}
-                <div className="mb-6 bg-gray-50 rounded-lg p-4">
+               {/*  <div className="mb-6 bg-gray-50 rounded-lg p-4">
                   <h4 className="font-semibold text-gray-700 mb-3 flex items-center">
                     <span className="bg-orange-500 text-white rounded-full w-6 h-6 flex items-center justify-center mr-2 text-sm">1</span>
                     Service
@@ -554,7 +542,7 @@ const CreateAgentModal = ({ services = [], entrepriseId = "" }: CreateAgentModal
                   <div className="ml-8">
                     <p className="text-gray-800"><span className="font-medium">Service :</span> {formData.nomService || services.find(s => s._id === formData.serviceId)?.nomService}</p>
                   </div>
-                </div>
+                </div> */}
 
                 {/* Informations personnelles */}
                 <div className="mb-6 bg-gray-50 rounded-lg p-4">
@@ -626,7 +614,7 @@ const CreateAgentModal = ({ services = [], entrepriseId = "" }: CreateAgentModal
             ) : (
               // ÉTAT 1 : Formulaire
               <div className="space-y-4">
-                <div>
+               {/*  <div>
                   <label className="block mb-1 font-medium text-gray-700">Service <span className="text-red-500">*</span></label>
                   <select
                     className={`w-full border ${errors.serviceId ? 'border-red-500' : 'border-gray-300'
@@ -651,7 +639,7 @@ const CreateAgentModal = ({ services = [], entrepriseId = "" }: CreateAgentModal
                   ) : (
                     <span className="text-xs text-gray-500 mt-1">Ce champ est obligatoire</span>
                   )}
-                </div>
+                </div> */}
                  <div>
   <label className="block mb-1 font-medium text-gray-700">
     Portefeuille mobile

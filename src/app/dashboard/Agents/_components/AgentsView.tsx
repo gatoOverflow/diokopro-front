@@ -7,13 +7,7 @@ import { Input } from '@/components/ui/input';
 
 
 // Types
-interface servicesAffecte {
-  _id: string;
-  nomService: string;
-  description: string;
-  tarifactionBase: number;
-  gerants: string[];
-}
+
 
 interface Agent {
   _id: string;
@@ -24,9 +18,10 @@ interface Agent {
   role: string;
   adresse: string;
   nin: string;
+  fonction:string;
   estNouveau: boolean;
   dateCreation: string;
-  servicesAffecte: servicesAffecte[];
+ 
   paiementsEffectues: any[];
   __v: number;
 }
@@ -153,7 +148,6 @@ const AgentsView: React.FC<GerantsByServiceViewProps> = ({
                   <th className="px-6 py-4 text-left text-base font-medium text-gray-800">Prenom(s)</th>
                   <th className="px-6 py-4 text-left text-base font-medium text-gray-800">Email</th>
                   <th className="px-6 py-4 text-left text-base font-medium text-gray-800">Téléphone</th>
-                  <th className="px-6 py-4 text-left text-base font-medium text-gray-800">Services</th>
                   <th className="px-6 py-4 text-left text-base font-medium text-gray-800">Rôle</th>
                 </tr>
               </thead>
@@ -176,16 +170,9 @@ const AgentsView: React.FC<GerantsByServiceViewProps> = ({
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-500">{agent.telephone}</div>
                       </td>
+                      
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-500">
-                          {agent.servicesAffecte && agent.servicesAffecte.length > 0
-                            ? agent.servicesAffecte[0]?.nomService
-                            : "Hello World"
-                          }
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-500">{agent.role}</div>
+                        <div className="text-sm text-gray-500">{agent.fonction}</div>
                       </td>
                     </tr>
                   ))

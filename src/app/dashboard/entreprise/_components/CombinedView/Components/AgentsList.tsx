@@ -105,7 +105,7 @@ const AgentsList = ({ agents, onAgentClick, onSendPaySlip }) => {
     }, */
     {
       header: "Rôle",
-      field: "role",
+      field: "fonction",
       cellClassName: "text-sm text-gray-600",
       defaultValue: "Word"
     },
