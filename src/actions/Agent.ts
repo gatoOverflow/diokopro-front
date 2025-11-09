@@ -18,7 +18,7 @@ const AgentSchema = z.object({
   prenom: z.string().min(1, { message: "Le prénom est obligatoire" }),
   email: z.string().email({ message: "L'email doit être valide" }),
   entrepriseId: z.string().min(1, { message: "L'ID de l'entreprise est obligatoire" }),
-  serviceId: z.string().min(1, { message: "L'ID du service est obligatoire" }),
+  //serviceId: z.string().min(1, { message: "L'ID du service est obligatoire" }),
   telephone: z.string().min(9, { message: "Le numéro de téléphone doit contenir au moins 10 chiffres" }),
   adresse: z.string().min(1, { message: "L'adresse est obligatoire" }),
   salaire: z.number(),
@@ -67,7 +67,7 @@ export const createAgent = async (formData) => {
       return { type: "error", errors: validation.error.flatten().fieldErrors };
     }
 
-    const { entrepriseId, serviceId, ...agentData
+    const { entrepriseId,  ...agentData
       
      } = validation.data;
 
@@ -75,7 +75,7 @@ export const createAgent = async (formData) => {
    // console.log("URL de l'API:", `${CREATE_AGENT_URL}/${entrepriseId}/service/${serviceId}`);
 
     const response = await createdOrUpdated({ 
-      url: `${CREATE_AGENT_URL}/${entrepriseId}/service/${serviceId}`, 
+      url: `${CREATE_AGENT_URL}/${entrepriseId}`, 
       data: agentData 
     });
 

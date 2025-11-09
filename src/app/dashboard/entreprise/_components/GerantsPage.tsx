@@ -17,6 +17,7 @@ const GerantsPage = async () => {
   
   // Fetch gerants for the enterprise
   const gerantsResponse = await fetchJSON(`${GET_ALL_GERANTS}/${currentEnterpriseId}`);
+  //console.log(gerantsResponse);
   
   const gerants = Array.isArray(gerantsResponse) ? gerantsResponse : gerantsResponse.gerants || [];
   
