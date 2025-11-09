@@ -863,7 +863,7 @@ const CombinedView = ({
                 <div className="bg-white p-9 rounded-md shadow-xl">
                     <h3 className="text-lg font-semibold">Total Gerants</h3>
                     <div className="flex items-center justify-between mt-1">
-                        <p className="text-3xl font-bold text-[#0cadec]">{agents.length}</p>
+                        <p className="text-3xl font-bold text-[#0cadec]">{gerants.length}</p>
                         <CreateGerantModal  enterprises={[{ _id: entrepriseId, nomEntreprise }]} >
                            
                         </CreateGerantModal>

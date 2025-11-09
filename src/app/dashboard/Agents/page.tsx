@@ -10,6 +10,7 @@ const GerantsPage = async () => {
 
 
   const agentsResponse = await fetchJSON(`${GET_ALL_AGENTS}/${currentEnterpriseId}`);
+//console.log(agentsResponse);
 
   
   return (
