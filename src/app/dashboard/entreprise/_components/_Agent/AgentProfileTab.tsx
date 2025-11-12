@@ -537,7 +537,7 @@ const AgentProfileTab: React.FC<AgentProfileTabProps> = ({
                   {agent.servicesAffecte.map((service, index) => (
                     <div key={index} className="flex items-center gap-1 mb-1">
                       <Badge variant="secondary">
-                        {service.nomService}
+                        {service?.nomService}
                       </Badge>
                       {onRemoveFromService && (
                         <Button
