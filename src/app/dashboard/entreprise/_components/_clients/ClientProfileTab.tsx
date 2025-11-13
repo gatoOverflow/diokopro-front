@@ -60,8 +60,8 @@ const ClientProfileTab: React.FC<ClientProfileTabProps> = ({
             <div className="col-span-3">
               <Input
                 type="number"
-                name="jourPaiement"
-                value={formData.jourPaiement || 1}
+                name="intervallePaiement"
+                value={formData.intervallePaiement || 1}
                 onChange={onInputChange}
                 min="1"
                 max="31"
