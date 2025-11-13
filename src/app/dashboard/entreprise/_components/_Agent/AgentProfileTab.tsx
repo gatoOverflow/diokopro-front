@@ -73,8 +73,8 @@ const AgentProfileTab: React.FC<AgentProfileTabProps> = ({
             <div className="col-span-3">
               <Input
                 type="number"
-                name="jourPaiement"
-                value={formData.jourPaiement || 1}
+                name="intervallePaiement"
+                value={formData.intervallePaiement}
                 onChange={onInputChange}
                 min="1"
                 max="31"
@@ -92,7 +92,7 @@ const AgentProfileTab: React.FC<AgentProfileTabProps> = ({
         <Input
           type="number"
           name="intervallePaiement"
-          value={formData.intervallePaiement || 1}
+          value={formData.intervallePaiement}
           onChange={onInputChange}
           min="1"
           max="365"
@@ -102,28 +102,14 @@ const AgentProfileTab: React.FC<AgentProfileTabProps> = ({
       </div>
     </div>
   );
-      /* case 'hebdomadaire':
-        return (
-          <div className="grid grid-cols-4 items-center gap-4">
-            <div className="font-semibold text-right">Jour de la semaine:</div>
-            <div className="col-span-3">
-              <select
-                name="jourPaiement"
-                value={formData.jourPaiement || 0}
-                onChange={onInputChange}
-                className="w-full border border-gray-300 rounded-md px-3 py-2"
-              >
-                <option value="0">Dimanche</option>
-                <option value="1">Lundi</option>
-                <option value="2">Mardi</option>
-                <option value="3">Mercredi</option>
-                <option value="4">Jeudi</option>
-                <option value="5">Vendredi</option>
-                <option value="6">Samedi</option>
-              </select>
-            </div>
-          </div>
-        ); */
+  case 'hebdomadaire':
+  return (
+    <div className="grid grid-cols-4 items-center gap-4">
+     
+     
+    </div>
+  );
+
       case 'horaire':
         return (
           <div className="grid grid-cols-4 items-center gap-4">
@@ -132,7 +118,7 @@ const AgentProfileTab: React.FC<AgentProfileTabProps> = ({
               <Input
                 type="number"
                 name="intervallePaiement"
-                value={formData.intervallePaiement || 1}
+                value={formData.intervallePaiement}
                 onChange={onInputChange}
                 min="1"
                 max="24"
@@ -150,7 +136,7 @@ const AgentProfileTab: React.FC<AgentProfileTabProps> = ({
               <Input
                 type="number"
                 name="intervallePaiement"
-                value={formData.intervallePaiement || 1}
+                value={formData.intervallePaiement}
                 onChange={onInputChange}
                 min="1"
                 max="60"
