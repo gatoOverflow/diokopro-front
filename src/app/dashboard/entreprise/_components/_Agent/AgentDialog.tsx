@@ -185,16 +185,25 @@ const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setIsRemovingFromService(true);
   };
 
-  // Opérations principales (simplifiées)
+  // Opérations principales (avec correction pour hebdomadaire)
   const handleUpdate = async () => {
     if (!agent || !onUpdate) return;
     
     try {
       setIsVerifying(true);
       setOperationType('update');
+      
+      // Créer une copie des données
+      const dataToSend = { ...formData };
+      
+      // Pour hebdomadaire, supprimer intervallePaiement (le backend le gère automatiquement)
+      if (dataToSend.frequencePaiement === 'hebdomadaire') {
+        delete dataToSend.intervallePaiement;
+      }
+      
       const result = await onUpdate({
         ...agent,
-        ...formData,
+        ...dataToSend,
         agentId: agent._id,
         entrepriseId
       });
@@ -325,7 +334,7 @@ const handleOtpVerification = async () => {
     setIsVerifying(true);
     try {
       const result = await verifyOtp({
-        code: otpCode, // Changé de 'otp' à 'code' pour correspondre à CombinedView
+        code: otpCode,
         pendingChangeId,
         actionType: operationType,
         serviceId: ['removeFromService', 'addService'].includes(operationType) ? selectedServiceId : undefined,
