@@ -48,7 +48,7 @@ const AllEntreprise: React.FC<GerantListProps> = ({
               className="bg-white rounded-md shadow-sm border border-gray-100 p-3 flex flex-col items-center"
               onClick={() => onGerantClick && onGerantClick(gerant)}
             >
-              <div className="flex flex-col items-center space-y-2 w-full">
+              <div className="flex flex-col items-center space-y-5 w-full">
                 <div className="w-12 h-12 rounded-full overflow-hidden bg-blue-500">
                   <img 
                     src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=100&q=80" 
@@ -56,11 +56,11 @@ const AllEntreprise: React.FC<GerantListProps> = ({
                     className="w-full h-full object-cover"
                   />
                 </div>
-                <div className="text-xs text-gray-700 text-center">
-                  Entreprise {gerant.nomEntreprise ? gerant.nomEntreprise.substring(0, 8) : (gerant.nom ? gerant.nom.substring(0, 8) : (gerant._id ? gerant._id.substring(0, 3) : ""))}
+                <div className="text-xl text-gray-700 text-center">
+                {gerant.nomEntreprise ? gerant.nomEntreprise.substring(0, 8) : (gerant.nom ? gerant.nom.substring(0, 8) : (gerant._id ? gerant._id.substring(0, 3) : ""))}
                 </div>
               </div>
-              <div className="mt-2 w-full flex justify-center">
+              {/* <div className="mt-2 w-full flex justify-center">
                 <label className="relative inline-flex items-center cursor-pointer">
                   <input 
                     type="checkbox" 
@@ -76,7 +76,7 @@ const AllEntreprise: React.FC<GerantListProps> = ({
                     after:transition-all
                     ${activeAgents[gerant._id] ? 'after:translate-x-5' : ''}`}></div>
                 </label>
-              </div>
+              </div> */}
             </div>
           ))
         ) : (

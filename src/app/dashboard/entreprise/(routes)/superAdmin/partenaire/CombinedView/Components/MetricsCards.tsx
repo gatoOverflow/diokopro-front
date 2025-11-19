@@ -6,29 +6,29 @@ import CreateServiceModal from '@/app/dashboard/_Service/_components/service';
 import CreateGerantModal from '@/app/dashboard/AgentEntre/_components/AgentEntreprise';
 
 
-const MetricsCardsEntreprise = ({ 
-  agentsCount, 
-  clientsCount, 
-  servicesCount, 
+const MetricsCardsEntreprise = ({
+  agentsCount,
+  clientsCount,
+  servicesCount,
   entrepriseCount,
-  entrepriseId, 
+  entrepriseId,
   nomEntreprise,
   services
 }) => {
   return (
-   <div className="grid grid-cols-1 md:grid-cols-4 md:w-[900px] w-[500px] gap-5 mb-6">
-       <div className="bg-white p-9 rounded-md shadow-xl">
+    <div className="grid grid-cols-1 md:grid-cols-4 md:w-[900px] w-[500px] gap-5 mb-6">
+     {/*  <div className="bg-white p-9 rounded-md shadow-xl">
         <h3 className="text-lg font-semibold">Total Entreprise</h3>
         <div className="flex items-center justify-between mt-1">
           <p className="text-3xl font-bold text-[#0cadec]">{entrepriseCount}</p>
-        
+
         </div>
-      </div>
+      </div> */}
       <div className="bg-white p-9 rounded-md shadow-xl">
         <h3 className="text-lg font-semibold">Total Agents</h3>
         <div className="flex items-center justify-between mt-1">
           <p className="text-3xl font-bold text-[#0cadec]">{agentsCount}</p>
-      
+
         </div>
       </div>
 
@@ -36,13 +36,13 @@ const MetricsCardsEntreprise = ({
         <h3 className="text-lg font-semibold">Total Clients</h3>
         <div className="flex items-center justify-between mt-1">
           <p className="text-3xl font-bold text-[#0cadec]">{clientsCount}</p>
-        
+
         </div>
       </div>
 
-     
 
-    
+
+
     </div>
   );
 };
