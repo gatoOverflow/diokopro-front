@@ -22,6 +22,7 @@ export const ALL_ENTERPRISES_ENDPOINT = `${API_URL}/authSuper/getAllEntreprises`
 export const BALANCE_ENDPOINT = `${API_URL}/AccountBalance`
 export const GET_AGENT_PAYSLIP = `${API_URL}/getAgentPaySlip/entreprise`
 export const BALANCE_ENDPOINT_FOR_ALL_ENTREPRISE = `${API_URL}/AllAccountBalanceEntreprise`
+export const TOGGLE_ENTREPRISE_URL = `${API_URL}/authSuper/enableOrDisableEntreprise`
 export const ENTERPRISES_INACTIVES_ENDPOINT = `${API_URL}/authSuper/entreprises/inactives`
 export const GET_ALL_SERVICE=`${API_URL}/getAllServices/entreprise`
 export const GET_ALL_HISTORIQUE=`${API_URL}/getAllPayments`

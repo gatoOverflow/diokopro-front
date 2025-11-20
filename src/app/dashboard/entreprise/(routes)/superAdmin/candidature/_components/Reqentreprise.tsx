@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { Search, User } from 'lucide-react';
+import { Search, User, Building2, Mail, Phone, Calendar, FileText, MapPin, Info } from 'lucide-react';
 import {
     Dialog,
     DialogContent,
@@ -29,6 +29,7 @@ const EntrepriseInactive: React.FC<EntrepriseListProps> = ({
     error = null,
 }) => {
     const [open, setOpen] = useState(false);
+    const [detailsOpen, setDetailsOpen] = useState(false);
     const [selectedEntreprise, setSelectedEntreprise] = useState<InterfaceEntreprise | null>(null);
     const [actionType, setActionType] = useState<'accept' | 'reject' | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -80,6 +81,11 @@ const EntrepriseInactive: React.FC<EntrepriseListProps> = ({
             data: paginatedData,
             totalPages: totalPages || 1
         };
+    };
+
+    const openDetailsDialog = (entreprise: InterfaceEntreprise) => {
+        setSelectedEntreprise(entreprise);
+        setDetailsOpen(true);
     };
 
     const openAcceptDialog = (e: React.MouseEvent, entreprise: InterfaceEntreprise) => {
@@ -268,7 +274,11 @@ const EntrepriseInactive: React.FC<EntrepriseListProps> = ({
                 <div className="min-h-[200px] max-h-[400px] overflow-y-auto">
                     {filteredEntreprises.length > 0 ? (
                         filteredEntreprises.map((entreprise) => (
-                            <div key={entreprise._id} className="flex flex-col md:flex-row w-full md:items-center p-3 md:py-3 border-b border-gray-100 hover:bg-gray-50 gap-3">
+                            <div 
+                                key={entreprise._id} 
+                                className="flex flex-col md:flex-row w-full md:items-center p-3 md:py-3 border-b border-gray-100 hover:bg-gray-50 gap-3 cursor-pointer transition-colors"
+                                onClick={() => openDetailsDialog(entreprise)}
+                            >
                                 {/* Section Société */}
                                 <div className="w-full md:w-1/2 md:pl-4">
                                     <div className="flex items-center space-x-3">
@@ -348,6 +358,153 @@ const EntrepriseInactive: React.FC<EntrepriseListProps> = ({
                     </div>
                 </div>
             </div>
+
+            {/* Dialogue des détails */}
+            <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
+                <DialogContent className="sm:max-w-2xl mx-4 max-w-[calc(100%-2rem)] max-h-[90vh] overflow-y-auto">
+                    <DialogHeader>
+                        <DialogTitle className="text-xl sm:text-2xl flex items-center gap-2">
+                            <Building2 className="w-6 h-6 text-blue-500" />
+                            Détails de l'entreprise
+                        </DialogTitle>
+                    </DialogHeader>
+
+                    {selectedEntreprise && (
+                        <div className="space-y-6">
+                            {/* Informations principales */}
+                            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-lg border border-blue-200">
+                                <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                                    <Info className="w-5 h-5 text-blue-500" />
+                                    Informations générales
+                                </h3>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div className="space-y-1">
+                                        <p className="text-sm text-gray-600 font-medium">Nom de l'entreprise</p>
+                                        <p className="text-base font-semibold text-gray-900">{selectedEntreprise.nomEntreprise}</p>
+                                    </div>
+                                    <div className="space-y-1">
+                                        <p className="text-sm text-gray-600 font-medium">Représenté par</p>
+                                        <p className="text-base text-gray-900">{selectedEntreprise.representéPar}</p>
+                                    </div>
+                                    <div className="space-y-1">
+                                        <p className="text-sm text-gray-600 font-medium">Statut</p>
+                                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                            selectedEntreprise.estActif 
+                                                ? 'bg-green-100 text-green-800' 
+                                                : 'bg-red-100 text-red-800'
+                                        }`}>
+                                            {selectedEntreprise.estActif ? 'Active' : 'Inactive'}
+                                        </span>
+                                    </div>
+                                    <div className="space-y-1">
+                                        <p className="text-sm text-gray-600 font-medium">Solde</p>
+                                        <p className="text-base font-semibold text-gray-900">{selectedEntreprise.solde.toLocaleString()} FCFA</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Coordonnées */}
+                            <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                                <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                                    <Mail className="w-5 h-5 text-blue-500" />
+                                    Coordonnées
+                                </h3>
+                                <div className="space-y-3">
+                                    <div className="flex items-center gap-3">
+                                        <Mail className="w-4 h-4 text-gray-500" />
+                                        <div>
+                                            <p className="text-xs text-gray-600">Email</p>
+                                            <p className="text-sm text-gray-900">{selectedEntreprise.emailEntreprise}</p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-3">
+                                        <Phone className="w-4 h-4 text-gray-500" />
+                                        <div>
+                                            <p className="text-xs text-gray-600">Téléphone</p>
+                                            <p className="text-sm text-gray-900">{selectedEntreprise.telephoneEntreprise}</p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-3">
+                                        <MapPin className="w-4 h-4 text-gray-500" />
+                                        <div>
+                                            <p className="text-xs text-gray-600">Adresse</p>
+                                            <p className="text-sm text-gray-900">{selectedEntreprise.adresse}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Informations légales */}
+                            <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                                <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                                    <FileText className="w-5 h-5 text-blue-500" />
+                                    Informations légales
+                                </h3>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div className="space-y-1">
+                                        <p className="text-sm text-gray-600 font-medium">NINEA</p>
+                                        <p className="text-base text-gray-900 font-mono">{selectedEntreprise.ninea}</p>
+                                    </div>
+                                    <div className="space-y-1">
+                                        <p className="text-sm text-gray-600 font-medium">RCCM</p>
+                                        <p className="text-base text-gray-900 font-mono">{selectedEntreprise.rccm || 'Non renseigné'}</p>
+                                    </div>
+                                    <div className="space-y-1">
+                                        <p className="text-sm text-gray-600 font-medium flex items-center gap-1">
+                                            <Calendar className="w-4 h-4" />
+                                            Date de création
+                                        </p>
+                                        <p className="text-base text-gray-900">
+                                            {new Date(selectedEntreprise.dateCreation).toLocaleDateString('fr-FR')}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Statistiques */}
+                            {selectedEntreprise.stats && (
+                                <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-4 rounded-lg border border-purple-200">
+                                    <h3 className="text-lg font-semibold text-gray-900 mb-3">Statistiques</h3>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="text-center p-3 bg-white rounded-lg shadow-sm">
+                                            <p className="text-2xl font-bold text-blue-600">{selectedEntreprise.stats.agents}</p>
+                                            <p className="text-sm text-gray-600">Agents</p>
+                                        </div>
+                                        <div className="text-center p-3 bg-white rounded-lg shadow-sm">
+                                            <p className="text-2xl font-bold text-green-600">{selectedEntreprise.stats.clients}</p>
+                                            <p className="text-sm text-gray-600">Clients</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Administrateur */}
+                            {selectedEntreprise.admin && (
+                                <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                                    <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                                        <User className="w-5 h-5 text-blue-500" />
+                                        Administrateur
+                                    </h3>
+                                    <div className="space-y-2">
+                                        <p className="text-sm"><span className="font-medium">Nom:</span> {selectedEntreprise.admin.nom} {selectedEntreprise.admin.prenom}</p>
+                                        <p className="text-sm"><span className="font-medium">Email:</span> {selectedEntreprise.admin.email}</p>
+                                        <p className="text-sm"><span className="font-medium">Téléphone:</span> {selectedEntreprise.admin.telephone}</p>
+                                        <p className="text-sm"><span className="font-medium">Rôle:</span> {selectedEntreprise.admin.role}</p>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    <DialogFooter className="flex flex-col sm:flex-row gap-2">
+                        <DialogClose asChild>
+                            <Button type="button" variant="outline" className="w-full sm:w-auto">
+                                Fermer
+                            </Button>
+                        </DialogClose>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
 
             {/* Dialogue de confirmation */}
             <Dialog open={open} onOpenChange={setOpen}>
