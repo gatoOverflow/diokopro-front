@@ -16,6 +16,7 @@ const AdminPage = async () => {
   // Récupérer les modifications en attente (comme dans votre code original)
   const pendingChanges = await fetchJSON(`${PENDING_CHANGES_ENDPOINT}/${currentEnterpriseId}`)
 
+ //console.log(en);
  
   return (
     <div className="space-y-8 p-6">
