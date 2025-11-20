@@ -11,7 +11,7 @@ export default async function Balance() {
       const currentEnterpriseId = enterprises[0]?._id; // Assuming you want the first enterprise
       
       const balance =await fetchJSON(`${BALANCE_ENDPOINT_FOR_ALL_ENTREPRISE}`)
-      //console.log("++++++++++++++balance",balance);
+      console.log("++++++++++++++balance",balance);
       
   return (
     <>
