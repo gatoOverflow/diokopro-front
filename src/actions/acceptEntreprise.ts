@@ -2,7 +2,7 @@
 
 import { z } from "zod";
 import { createdOrUpdated } from "@/lib/api";
-import { ACTIVATE_ENTREPRISE_URL, REFUSE_ENTREPRISE_URL } from "./endpoint"; 
+import { ACTIVATE_ENTREPRISE_URL, REFUSE_ENTREPRISE_URL, TOGGLE_ENTREPRISE_URL } from "./endpoint"; 
 import { UPDATE_ENTREPRISE_URL } from './endpoint';
 // Schéma pour la validation des données
 const UpdateEntrepriseStatusSchema = z.object({
@@ -164,5 +164,92 @@ export const updateEntreprise = async (formData) => {
     }
     
     return { type: "error", error: "Erreur lors de la mise à jour de l'entreprise" };
+  }
+};
+
+
+const ToggleEntrepriseSchema = z.object({
+  entrepriseId: z.string().min(1, "L'ID de l'entreprise est requis"),
+  estActif: z.boolean(),
+});
+
+/**
+ * Fonction pour activer ou désactiver une entreprise
+ * @param entrepriseId - ID de l'entreprise
+ * @param estActif - Nouveau statut (true = actif, false = inactif)
+ */
+export const toggleEntrepriseStatus = async (entrepriseId: string, estActif: boolean) => {
+
+
+  try {
+    // Validation des données
+    const validation = ToggleEntrepriseSchema.safeParse({ entrepriseId, estActif });
+
+    if (!validation.success) {
+      console.log("❌ Échec validation:", validation.error.flatten());
+      return { 
+        type: "error", 
+        error: "Données invalides",
+        errors: validation.error.flatten().fieldErrors 
+      };
+    }
+
+
+
+    // Construction de l'URL avec l'ID de l'entreprise
+    const apiUrl = `${TOGGLE_ENTREPRISE_URL}/${entrepriseId}`;
+  
+
+    // Appel à l'API via createdOrUpdated
+    console.log("🚀 Envoi de la requête à l'API...");
+    const response = await createdOrUpdated({ 
+      url: apiUrl, 
+      data: { estActif },
+      updated: true
+    });
+
+ 
+
+    return { 
+      type: "success", 
+      message: response.message || `Le statut de l'entreprise a été mis à jour avec succès.`,
+      data: response.updatedEntreprise 
+    };
+
+  } catch (error) {
+    console.error("💥 Erreur dans toggleEntrepriseStatus:", error);
+    console.error("💥 Détails de l'erreur:", {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+      url: error.config?.url
+    });
+    
+    // Gestion des erreurs spécifiques
+    if (error.response?.status === 403) {
+      return { 
+        type: "error", 
+        error: "Accès refusé. Seuls les superAdmins peuvent modifier le statut des entreprises." 
+      };
+    }
+    
+    if (error.response?.status === 404) {
+      return { 
+        type: "error", 
+        error: "Entreprise non trouvée." 
+      };
+    }
+    
+    if (error.response?.data?.message) {
+      return { 
+        type: "error", 
+        error: error.response.data.message 
+      };
+    }
+    
+    return { 
+      type: "error", 
+      error: "Erreur lors de la modification du statut de l'entreprise" 
+    };
   }
 };
