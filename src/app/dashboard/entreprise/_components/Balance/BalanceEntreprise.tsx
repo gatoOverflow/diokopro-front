@@ -235,7 +235,7 @@ const handleVerifyOtp = async () => {
     
 
       if (response.success) {
-        showNotification('success', 'Lien de paiement envoyé via WhatsApp !')
+        showNotification('success', 'Lien de paiement envoyé via SMS !')
         resetRechargeModal()
         if (onBalanceUpdate) onBalanceUpdate()
       } else {
@@ -457,7 +457,7 @@ const handleVerifyOtp = async () => {
                           loadingText="Vérification en cours..."
                           buttonText="Valider"
                           title="Vérification OTP - Recharge du compte"
-                          description={`Un code OTP a été envoyé pour confirmer la recharge de ${Number(rechargeAmount).toLocaleString()} FCFA. Le lien de paiement sera envoyé via WhatsApp après validation.`}
+                          description={`Un code OTP a été envoyé pour confirmer la recharge de ${Number(rechargeAmount).toLocaleString()} FCFA. Le lien de paiement sera envoyé via SMS après validation.`}
                           timerDuration={60}
                         />
                       </div>

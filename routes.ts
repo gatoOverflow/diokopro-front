@@ -46,10 +46,6 @@ export const ROLEPAGES = {
   gerant: [
     "/dashboard/clientsPage", 
     "/dashboard/entreprise",
-    "/dashboard/organizer/events",
-    "/dashboard/organizer/events/new",
-    "/dashboard/organizer/tickets",
-    "/dashboard/organizer/chat",
     "/dashboard/profile",
 
     /^\/dashboard\/profile\/[^/]+(\/updateProfile)?$/,
