@@ -33,6 +33,7 @@ const BalanceEntreprise=balance.totalSolde
   // Fetch clients for the enterprise
   const clientsResponse = await fetchJSON(`${GET_ALL_CLIENT_URL}/clients`);
 
+
   
   const clients = clientsResponse.data || [];
 

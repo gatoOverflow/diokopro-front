@@ -13,6 +13,7 @@ const ClientsPage = async () => {
   // Fetch all clients for this enterprise
   const clientsResponse = await fetchJSON(`${GET_ALL_CLIENT_URL}/${currentEnterpriseId}/clients`);
   const clients = clientsResponse.data || [];
+  //console.log(clients);
   
   return (
     <ClientsView 
