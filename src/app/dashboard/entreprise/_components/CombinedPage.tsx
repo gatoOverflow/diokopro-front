@@ -20,6 +20,7 @@ const CombinedPage = async () => {
   // Fetch clients for the enterprise
   const clientsResponse = await fetchJSON(`${GET_ALL_CLIENT_URL}/${currentEnterpriseId}/clients`);
   const clients = clientsResponse.data || [];
+//console.log(clients);
 
   const agenttopay = await fetchJSON(`${GET_ALL_AGENTS_TO_PAY}/${currentEnterpriseId}`);
   const agentToNotPay = await fetchJSON(`${GET_ALL_AGENTS_TO_NOT_PAY}/${currentEnterpriseId}`);

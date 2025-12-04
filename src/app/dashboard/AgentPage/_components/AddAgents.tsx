@@ -60,7 +60,7 @@ const CreateAgentModal = ({ services = [], entrepriseId = "" }: CreateAgentModal
     // Vérifier si un service existe mais que l'entrepriseId est manquante
     const servicesMissingEntrepriseId = services.filter(service => !service.entrepriseId);
     if (servicesMissingEntrepriseId.length > 0) {
-      console.warn("Services sans entrepriseId:", servicesMissingEntrepriseId);
+      //console.warn("Services sans entrepriseId:", servicesMissingEntrepriseId);
     }
 
     // Si formData n'a pas d'entrepriseId, essayez d'en définir une par défaut
