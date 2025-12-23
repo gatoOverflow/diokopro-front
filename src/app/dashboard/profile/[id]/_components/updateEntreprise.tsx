@@ -18,6 +18,7 @@ type EntrepriseInfos = {
   emailEntreprise: string;
   telephoneEntreprise: string;
   ninea: string;
+  supportFees:boolean;
   rccm: string;
   representéPar: string;
   dateCreation: string;
@@ -36,6 +37,7 @@ export default function UpdateEntreprise({ entreprise }: Props) {
     adresse: entreprise?.adresse || "",
     emailEntreprise: entreprise?.emailEntreprise || "",
     telephoneEntreprise: entreprise?.telephoneEntreprise || "",
+    supportFees: entreprise?.supportFees || false,
     ninea: entreprise?.ninea || "",
     rccm: entreprise?.rccm || "",
     representéPar: entreprise?.representéPar || "",
@@ -59,7 +61,13 @@ export default function UpdateEntreprise({ entreprise }: Props) {
       [name]: value,
     }));
   };
-
+const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, checked } = e.target;
+    setFormData(prev => ({ 
+      ...prev, 
+      [name]: checked 
+    }));
+  };
   const validateForm = () => {
     // Validation de base
     if (!formData.nomEntreprise.trim() || !formData.representéPar.trim()) {
@@ -116,6 +124,7 @@ export default function UpdateEntreprise({ entreprise }: Props) {
         ninea: formData.ninea,
         rccm: formData.rccm,
         representéPar: formData.representéPar,
+        supportFees:formData.supportFees,
         dateCreation: formData.dateCreation,
       };
 
@@ -272,8 +281,31 @@ export default function UpdateEntreprise({ entreprise }: Props) {
                   max={new Date().toISOString().split('T')[0]}
                 />
               </div>
+               <div className="mt-4 p-4 bg-gray-50 rounded-lg border">
+                    <label className="flex items-center space-x-3 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        name="supportFees"
+                        checked={formData.supportFees}
+                        onChange={handleCheckboxChange}
+                        className="w-5 h-5 text-orange-500 border-2 border-gray-300 rounded focus:ring-orange-500 focus:ring-2"
+                      />
+                      <div className="flex flex-col">
+                        <span className={`font-medium ${formData.supportFees ? 'text-green-600' : 'text-red-600'}`}>
+                          {formData.supportFees ? '✅ Client vas supporter les frais' : '❌Client ne vas pas supporter les frais'}
+                        </span>
+                        <span className="text-xs text-gray-500">
+                          {formData.supportFees 
+                            ? 'Ce client supportera les frais'
+                            : 'Ce client ne supportera pas les frais '
+                          }
+                        </span>
+                      </div>
+                      
+                    </label>
+                  </div>
             </div>
-            
+             
             {/* Bouton de soumission */}
             <div className="pt-4 flex justify-center">
               <Button 
