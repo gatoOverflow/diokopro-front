@@ -292,14 +292,9 @@ const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
                       />
                       <div className="flex flex-col">
                         <span className={`font-medium ${formData.supportFees ? 'text-green-600' : 'text-red-600'}`}>
-                          {formData.supportFees ? '✅ Client vas supporter les frais' : '❌Client ne vas pas supporter les frais'}
+                          {formData.supportFees ? `Votre entreprise supportera  les frais de service ` : `Votre entreprise ne  supportera pas  les frais de service `}
                         </span>
-                        <span className="text-xs text-gray-500">
-                          {formData.supportFees 
-                            ? 'Ce client supportera les frais'
-                            : 'Ce client ne supportera pas les frais '
-                          }
-                        </span>
+                        
                       </div>
                       
                     </label>
