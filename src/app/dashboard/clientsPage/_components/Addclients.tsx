@@ -55,6 +55,7 @@ const CreateClientModal = ({ services = [], entrepriseId = "" }: CreateClientMod
     intervallePaiement: 1,
     jourPaiement: 1,
     aFAirePayer: false,
+    //supportFees:false,
     // Champ pour la date programmée
     dateProgrammee: ""
   });
@@ -162,6 +163,7 @@ const CreateClientModal = ({ services = [], entrepriseId = "" }: CreateClientMod
       intervallePaiement: 1,
       jourPaiement: 1,
       aFAirePayer: false,
+     // supportFees:false,
       // Réinitialiser la date programmée
       dateProgrammee: ""
     });
@@ -882,8 +884,33 @@ const CreateClientModal = ({ services = [], entrepriseId = "" }: CreateClientMod
                           }
                         </span>
                       </div>
+                      
                     </label>
                   </div>
+
+                   {/*  <div className="mt-4 p-4 bg-gray-50 rounded-lg border">
+                    <label className="flex items-center space-x-3 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        name="supportFees"
+                        checked={formData.supportFees}
+                        onChange={handleCheckboxChange}
+                        className="w-5 h-5 text-orange-500 border-2 border-gray-300 rounded focus:ring-orange-500 focus:ring-2"
+                      />
+                      <div className="flex flex-col">
+                        <span className={`font-medium ${formData.supportFees ? 'text-green-600' : 'text-red-600'}`}>
+                          {formData.supportFees ? '✅ Client vas supporter les frais' : '❌Client ne vas pas supporter les frais'}
+                        </span>
+                        <span className="text-xs text-gray-500">
+                          {formData.supportFees 
+                            ? 'Ce client supportera les frais'
+                            : 'Ce client ne supportera pas les frais '
+                          }
+                        </span>
+                      </div>
+                      
+                    </label>
+                  </div> */}
                 </div>
 
                 <div className="flex justify-end mt-6">
