@@ -25,7 +25,7 @@ const ClientSchema = z.object({
   intervallePaiement: z.number().optional(),
   jourPaiement: z.number().optional(),
   aFAirePayer: z.boolean().optional(),
-
+  //supportFees: z.boolean().optional(),
   // Nouvelle propriété ajoutée pour la date de programmation
   dateProgrammee: z.union([z.string(), z.date()]),
 });
