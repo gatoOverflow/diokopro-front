@@ -123,6 +123,7 @@ const UpdateEntrepriseSchema = z.object({
   rccm: z.string().optional(),
   representéPar: z.string().min(1, "Le représentant est requis"),
   dateCreation: z.string().optional(),
+  supportFees:z.boolean().optional()
 });
 
 export const updateEntreprise = async (formData) => {
@@ -173,11 +174,7 @@ const ToggleEntrepriseSchema = z.object({
   estActif: z.boolean(),
 });
 
-/**
- * Fonction pour activer ou désactiver une entreprise
- * @param entrepriseId - ID de l'entreprise
- * @param estActif - Nouveau statut (true = actif, false = inactif)
- */
+
 export const toggleEntrepriseStatus = async (entrepriseId: string, estActif: boolean) => {
 
 
