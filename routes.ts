@@ -54,8 +54,9 @@ export const ROLEPAGES = {
   ],
   superAdmin: [
     "/dashboard/entreprise/superAdmin/candidature",
-     "/dashboard/entreprise/superAdmin/historique",
-     "/dashboard/entreprise/superAdmin/partenaire",
+    "/dashboard/entreprise/superAdmin/historique",
+    "/dashboard/entreprise/superAdmin/partenaire",
+    "/dashboard/entreprise/superAdmin/messages",
     "/dashboard/profile",
     /^\/dashboard\/profile\/[^/]+(\/updateProfile)?$/,
     /^\/dashboard\/profile\/[^/]+(\/changePassWord)?$/
