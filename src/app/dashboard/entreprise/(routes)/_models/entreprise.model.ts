@@ -9,7 +9,7 @@ export type EntrepriseType = {
     gerants: Array<object>; // Vous pouvez remplacer `Object` par un type plus spécifique si vous connaissez la structure des gérants
     représentéPar: string;
   };
-  export type InterfaceEntreprise ={
+  export type InterfaceEntreprise = {
     _id: string;
     nomEntreprise: string;
     ninea: string;
@@ -17,6 +17,29 @@ export type EntrepriseType = {
     solde: number;
     representéPar: string;
     estActif: boolean;
+    dateCreation: string;
+    emailEntreprise?: string;
+    telephoneEntreprise?: string;
+    adresse?: string;
+    raisonRefus?: string;
+    logo?: string;
+    stats?: {
+      agents: number;
+      clients: number;
+    };
+    admin?: {
+      _id: string;
+      nom: string;
+      prenom: string;
+      email: string;
+      telephone?: string;
+      role: string;
+    };
+    gerants?: Array<{
+      _id: string;
+      nom: string;
+      prenom: string;
+    }>;
   }
 
   export type InterfaceClient ={

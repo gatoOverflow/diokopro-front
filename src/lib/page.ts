@@ -3,7 +3,8 @@ import {
   CalendarCheck,
   Layers,
   Users,
-  CreditCard
+  CreditCard,
+  MessageSquare
 } from "lucide-react";
 
 type Submenu = {
@@ -144,12 +145,12 @@ const AcceptPage: Menu = {
             submenus: []
           }, // Ajout de la page commune
           {
-            href: "/dashboard/entreprise/superAdmin/candidature",
+            href: "/dashboard/entreprise/superAdmin/messages",
             label: "Messages",
-            active: pathname === "/dashboard/entreprise/superAdmin/candidature",
-            icon: LayoutGrid,
+            active: pathname === "/dashboard/entreprise/superAdmin/messages",
+            icon: MessageSquare,
             submenus: []
-          }, // Ajout de la page commune
+          },
           paiementsPage ,
          
         
