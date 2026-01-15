@@ -1,92 +1,150 @@
 "use client";
+
 import React, { useState, useCallback } from 'react';
+import { toast } from 'sonner';
+import { toggleEntrepriseStatus } from '@/actions/acceptEntreprise';
 
-import BalanceEntrepriseAllEntreprise from './Balance/BalanceEntreprise';
+// New Components
+import BalanceCard from './Components/BalanceCard';
+import MetricsCardsNew from './Components/MetricsCardsNew';
+import EntrepriseFilters from './Components/EntrepriseFilters';
+import EntrepriseGrid from './Components/EntrepriseGrid';
+import EntrepriseDetailsDialog from './Components/EntrepriseDetailsDialog';
 
-import AllEntreprise from './Components/AllEntreprise';
-import MetricsCardsEntreprise from './Components/MetricsCards';
+interface CombinedViewProps {
+  services?: any[];
+  serviceId?: string;
+  balance?: number;
+  nombreTotalGerants?: number;
+  termeRecherche?: string;
+  clients?: any[];
+  agentsResponse?: number;
+  gerantsResponse?: number;
+  clientsResponse?: number;
+  agentNotTopayer?: any[];
+  getNumbersEntreprise?: number;
+  agentapayer?: any[];
+  agents?: any[]; // This is actually entreprises
+  gerants?: any[];
+  clientNotTopayer?: any[];
+  entrepriseId?: string;
+  nomEntreprise?: string;
+}
 
-const CombinedViewTest = ({
-    services,
-    serviceId,
-    balance,
-    nombreTotalGerants,
-    termeRecherche,
-    clients,
-    agentsResponse,
-    gerantsResponse,
-    clientsResponse,
-    agentNotTopayer,
-    getNumbersEntreprise,
-    agentapayer,
-    agents,
-    gerants,
-    clientNotTopayer,
-    entrepriseId,
-    nomEntreprise
+const CombinedViewTest: React.FC<CombinedViewProps> = ({
+  services,
+  balance = 0,
+  clients,
+  agentsResponse = 0,
+  gerantsResponse = 0,
+  clientsResponse = 0,
+  getNumbersEntreprise = 0,
+  agents = [], // entreprises
 }) => {
+  // State
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [sortBy, setSortBy] = useState('name');
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [selectedEntreprise, setSelectedEntreprise] = useState<any>(null);
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-    const [selectedGerant, setSelectedGerant] = useState(null);
+  // Handlers
+  const handleSearch = useCallback((value: string) => {
+    setSearchTerm(value);
+  }, []);
 
+  const handleEntrepriseClick = useCallback((entreprise: any) => {
+    setSelectedEntreprise(entreprise);
+    setIsDetailsOpen(true);
+  }, []);
 
+  const handleCloseDetails = useCallback(() => {
+    setIsDetailsOpen(false);
+    setSelectedEntreprise(null);
+  }, []);
 
-    const handleGerantClick = useCallback((gerant) => {
-        setSelectedGerant(gerant);
-        setIsGerantDialogOpen(true);
-    }, []);
+  const handleToggleStatus = useCallback(async (id: string, newStatus: boolean) => {
+    try {
+      const result = await toggleEntrepriseStatus(id, newStatus);
 
+      if (result.type === 'error') {
+        toast.error(result.error || 'Erreur lors de la mise à jour');
+        throw new Error(result.error);
+      }
 
+      toast.success(
+        newStatus
+          ? 'Entreprise activée avec succès'
+          : 'Entreprise désactivée avec succès'
+      );
+    } catch (error) {
+      console.error('Error toggling status:', error);
+      throw error;
+    }
+  }, []);
 
+  // Calculate active count
+  const activeCount = agents.filter((ent) => ent.estActif).length;
 
+  return (
+    <div className="min-h-screen bg-gray-50/30">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Balance Card */}
+        <BalanceCard
+          totalSolde={balance}
+          trend={{
+            value: 12,
+            isPositive: true,
+            label: 'ce mois',
+          }}
+          subtitle="Solde total des partenaires"
+        />
 
+        {/* Metrics Cards */}
+        <MetricsCardsNew
+          entrepriseCount={getNumbersEntreprise || agents.length}
+          agentsCount={agentsResponse}
+          clientsCount={clientsResponse}
+          activeCount={activeCount}
+        />
 
+        {/* Filters */}
+        <EntrepriseFilters
+          statusFilter={statusFilter}
+          onStatusFilterChange={setStatusFilter}
+          sortBy={sortBy}
+          onSortByChange={setSortBy}
+          viewMode={viewMode}
+          onViewModeChange={setViewMode}
+          totalCount={agents.length}
+          filteredCount={agents.length}
+          searchValue={searchTerm}
+          onSearchChange={handleSearch}
+        />
 
+        {/* Entreprise Grid */}
+        <EntrepriseGrid
+          entreprises={agents}
+          viewMode={viewMode}
+          searchTerm={searchTerm}
+          statusFilter={statusFilter}
+          sortBy={sortBy}
+          onEntrepriseClick={handleEntrepriseClick}
+          onToggleStatus={handleToggleStatus}
+          isLoading={isLoading}
+        />
 
-
-
-
-
-
-
-    return (
-        <div className="p-2">
-
-
-
-            <div className=' space-y-6 lg:w-[300px]'>
-                <div className="col-span-1 ">
-                    <BalanceEntrepriseAllEntreprise totalSolde={balance} />
-                </div>
-                <MetricsCardsEntreprise
-                    agentsCount={agentsResponse}
-                    gerantsCount={gerantsResponse}
-                    clientsCount={clientsResponse}
-                    entrepriseCount={getNumbersEntreprise}
-
-                />
-            </div>
-            {/* Section principale avec les listes */}
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-                <div className="lg:col-span-3 space-y-6">
-                    {/* Liste des Agents */}
-                    <AllEntreprise
-                        agents={agents}
-                        totalGerants={nombreTotalGerants}
-                        onGerantClick={handleGerantClick}
-                        searchTerm={termeRecherche}
-                    />
-
-                    {/* Liste des Clients */}
-
-                </div>
-
-                {/* Panneau latéral avec services */}
-
-            </div>
-
-
-        </div>
-    );
+        {/* Details Dialog */}
+        <EntrepriseDetailsDialog
+          entreprise={selectedEntreprise}
+          isOpen={isDetailsOpen}
+          onClose={handleCloseDetails}
+        />
+      </div>
+    </div>
+  );
 };
 
 export default CombinedViewTest;
