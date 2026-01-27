@@ -1,35 +1,23 @@
 "use client"
 
 import React from 'react';
-import { Separator } from '@/components/ui/separator';
 import { SidebarTrigger } from '@/components/ui/sidebar';
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbList,
-} from "@/components/ui/breadcrumb";
 
 const Navbar = () => {
   return (
-    <header className="flex h-16 shrink-0 items-center justify-between gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12 shadow-sm px-4">
-      <div className="flex items-center gap-2">
-        <SidebarTrigger className="-ml-1" />
-        <Separator orientation="vertical" className="mr-2 h-4" />
-        <Breadcrumb>
-          <BreadcrumbList>
-            <BreadcrumbItem className="hidden md:block">
-              {/* <BreadcrumbLink href="#">
-                Building Your Application
-              </BreadcrumbLink> */}
-            </BreadcrumbItem>
-            {/* <BreadcrumbSeparator className="hidden md:block" /> */}
-            {/* <BreadcrumbItem>
-              <BreadcrumbPage>Data Fetching</BreadcrumbPage>
-            </BreadcrumbItem> */}
-          </BreadcrumbList>
-        </Breadcrumb>
+    <header className="sticky top-0 z-10 flex h-14 items-center bg-white border-b border-gray-200 px-4">
+      {/* Left side - Sidebar trigger */}
+      <div className="flex items-center">
+        <SidebarTrigger className="h-9 w-9 flex items-center justify-center rounded-lg hover:bg-gray-100 transition-colors" />
       </div>
-      {/* Suppression de LocaleLangageSelected */}
+
+      {/* Spacer */}
+      <div className="flex-1" />
+
+      {/* Right side - Can add notifications, user avatar etc later */}
+      <div className="flex items-center gap-2">
+        {/* Placeholder for future items */}
+      </div>
     </header>
   );
 };
