@@ -1,23 +1,25 @@
 import { fetchJSON } from '@/lib/api'
-import { GET_ALL_SERVICE, ENTERPRISES_ENDPOINT, GET_ALL_GERANTS } from '@/actions/endpoint'
+import { GET_ALL_SERVICE, ENTERPRISES_ENDPOINT, GET_ALL_GERANTS_BY_ENTREPRISE } from '@/actions/endpoint'
 import AffecterGerantServiceModal from './_components/AffecterGerantServiceModal'
 
 const ServiceManagerPage = async () => {
-  // Fetch the enterprise first
-  const enterprises = await fetchJSON(ENTERPRISES_ENDPOINT);
-  const currentEnterpriseId = enterprises[0]?._id; 
-  
+  const enterprises = await fetchJSON(ENTERPRISES_ENDPOINT, { tags: ['enterprises'] });
+  const currentEnterpriseId = enterprises[0]?._id;
 
-  const servicesData = await fetchJSON(`${GET_ALL_SERVICE}/${currentEnterpriseId}`);
-  
- 
-  const services = servicesData.map((service: any) => ({
+  if (!currentEnterpriseId) {
+    return <div>Aucune entreprise trouvée</div>;
+  }
+
+  // Paralléliser les appels API avec tags pour cache
+  const [servicesData, gerants] = await Promise.all([
+    fetchJSON(`${GET_ALL_SERVICE}/${currentEnterpriseId}`, { tags: ['services'] }),
+    fetchJSON(`${GET_ALL_GERANTS_BY_ENTREPRISE}/${currentEnterpriseId}`, { tags: ['gerants'] })
+  ]);
+
+  const services = (servicesData || []).map((service: any) => ({
     ...service,
     entrepriseId: currentEnterpriseId
   }));
-  
-  // Fetch gérants for this enterprise
-  const gerants = await fetchJSON(`${GET_ALL_GERANTS}/${currentEnterpriseId}`);
  // console.log(gerants);
   
   return (

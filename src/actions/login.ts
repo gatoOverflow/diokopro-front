@@ -30,12 +30,12 @@ export const login = async (state: any, formData: FormData) => {
   //  console.log("Login response:", res.data); // Debugging: Log the response
 
     // Vérifiez si la réponse contient un message indiquant que l'OTP a été envoyé
-    if (res.data.message === "Code OTP envoyé par email.") {
+    if (res.data.message === "Code OTP envoyé par email." || res.data.message === "Code OTP envoyé par SMS.") {
       return {
         requiresOtp: true,
         email: email,
         type: "success",
-        message: "Veuillez entrer le code OTP envoyé à votre email",
+        message: "Veuillez entrer le code OTP envoyé par SMS",
       };
     } else {
       return {

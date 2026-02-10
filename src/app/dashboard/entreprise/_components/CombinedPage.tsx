@@ -1,63 +1,88 @@
-// page.tsx (Server Component)
+// CombinedPage.tsx - Version avec streaming Suspense
+import { Suspense } from 'react';
 import { fetchJSON } from '@/lib/api';
-import { ENTERPRISES_ENDPOINT, GET_ALL_SERVICE, GET_ALL_CLIENT_URL, GET_ALL_AGENTS, GET_ALL_GERANTS, GET_ALL_AGENTS_TO_PAY, GET_ALL_AGENTS_TO_NOT_PAY, GET_ALL_CLIENT_TO_NOT_PAY_URL, BALANCE_ENDPOINT, GET_MASSE_SALARIALE, GET_MASSE_PAIEMENT_ATTENDUS } from '@/actions/endpoint';
+import { ENTERPRISES_ENDPOINT } from '@/actions/endpoint';
+import { loadAllData, MetricsSkeleton, ListSkeleton } from './DataLoaders';
 import CombinedView from './CombinedView/CombinedViewpage';
 
-// Ajoutez cette constante dans votre fichier endpoint.js
-// export const GET_MASSE_SALARIALE = '/api/getMasseSalariale';
+// Composant pour charger et afficher les données
+async function CombinedDataLoader({ entrepriseId, nomEntreprise }: { entrepriseId: string; nomEntreprise: string }) {
+  const data = await loadAllData(entrepriseId);
+
+  return (
+    <CombinedView
+      services={data.services}
+      agentapayer={data.agenttopay}
+      agentNotTopayer={data.agentToNotPay}
+      clientNotTopayer={data.clientNotTopayer}
+      clients={data.clients}
+      agents={data.agents}
+      gerants={data.gerants}
+      entrepriseId={entrepriseId}
+      serviceId={''}
+      nomEntreprise={nomEntreprise}
+      balance={data.balance}
+      salaire={data.salaire}
+      waitingpaiement={data.waitingpaiement}
+    />
+  );
+}
+
+// Skeleton complet pour le loading
+function CombinedSkeleton() {
+  return (
+    <div className="space-y-6 animate-pulse">
+      {/* Métriques skeleton */}
+      <MetricsSkeleton />
+
+      {/* Balance skeleton */}
+      <div className="flex flex-col lg:flex-row gap-4">
+        <div className="flex-1">
+          <div className="bg-white rounded-lg shadow p-4">
+            <div className="h-6 bg-gray-200 rounded w-1/3 mb-4"></div>
+            <div className="grid grid-cols-2 gap-4">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="h-20 bg-gray-100 rounded"></div>
+              ))}
+            </div>
+          </div>
+        </div>
+        <div className="w-full lg:w-[320px]">
+          <div className="bg-white rounded-lg shadow p-4 h-48"></div>
+        </div>
+      </div>
+
+      {/* Listes skeleton */}
+      <div className="space-y-4">
+        <ListSkeleton title="Agents" />
+        <ListSkeleton title="Clients" />
+        <ListSkeleton title="Services" />
+      </div>
+    </div>
+  );
+}
 
 const CombinedPage = async () => {
-  // Fetch the enterprises to get the current enterprise ID
-  const enterprises = await fetchJSON(ENTERPRISES_ENDPOINT);
-  const nomEntreprise = enterprises[0].nomEntreprise;
+  // Fetch enterprises first (nécessaire pour les autres appels)
+  const enterprises = await fetchJSON(ENTERPRISES_ENDPOINT, { tags: ['enterprises'] });
+  const nomEntreprise = enterprises[0]?.nomEntreprise || '';
   const currentEnterpriseId = enterprises[0]?._id;
-  
 
-  
-  // Fetch services for the enterprise
-  const services = await fetchJSON(`${GET_ALL_SERVICE}/${currentEnterpriseId}`);
-  
-  // Fetch clients for the enterprise
-  const clientsResponse = await fetchJSON(`${GET_ALL_CLIENT_URL}/${currentEnterpriseId}/clients`);
-  const clients = clientsResponse.data || [];
-//console.log(clients);
+  if (!currentEnterpriseId) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <p className="text-gray-500">Aucune entreprise trouvée</p>
+      </div>
+    );
+  }
 
-  const agenttopay = await fetchJSON(`${GET_ALL_AGENTS_TO_PAY}/${currentEnterpriseId}`);
-  const agentToNotPay = await fetchJSON(`${GET_ALL_AGENTS_TO_NOT_PAY}/${currentEnterpriseId}`);
-
-  const agentsResponse = await fetchJSON(`${GET_ALL_AGENTS}/${currentEnterpriseId}`);
-  const agents = Array.isArray(agentsResponse) ? agentsResponse : agentsResponse.data || [];
-
-  const gerantsResponse = await fetchJSON(`${GET_ALL_GERANTS}/${currentEnterpriseId}`);
-  const clientToNotpay = await fetchJSON(`${GET_ALL_CLIENT_TO_NOT_PAY_URL}/${currentEnterpriseId}`);
-  const gerants = Array.isArray(gerantsResponse) ? gerantsResponse : gerantsResponse.gerants || [];
-  
-  const balance = await fetchJSON(`${BALANCE_ENDPOINT}/${currentEnterpriseId}`);
-  
-  // 🆕 Fetch masse salariale
-  const salaire = await fetchJSON(`${GET_MASSE_SALARIALE}/${currentEnterpriseId}`);
-       const waitingpaiement = await fetchJSON(`${GET_MASSE_PAIEMENT_ATTENDUS}/${currentEnterpriseId}`);
-       //console.log(waitingpaiement);
-       
-      
   return (
-    <div>
-      <CombinedView 
-        services={services}
-        agentapayer={agenttopay}
-        agentNotTopayer={agentToNotPay}
-        clientNotTopayer={clientToNotpay.data}
-        clients={clients}
-        agents={agents}
-        gerants={gerants}
+    <Suspense fallback={<CombinedSkeleton />}>
+      <CombinedDataLoader
         entrepriseId={currentEnterpriseId}
-        serviceId={''}
         nomEntreprise={nomEntreprise}
-        balance={balance}
-        salaire={salaire}  
-        waitingpaiement={waitingpaiement}
       />
-    </div>
+    </Suspense>
   );
 };
 

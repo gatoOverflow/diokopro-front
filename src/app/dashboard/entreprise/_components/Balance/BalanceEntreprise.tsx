@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useState } from 'react'
-import { CreditCard, Minus, Plus, Send, Loader2, AlertCircle, CheckCircle } from 'lucide-react'
+import { CreditCard, Minus, Plus, Send, Loader2, AlertCircle, CheckCircle, Wallet, ArrowUpCircle, ArrowDownCircle, MessageSquarePlus, TrendingUp } from 'lucide-react'
 import { envoyerMessage, rechargeCompte, retraitCompte } from '@/actions/Balance'
 import OtpInput from '../_Agent/OtpInput';
 import { validateOTP } from '@/actions/service';
@@ -364,277 +364,309 @@ const handleVerifyOtp = async () => {
     <>
       {/* Notification */}
       {notification.type && (
-        <div className={`fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg flex items-center gap-2 ${
-          notification.type === 'success' 
-            ? 'bg-green-100 text-green-800 border border-green-200' 
-            : 'bg-red-100 text-red-800 border border-red-200'
+        <div className={`fixed top-4 right-4 z-50 p-4 rounded-2xl shadow-lg flex items-center gap-3 animate-in slide-in-from-top-2 ${
+          notification.type === 'success'
+            ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+            : 'bg-red-50 text-red-800 border border-red-200'
         }`}>
           {notification.type === 'success' ? (
-            <CheckCircle className="w-5 h-5" />
+            <CheckCircle className="w-5 h-5 text-emerald-500" />
           ) : (
-            <AlertCircle className="w-5 h-5" />
+            <AlertCircle className="w-5 h-5 text-red-500" />
           )}
-          <span>{notification.message}</span>
+          <span className="font-medium">{notification.message}</span>
         </div>
       )}
 
       <div className="space-y-4">
-        {/* Gestion de compte */}
-        <Card className="shadow-sm border bg-white">
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2 text-lg font-semibold">
-              <CreditCard className="w-5 h-5" />
-              Gestion de compte
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div>
-                <p className="text-sm text-gray-500">Solde disponible</p>
-                <h1 className="text-2xl font-bold">{balances.balance.toLocaleString()} FCFA</h1>
-              </div>
-              <div className="flex gap-2">
-                {/* Bouton Alimenter */}
-                <Dialog open={isRechargeOpen} onOpenChange={handleCloseRechargeDialog}>
-                  <DialogTrigger asChild>
-                    <Button className="flex-1 bg-[#FF8D3C] hover:bg-[#FF8D3C]/90 text-white">
-                      <Plus className="w-4 h-4 mr-1" />
-                      Alimenter
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-lg">
-                    <DialogHeader>
-                      <DialogTitle>
-                        {showOtpStep ? 'Vérification de sécurité' : 'Alimenter le compte'}
-                      </DialogTitle>
-                      <DialogDescription>
-                        {showOtpStep 
-                          ? 'Entrez le code de vérification envoyé à l\'administrateur'
-                          : 'Entrez le montant que vous souhaitez recharger'
-                        }
-                      </DialogDescription>
-                    </DialogHeader>
-                    
-                    {!showOtpStep ? (
-                      // Étape 1: Saisie du montant
-                      <div className="space-y-4">
-                        <div>
-                          <Label htmlFor="recharge-amount">Montant (FCFA)</Label>
-                          <Input
-                            id="recharge-amount"
-                            type="number"
-                            placeholder="Entrez le montant"
-                            value={rechargeAmount}
-                            onChange={(e) => setRechargeAmount(e.target.value)}
-                            disabled={loading}
-                          />
-                        </div>
-                        <Button 
-                          onClick={handleRecharge} 
-                          disabled={loading || !rechargeAmount}
-                          className="w-full bg-[#FF8D3C] hover:bg-[#FF8D3C]/90"
-                        >
-                          {loading ? (
-                            <>
-                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                              Traitement...
-                            </>
-                          ) : (
-                            'Continuer'
-                          )}
-                        </Button>
-                      </div>
-                    ) : (
-                      // Étape 2: Vérification OTP
-                      <div className="py-4">
-                        <OtpInput
-                          length={6}
-                          onComplete={(otp) => setOtpCode(otp)}
-                          onSubmit={handleVerifyOtp}
-                          onResend={handleResendOtp}
-                          disabled={loading}
-                          isLoading={loading}
-                          loadingText="Vérification en cours..."
-                          buttonText="Valider"
-                          title="Vérification OTP - Recharge du compte"
-                          description={`Un code OTP a été envoyé pour confirmer la recharge de ${Number(rechargeAmount).toLocaleString()} FCFA. Le lien de paiement sera envoyé via SMS après validation.`}
-                          timerDuration={60}
-                        />
-                      </div>
-                    )}
-                  </DialogContent>
-                </Dialog>
+        {/* Carte Solde - Design moderne avec gradient */}
+        <div className="bg-gradient-to-br from-indigo-600 via-purple-600 to-indigo-700 rounded-2xl p-5 text-white shadow-lg relative overflow-hidden">
+          {/* Décoration de fond */}
+          <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2" />
+          <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2" />
 
-                {/* Bouton Débiter */}
-                <Dialog open={isRetraitOpen} onOpenChange={handleCloseRetraitDialog}>
-                  <DialogTrigger asChild>
-                    <Button className="flex-1 bg-[#FF8D3C] hover:bg-[#FF8D3C]/90 text-white">
-                      <Minus className="w-4 h-4 mr-1" />
-                      Débiter
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>
-                        {showOtpStep ? 'Vérification de sécurité' : 'Retrait du compte'}
-                      </DialogTitle>
-                      <DialogDescription>
-                        {showOtpStep 
-                          ? 'Entrez le code de vérification envoyé à l\'administrateur'
-                          : 'Effectuer un retrait vers un portefeuille mobile'
-                        }
-                      </DialogDescription>
-                    </DialogHeader>
-                    
-                    {!showOtpStep ? (
-                      // Étape 1: Formulaire de retrait
-                      <div className="space-y-4">
-                        <div>
-                          <Label htmlFor="retrait-amount">Montant (FCFA)</Label>
-                          <Input
-                            id="retrait-amount"
-                            type="number"
-                            placeholder="Entrez le montant"
-                            value={retraitData.montant}
-                            onChange={(e) => setRetraitData({...retraitData, montant: e.target.value})}
-                            disabled={loading}
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor="phone-number">Numéro de téléphone</Label>
-                          <Input
-                            id="phone-number"
-                            type="tel"
-                            placeholder="+221xxxxxxxxx"
-                            value={retraitData.numAdmin}
-                            onChange={(e) => setRetraitData({...retraitData, numAdmin: e.target.value})}
-                            disabled={loading}
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor="wallet">Portefeuille</Label>
-                          <Select 
-                            value={retraitData.wallet} 
-                            onValueChange={(value) => setRetraitData({...retraitData, wallet: value})}
-                            disabled={loading}
-                          >
-                            <SelectTrigger>
-                              <SelectValue placeholder="Sélectionnez un portefeuille" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {walletOptions.map((option) => (
-                                <SelectItem key={option.value} value={option.value}>
-                                  {option.label}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <Button 
-                          onClick={handleRetrait} 
-                          disabled={loading || !retraitData.montant || !retraitData.numAdmin}
-                          className="w-full bg-[#FF8D3C] hover:bg-[#FF8D3C]/90"
-                        >
-                          {loading ? (
-                            <>
-                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                              Traitement...
-                            </>
-                          ) : (
-                            'Effectuer le retrait'
-                          )}
-                        </Button>
-                      </div>
-                    ) : (
-                      // Étape 2: Vérification OTP pour retrait (utilise la même fonction handleVerifyOtp)
-                      <div className="py-4">
-                        <OtpInput
-                          length={6}
-                          onComplete={(otp) => setOtpCode(otp)}
-                          onSubmit={handleVerifyOtp}
-                          onResend={handleResendOtp}
-                          disabled={loading}
-                          isLoading={loading}
-                          loadingText="Vérification en cours..."
-                          buttonText="Valider le retrait"
-                          title="Vérification OTP - Retrait"
-                          description={`Un code OTP a été envoyé pour confirmer le retrait de ${Number(retraitData.montant).toLocaleString()} FCFA vers ${retraitData.numAdmin}.`}
-                          timerDuration={60}
-                        />
-                      </div>
-                    )}
-                  </DialogContent>
-                </Dialog>
+          <div className="relative z-10">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="bg-white/20 p-2 rounded-xl">
+                <Wallet className="w-5 h-5" />
               </div>
+              <span className="text-white/80 text-sm font-medium">Solde disponible</span>
             </div>
-          </CardContent>
-        </Card>
-        
-        {/* Messagerie */}
-        <Card className="shadow-sm border bg-white">
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2 text-lg font-semibold">
-              <Send className="w-5 h-5" />
-              Messagerie
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Dialog open={isMessageOpen} onOpenChange={setIsMessageOpen}>
-              <DialogTrigger asChild>
-                <Button className="w-full bg-[#FF8D3C] hover:bg-[#FF8D3C]/90 text-white">
-                  <Send className="w-4 h-4 mr-2" />
-                  Composer un message
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Nouveau message</DialogTitle>
-                  <DialogDescription>
-                    Envoyer un message aux utilisateurs
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="space-y-4">
+
+            <div className="flex items-baseline gap-2 mb-1">
+              <span className="text-3xl font-bold tracking-tight">
+                {balances.balance.toLocaleString()}
+              </span>
+              <span className="text-white/70 text-sm font-medium">FCFA</span>
+            </div>
+
+            <div className="flex items-center gap-1 text-emerald-300 text-xs">
+              <TrendingUp className="w-3 h-3" />
+              <span>Compte actif</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Actions - Alimenter et Débiter */}
+        <div className="grid grid-cols-2 gap-3">
+          {/* Bouton Alimenter */}
+          <Dialog open={isRechargeOpen} onOpenChange={handleCloseRechargeDialog}>
+            <DialogTrigger asChild>
+              <button className="group flex flex-col items-center gap-2 p-4 bg-gradient-to-br from-emerald-50 to-green-50 border border-emerald-200 rounded-2xl hover:shadow-md hover:border-emerald-300 transition-all">
+                <div className="bg-emerald-500 p-3 rounded-xl group-hover:scale-110 transition-transform">
+                  <ArrowUpCircle className="w-5 h-5 text-white" />
+                </div>
+                <span className="text-sm font-semibold text-emerald-700">Alimenter</span>
+              </button>
+            </DialogTrigger>
+            <DialogContent className="max-w-lg">
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  <div className="bg-emerald-100 p-2 rounded-lg">
+                    <ArrowUpCircle className="w-5 h-5 text-emerald-600" />
+                  </div>
+                  {showOtpStep ? 'Vérification de sécurité' : 'Alimenter le compte'}
+                </DialogTitle>
+                <DialogDescription>
+                  {showOtpStep
+                    ? 'Entrez le code de vérification envoyé à l\'administrateur'
+                    : 'Entrez le montant que vous souhaitez recharger'
+                  }
+                </DialogDescription>
+              </DialogHeader>
+
+              {!showOtpStep ? (
+                <div className="space-y-4 pt-2">
                   <div>
-                    <Label htmlFor="message-title">Titre</Label>
+                    <Label htmlFor="recharge-amount" className="text-gray-700">Montant (FCFA)</Label>
                     <Input
-                      id="message-title"
-                      type="text"
-                      placeholder="Titre du message"
-                      value={messageData.titre}
-                      onChange={(e) => setMessageData({...messageData, titre: e.target.value})}
+                      id="recharge-amount"
+                      type="number"
+                      placeholder="Ex: 50000"
+                      value={rechargeAmount}
+                      onChange={(e) => setRechargeAmount(e.target.value)}
                       disabled={loading}
+                      className="mt-1.5 h-12 text-lg"
                     />
                   </div>
-                  <div>
-                    <Label htmlFor="message-content">Message</Label>
-                    <Textarea
-                      id="message-content"
-                      placeholder="Contenu du message"
-                      className="min-h-[100px]"
-                      value={messageData.message}
-                      onChange={(e) => setMessageData({...messageData, message: e.target.value})}
-                      disabled={loading}
-                    />
-                  </div>
-                  <Button 
-                    onClick={handleSendMessage}
-                    disabled={loading || !messageData.titre || !messageData.message}
-                    className="w-full bg-[#FF8D3C] hover:bg-[#FF8D3C]/90"
+                  <Button
+                    onClick={handleRecharge}
+                    disabled={loading || !rechargeAmount}
+                    className="w-full h-12 bg-emerald-500 hover:bg-emerald-600 text-white font-medium"
                   >
                     {loading ? (
                       <>
                         <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Envoi en cours...
+                        Traitement...
                       </>
                     ) : (
-                      'Envoyer le message'
+                      <>
+                        <Plus className="w-4 h-4 mr-2" />
+                        Continuer
+                      </>
                     )}
                   </Button>
                 </div>
-              </DialogContent>
-            </Dialog>
-          </CardContent>
-        </Card>
+              ) : (
+                <div className="py-4">
+                  <OtpInput
+                    length={6}
+                    onComplete={(otp) => setOtpCode(otp)}
+                    onSubmit={handleVerifyOtp}
+                    onResend={handleResendOtp}
+                    disabled={loading}
+                    isLoading={loading}
+                    loadingText="Vérification en cours..."
+                    buttonText="Valider"
+                    title="Vérification OTP - Recharge du compte"
+                    description={`Un code OTP a été envoyé pour confirmer la recharge de ${Number(rechargeAmount).toLocaleString()} FCFA. Le lien de paiement sera envoyé via SMS après validation.`}
+                    timerDuration={60}
+                  />
+                </div>
+              )}
+            </DialogContent>
+          </Dialog>
+
+          {/* Bouton Débiter */}
+          <Dialog open={isRetraitOpen} onOpenChange={handleCloseRetraitDialog}>
+            <DialogTrigger asChild>
+              <button className="group flex flex-col items-center gap-2 p-4 bg-gradient-to-br from-rose-50 to-red-50 border border-rose-200 rounded-2xl hover:shadow-md hover:border-rose-300 transition-all">
+                <div className="bg-rose-500 p-3 rounded-xl group-hover:scale-110 transition-transform">
+                  <ArrowDownCircle className="w-5 h-5 text-white" />
+                </div>
+                <span className="text-sm font-semibold text-rose-700">Débiter</span>
+              </button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  <div className="bg-rose-100 p-2 rounded-lg">
+                    <ArrowDownCircle className="w-5 h-5 text-rose-600" />
+                  </div>
+                  {showOtpStep ? 'Vérification de sécurité' : 'Retrait du compte'}
+                </DialogTitle>
+                <DialogDescription>
+                  {showOtpStep
+                    ? 'Entrez le code de vérification envoyé à l\'administrateur'
+                    : 'Effectuer un retrait vers un portefeuille mobile'
+                  }
+                </DialogDescription>
+              </DialogHeader>
+
+              {!showOtpStep ? (
+                <div className="space-y-4 pt-2">
+                  <div>
+                    <Label htmlFor="retrait-amount" className="text-gray-700">Montant (FCFA)</Label>
+                    <Input
+                      id="retrait-amount"
+                      type="number"
+                      placeholder="Ex: 25000"
+                      value={retraitData.montant}
+                      onChange={(e) => setRetraitData({...retraitData, montant: e.target.value})}
+                      disabled={loading}
+                      className="mt-1.5 h-12 text-lg"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="phone-number" className="text-gray-700">Numéro de téléphone</Label>
+                    <Input
+                      id="phone-number"
+                      type="tel"
+                      placeholder="+221 7X XXX XX XX"
+                      value={retraitData.numAdmin}
+                      onChange={(e) => setRetraitData({...retraitData, numAdmin: e.target.value})}
+                      disabled={loading}
+                      className="mt-1.5"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="wallet" className="text-gray-700">Portefeuille mobile</Label>
+                    <Select
+                      value={retraitData.wallet}
+                      onValueChange={(value) => setRetraitData({...retraitData, wallet: value})}
+                      disabled={loading}
+                    >
+                      <SelectTrigger className="mt-1.5">
+                        <SelectValue placeholder="Choisir un portefeuille" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {walletOptions.map((option) => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <Button
+                    onClick={handleRetrait}
+                    disabled={loading || !retraitData.montant || !retraitData.numAdmin}
+                    className="w-full h-12 bg-rose-500 hover:bg-rose-600 text-white font-medium"
+                  >
+                    {loading ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Traitement...
+                      </>
+                    ) : (
+                      <>
+                        <Minus className="w-4 h-4 mr-2" />
+                        Effectuer le retrait
+                      </>
+                    )}
+                  </Button>
+                </div>
+              ) : (
+                <div className="py-4">
+                  <OtpInput
+                    length={6}
+                    onComplete={(otp) => setOtpCode(otp)}
+                    onSubmit={handleVerifyOtp}
+                    onResend={handleResendOtp}
+                    disabled={loading}
+                    isLoading={loading}
+                    loadingText="Vérification en cours..."
+                    buttonText="Valider le retrait"
+                    title="Vérification OTP - Retrait"
+                    description={`Un code OTP a été envoyé pour confirmer le retrait de ${Number(retraitData.montant).toLocaleString()} FCFA vers ${retraitData.numAdmin}.`}
+                    timerDuration={60}
+                  />
+                </div>
+              )}
+            </DialogContent>
+          </Dialog>
+        </div>
+
+        {/* Messagerie - Design amélioré */}
+        <Dialog open={isMessageOpen} onOpenChange={setIsMessageOpen}>
+          <DialogTrigger asChild>
+            <button className="w-full group flex items-center gap-3 p-4 bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-2xl hover:shadow-md hover:border-blue-300 transition-all">
+              <div className="bg-blue-500 p-3 rounded-xl group-hover:scale-110 transition-transform">
+                <MessageSquarePlus className="w-5 h-5 text-white" />
+              </div>
+              <div className="text-left">
+                <span className="text-sm font-semibold text-blue-700 block">Messagerie</span>
+                <span className="text-xs text-blue-500">Envoyer un message aux utilisateurs</span>
+              </div>
+              <Send className="w-4 h-4 text-blue-400 ml-auto" />
+            </button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <div className="bg-blue-100 p-2 rounded-lg">
+                  <MessageSquarePlus className="w-5 h-5 text-blue-600" />
+                </div>
+                Nouveau message
+              </DialogTitle>
+              <DialogDescription>
+                Envoyer un message à tous les utilisateurs
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 pt-2">
+              <div>
+                <Label htmlFor="message-title" className="text-gray-700">Titre du message</Label>
+                <Input
+                  id="message-title"
+                  type="text"
+                  placeholder="Ex: Information importante"
+                  value={messageData.titre}
+                  onChange={(e) => setMessageData({...messageData, titre: e.target.value})}
+                  disabled={loading}
+                  className="mt-1.5"
+                />
+              </div>
+              <div>
+                <Label htmlFor="message-content" className="text-gray-700">Contenu</Label>
+                <Textarea
+                  id="message-content"
+                  placeholder="Rédigez votre message ici..."
+                  className="mt-1.5 min-h-[120px] resize-none"
+                  value={messageData.message}
+                  onChange={(e) => setMessageData({...messageData, message: e.target.value})}
+                  disabled={loading}
+                />
+              </div>
+              <Button
+                onClick={handleSendMessage}
+                disabled={loading || !messageData.titre || !messageData.message}
+                className="w-full h-12 bg-blue-500 hover:bg-blue-600 text-white font-medium"
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Envoi en cours...
+                  </>
+                ) : (
+                  <>
+                    <Send className="w-4 h-4 mr-2" />
+                    Envoyer le message
+                  </>
+                )}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </>
   )

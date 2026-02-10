@@ -2,34 +2,27 @@ import { fetchJSON } from '@/lib/api';
 import { ENTERPRISES_ENDPOINT, GET_ALL_CLIENT_URL, GET_ALL_PAIEMENT_ENTREPRISE_URL, GET_ALL_AGENTS } from '@/actions/endpoint';
 import PaymentListView from './_components/ListPaiements';
 
-
 const ClientsByServicePage = async () => {
-  // First fetch the enterprises to get the current enterprise ID
-  const enterprises = await fetchJSON(ENTERPRISES_ENDPOINT);
+  const enterprises = await fetchJSON(ENTERPRISES_ENDPOINT, { tags: ['enterprises'] });
+  const currentEnterpriseId = enterprises[0]?._id;
 
-  
-  const currentEnterpriseId = enterprises[0]?._id; // Assuming you want the first enterprise
-  //console.log(currentEnterpriseId);
-  
   if (!currentEnterpriseId) {
-    throw new Error("No enterprise found");
+    return <div>Aucune entreprise trouvée</div>;
   }
-  
-  // Then fetch services for the specific enterprise
-  const clients = await fetchJSON(`${GET_ALL_CLIENT_URL}/${currentEnterpriseId}/clients`);
 
-  const paie =await await fetchJSON(`${GET_ALL_PAIEMENT_ENTREPRISE_URL}/${currentEnterpriseId}`);
+  // Paralléliser les appels API avec tags pour cache
+  const [clients, agentsResponse] = await Promise.all([
+    fetchJSON(`${GET_ALL_CLIENT_URL}/${currentEnterpriseId}/clients`, { tags: ['clients'] }),
+    fetchJSON(`${GET_ALL_AGENTS}/${currentEnterpriseId}`, { tags: ['agents'] })
+  ]);
 
-    const agentsResponse = await fetchJSON(`${GET_ALL_AGENTS}/${currentEnterpriseId}`);
-    //console.log(agentsResponse);
-    
-    const agents = Array.isArray(agentsResponse) ? agentsResponse : agentsResponse.data || [];
-  
+  const agents = Array.isArray(agentsResponse) ? agentsResponse : agentsResponse.data || [];
+
   return (
-    <PaymentListView 
-     clients={clients.data}
-     agents={agents}
-        />
+    <PaymentListView
+      clients={clients.data || []}
+      agents={agents}
+    />
   );
 };
 

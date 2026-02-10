@@ -4,5 +4,7 @@ export type User = {
     prenom: string;
     email: string;
     role: string;
-  
+    enterpriseId?: string;
+    entrepriseId?: string; // Variante possible
+    entreprise?: string | { _id: string };
   };

@@ -4,19 +4,21 @@ import { useState, useRef, useEffect } from "react";
 import { LockKeyhole, AlertCircle } from "lucide-react";
 import { verifyAdminPassword } from "@/actions/bureau";
 import { fetchJSON } from "@/lib/api";
-import { ENTERPRISES_ENDPOINT } from "@/actions/endpoint";
+import { ENTERPRISES_ENDPOINT, GET_ENTREPRISE_URL } from "@/actions/endpoint";
 
 interface PasswordModalProps {
   onSuccess: () => void;
   onCancel: () => void;
   userRole?: string;
+  userEmail?: string; // Email de l'utilisateur connecté
   enterpriseId?: string; // Ajout de l'ID de l'entreprise
 }
 
-export function PasswordModal({ onSuccess, onCancel, userRole, enterpriseId }: PasswordModalProps) {
+export function PasswordModal({ onSuccess, onCancel, userRole, userEmail, enterpriseId }: PasswordModalProps) {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingAdmin, setIsLoadingAdmin] = useState(true); // État de chargement pour l'email admin
   const [adminEmail, setAdminEmail] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
   
@@ -32,55 +34,93 @@ export function PasswordModal({ onSuccess, onCancel, userRole, enterpriseId }: P
   
   // Récupérer l'email de l'administrateur au chargement (seulement si nécessaire)
   useEffect(() => {
-    if (hasPrivilegedAccess) return; // Pas besoin de récupérer l'email pour les accès privilégiés
-    
+    if (hasPrivilegedAccess) {
+      setIsLoadingAdmin(false);
+      return;
+    }
+
     const fetchAdminEmail = async () => {
+      setIsLoadingAdmin(true);
       try {
-        let endpoint = ENTERPRISES_ENDPOINT;
-        
-        // Si on a un ID d'entreprise spécifique, l'utiliser
-        if (enterpriseId) {
-          endpoint = `${ENTERPRISES_ENDPOINT}/${enterpriseId}`;
+        // Si l'utilisateur connecté est admin et a un email, l'utiliser directement
+        if (userRole === "admin" && userEmail) {
+          setAdminEmail(userEmail);
+          console.log("PasswordModal - utilisation de l'email de l'utilisateur connecté:", userEmail);
+          setIsLoadingAdmin(false);
+          return;
         }
-        
-        const data = await fetchJSON(endpoint);
-       // console.log("Données entreprises reçues:", data);
-        
-        let enterpriseData = data;
-        
-        // Si c'est un tableau, prendre le premier élément ou celui correspondant à l'ID
-        if (Array.isArray(data)) {
-          if (enterpriseId) {
-            enterpriseData = data.find(enterprise => enterprise.id === enterpriseId) || data[0];
-          } else {
-            enterpriseData = data[0];
-          }
+
+        console.log("PasswordModal - enterpriseId reçu:", enterpriseId);
+
+        // Toujours récupérer la liste des entreprises d'abord
+        const enterprises = await fetchJSON(ENTERPRISES_ENDPOINT);
+        console.log("PasswordModal - enterprises:", enterprises);
+
+        if (!enterprises || !Array.isArray(enterprises) || enterprises.length === 0) {
+          setError("Aucune entreprise trouvée");
+          setIsLoadingAdmin(false);
+          return;
         }
-        
-        // Vérifier que nous avons des données d'entreprise avec des gérants
-        if (enterpriseData && enterpriseData.gerants) {
-          // Chercher le gérant avec le rôle "admin"
-          const admin = enterpriseData.gerants.find((gerant) => gerant.role === 'admin');
-          
-          if (admin && admin.email) {
+
+        // Utiliser l'ID passé ou le premier de la liste
+        const targetEnterpriseId = enterpriseId || enterprises[0]?._id;
+        console.log("PasswordModal - targetEnterpriseId:", targetEnterpriseId);
+
+        if (!targetEnterpriseId) {
+          setError("ID d'entreprise non trouvé");
+          setIsLoadingAdmin(false);
+          return;
+        }
+
+        // Récupérer les détails complets de l'entreprise
+        const enterpriseData = await fetchJSON(`${GET_ENTREPRISE_URL}/${targetEnterpriseId}`);
+        console.log("PasswordModal - enterpriseData:", enterpriseData);
+
+        if (!enterpriseData || (Array.isArray(enterpriseData) && enterpriseData.length === 0)) {
+          setError("Impossible de charger les données de l'entreprise");
+          setIsLoadingAdmin(false);
+          return;
+        }
+
+        // Chercher le gérant avec le rôle "admin"
+        if (enterpriseData.gerants && Array.isArray(enterpriseData.gerants) && enterpriseData.gerants.length > 0) {
+          const admin = enterpriseData.gerants.find((gerant: any) => gerant.role === 'admin');
+
+          if (admin?.email) {
             setAdminEmail(admin.email);
-            //console.log("Email admin trouvé:", admin.email);
+            console.log("PasswordModal - admin email trouvé:", admin.email);
           } else {
-            console.error("Aucun administrateur trouvé dans les données");
-            setError("Aucun administrateur trouvé pour cette entreprise");
+            // Si pas d'admin, chercher n'importe quel gérant
+            const anyGerant = enterpriseData.gerants[0];
+            if (anyGerant?.email) {
+              setAdminEmail(anyGerant.email);
+              console.log("PasswordModal - gérant email utilisé:", anyGerant.email);
+            } else {
+              setError("Aucun email d'administrateur trouvé dans les gérants");
+            }
           }
         } else {
-          console.error("Format de données inattendu:", enterpriseData);
-          setError("Impossible de récupérer les informations de l'entreprise");
+          console.log("PasswordModal - pas de gérants dans enterpriseData:", enterpriseData);
+          // Essayer aussi de chercher dans la structure directe de l'entreprise
+          // Note: le champ peut être "email" ou "emailEntreprise"
+          const enterpriseEmail = enterpriseData.emailEntreprise || enterpriseData.email;
+          if (enterpriseEmail) {
+            setAdminEmail(enterpriseEmail);
+            console.log("PasswordModal - email entreprise utilisé:", enterpriseEmail);
+          } else {
+            setError("Aucun gérant configuré pour cette entreprise");
+          }
         }
       } catch (error) {
-        console.error("Erreur lors de la récupération de l'email de l'administrateur:", error);
+        console.error("PasswordModal - Erreur:", error);
         setError("Erreur de connexion au serveur");
+      } finally {
+        setIsLoadingAdmin(false);
       }
     };
-    
+
     fetchAdminEmail();
-  }, [hasPrivilegedAccess, enterpriseId]);
+  }, [hasPrivilegedAccess, enterpriseId, userRole, userEmail]);
   
   useEffect(() => {
     // Focus sur le champ de saisie quand le modal s'ouvre
@@ -150,7 +190,12 @@ export function PasswordModal({ onSuccess, onCancel, userRole, enterpriseId }: P
             Veuillez saisir le mot de passe pour accéder au bureau.
           </p>
           
-          {adminEmail ? (
+          {isLoadingAdmin ? (
+            <div className="text-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
+              <p className="text-gray-500">Chargement des informations...</p>
+            </div>
+          ) : adminEmail ? (
             <form onSubmit={handleSubmit}>
               <div className="mb-6">
                 <input
@@ -163,7 +208,7 @@ export function PasswordModal({ onSuccess, onCancel, userRole, enterpriseId }: P
                   placeholder="Entrez le mot de passe administrateur"
                   disabled={isLoading}
                 />
-                
+
                 {error && (
                   <div className="mt-2 flex items-center text-red-600 text-sm">
                     <AlertCircle className="h-4 w-4 mr-1" />
@@ -171,7 +216,7 @@ export function PasswordModal({ onSuccess, onCancel, userRole, enterpriseId }: P
                   </div>
                 )}
               </div>
-              
+
               <div className="flex gap-3">
                 <button
                   type="submit"

@@ -47,6 +47,8 @@ import { validateOTP } from '@/actions/service';
 import { updatedGerant } from '@/actions/gerant';
 import { deleteAgent, updatedAgent } from '@/actions/Agent';
 import CreateGerantModal from '../../AgentEntre/_components/AgentEntreprise';
+import { Building2, UserPlus, Briefcase, UserCog, Plus, Mail, Phone, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 
 const CombinedView = ({
     services,
@@ -778,103 +780,220 @@ const CombinedView = ({
         setMessageContent('');
     };
 
-    // Fonction pour la pagination
-    const renderPagination = (currentPage, totalPages, setPage) => {
+    // Fonction pour obtenir les initiales
+    const getInitials = (nom: string, prenom: string) => {
+        return `${(nom?.[0] || '').toUpperCase()}${(prenom?.[0] || '').toUpperCase()}`;
+    };
+
+    // Fonction pour la pagination moderne
+    const renderPagination = (currentPage, totalPages, setPage, totalItems, startIndex) => {
         if (totalPages <= 1) return null;
 
+        const getPageNumbers = () => {
+            const pages: (number | string)[] = [];
+            const maxVisible = 5;
+
+            if (totalPages <= maxVisible) {
+                for (let i = 1; i <= totalPages; i++) pages.push(i);
+            } else {
+                if (currentPage <= 3) {
+                    for (let i = 1; i <= 4; i++) pages.push(i);
+                    pages.push('...');
+                    pages.push(totalPages);
+                } else if (currentPage >= totalPages - 2) {
+                    pages.push(1);
+                    pages.push('...');
+                    for (let i = totalPages - 3; i <= totalPages; i++) pages.push(i);
+                } else {
+                    pages.push(1);
+                    pages.push('...');
+                    for (let i = currentPage - 1; i <= currentPage + 1; i++) pages.push(i);
+                    pages.push('...');
+                    pages.push(totalPages);
+                }
+            }
+            return pages;
+        };
+
+        const endIndex = Math.min(startIndex + ITEMS_PER_PAGE, totalItems);
+
         return (
-            <div className="flex items-center justify-center gap-2">
-            {/* Bouton précédent */}
-            <button
-                onClick={() => setPage(p => Math.max(p - 1, 1))}
-                disabled={currentPage === 1}
-                className="w-16 h-12 flex items-center justify-center border border-gray-200 rounded-lg hover:bg-gray-50"
-            >
-                <ChevronLeft size={20} />
-            </button>
-            
-            {/* Affichage des numéros de page */}
-            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                const pageNum = i + 1;
-                return (
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6 pt-4 border-t border-gray-100">
+                <div className="text-sm text-gray-500">
+                    Affichage de <span className="font-medium text-gray-900">{startIndex + 1}</span> à{' '}
+                    <span className="font-medium text-gray-900">{endIndex}</span> sur{' '}
+                    <span className="font-medium text-gray-900">{totalItems}</span> résultats
+                </div>
+
+                <div className="flex items-center gap-1">
                     <button
-                        key={pageNum}
-                        onClick={() => setPage(pageNum)}
-                        className={`w-12 h-12 flex items-center justify-center rounded-lg ${
-                            currentPage === pageNum
-                                ? "bg-orange-400 text-white"
-                                : "bg-white text-gray-800 border border-gray-200 hover:bg-gray-50"
-                        }`}
+                        onClick={() => setPage(1)}
+                        disabled={currentPage === 1}
+                        className="h-9 w-9 flex items-center justify-center rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed hidden sm:flex"
                     >
-                        {pageNum}
+                        <ChevronsLeft className="w-4 h-4" />
                     </button>
-                );
-            })}
-            
-            {/* Bouton suivant */}
-            <button
-                onClick={() => setPage(p => Math.min(p + 1, totalPages))}
-                disabled={currentPage === totalPages}
-                className="w-16 h-12 flex items-center justify-center border border-gray-200 rounded-lg hover:bg-gray-50"
-            >
-                <ChevronRight size={20} />
-            </button>
-        </div>
-    );
-};
+                    <button
+                        onClick={() => setPage(p => Math.max(p - 1, 1))}
+                        disabled={currentPage === 1}
+                        className="h-9 w-9 flex items-center justify-center rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                        <ChevronLeft className="w-4 h-4" />
+                    </button>
+
+                    {getPageNumbers().map((page, index) => (
+                        <React.Fragment key={index}>
+                            {page === '...' ? (
+                                <span className="px-2 text-gray-400">...</span>
+                            ) : (
+                                <button
+                                    onClick={() => setPage(page as number)}
+                                    className={`h-9 w-9 flex items-center justify-center rounded-lg font-medium transition-all ${
+                                        currentPage === page
+                                            ? 'bg-blue-500 text-white shadow-md shadow-blue-500/25'
+                                            : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                                    }`}
+                                >
+                                    {page}
+                                </button>
+                            )}
+                        </React.Fragment>
+                    ))}
+
+                    <button
+                        onClick={() => setPage(p => Math.min(p + 1, totalPages))}
+                        disabled={currentPage === totalPages}
+                        className="h-9 w-9 flex items-center justify-center rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                        <ChevronRight className="w-4 h-4" />
+                    </button>
+                    <button
+                        onClick={() => setPage(totalPages)}
+                        disabled={currentPage === totalPages}
+                        className="h-9 w-9 flex items-center justify-center rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed hidden sm:flex"
+                    >
+                        <ChevronsRight className="w-4 h-4" />
+                    </button>
+                </div>
+            </div>
+        );
+    };
 
     return (
-        <div className="p-2 ">
+        <div className="p-4 md:p-6 space-y-6 bg-gray-50/50 min-h-screen">
             <Toaster position="top-center" />
 
-    
+            {/* ═══════════════════════════════════════════════════════════════
+                SECTION 1: HEADER + STATS + SOLDE (Layout horizontal)
+            ═══════════════════════════════════════════════════════════════ */}
+            <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
 
-            <div className="grid grid-cols-1 md:grid-cols-4 md:w-[900px] w-[500px] gap-5 mb-6">
-                <div className="bg-white p-9 rounded-md shadow-xl">
-                    <h3 className="text-lg font-semibold">Total Agents</h3>
-                    <div className="flex items-center justify-between mt-1">
-                        <p className="text-3xl font-bold text-[#0cadec]">{agents.length}</p>
-                        <CreateAgentModal services={services} entrepriseId={entrepriseId}>
-                           
-                        </CreateAgentModal>
+                {/* Colonne gauche: Header + Stats (3/4) */}
+                <div className="xl:col-span-3 space-y-4">
+                    {/* Header entreprise */}
+                    <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 rounded-2xl p-5 text-white shadow-lg">
+                        <div className="flex items-center gap-4">
+                            <div className="bg-white/20 backdrop-blur-sm p-3 rounded-xl">
+                                <Building2 className="w-7 h-7" />
+                            </div>
+                            <div>
+                                <h1 className="text-xl md:text-2xl font-bold">{nomEntreprise}</h1>
+                                <p className="text-blue-100 text-sm">Tableau de bord entreprise</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Cartes statistiques - PROPRES (aucun bouton) */}
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+                        <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+                            <div className="bg-blue-500 w-9 h-9 rounded-lg flex items-center justify-center mb-2">
+                                <Users className="w-4 h-4 text-white" />
+                            </div>
+                            <p className="text-2xl font-bold text-gray-900">{agents.length}</p>
+                            <p className="text-xs text-gray-500 font-medium">Agents</p>
+                        </div>
+
+                        <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+                            <div className="bg-emerald-500 w-9 h-9 rounded-lg flex items-center justify-center mb-2">
+                                <User className="w-4 h-4 text-white" />
+                            </div>
+                            <p className="text-2xl font-bold text-gray-900">{clients.length}</p>
+                            <p className="text-xs text-gray-500 font-medium">Clients</p>
+                        </div>
+
+                        <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+                            <div className="bg-purple-500 w-9 h-9 rounded-lg flex items-center justify-center mb-2">
+                                <Briefcase className="w-4 h-4 text-white" />
+                            </div>
+                            <p className="text-2xl font-bold text-gray-900">{services.length}</p>
+                            <p className="text-xs text-gray-500 font-medium">Services</p>
+                        </div>
+
+                        <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+                            <div className="bg-amber-500 w-9 h-9 rounded-lg flex items-center justify-center mb-2">
+                                <UserCog className="w-4 h-4 text-white" />
+                            </div>
+                            <p className="text-2xl font-bold text-gray-900">{gerants.length}</p>
+                            <p className="text-xs text-gray-500 font-medium">Gérants</p>
+                        </div>
+
+                        <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+                            <div className="bg-cyan-500 w-9 h-9 rounded-lg flex items-center justify-center mb-2">
+                                <FileText className="w-4 h-4 text-white" />
+                            </div>
+                            <p className="text-xl font-bold text-gray-900">0</p>
+                            <p className="text-xs text-gray-500 font-medium">Masse Salariale</p>
+                        </div>
+
+                        <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+                            <div className="bg-rose-500 w-9 h-9 rounded-lg flex items-center justify-center mb-2">
+                                <Calendar className="w-4 h-4 text-white" />
+                            </div>
+                            <p className="text-xl font-bold text-gray-900">0</p>
+                            <p className="text-xs text-gray-500 font-medium">Paiements Attendus</p>
+                        </div>
                     </div>
                 </div>
 
-                <div className="bg-white p-9 rounded-md shadow-xl">
-                    <h3 className="text-lg font-semibold">Total Clients</h3>
-                    <div className="flex items-center justify-between mt-1">
-                        <p className="text-3xl font-bold text-[#0cadec]">{clients.length}</p>
-                        <CreateClientModal services={services} entrepriseId={entrepriseId}>
-                           
-                        </CreateClientModal>
-                    </div>
+                {/* Colonne droite: Solde (1/4) */}
+                <div className="xl:col-span-1">
+                    <BalanceEntreprise balances={balance} entrepriseId={entrepriseId} />
                 </div>
-
-                <div className="bg-white p-9 rounded-md shadow-xl">
-                    <h3 className="text-lg font-semibold">Total Services</h3>
-                    <div className="flex items-center justify-between mt-1">
-                        <p className="text-3xl font-bold text-[#0cadec]">{services.length}</p>
-                        <CreateServiceModal enterprises={[{ _id: entrepriseId, nomEntreprise }]}>
-                          
-                        </CreateServiceModal>
-                    </div>
-                </div>
-
-                <div className="bg-white p-9 rounded-md shadow-xl">
-                    <h3 className="text-lg font-semibold">Total Gerants</h3>
-                    <div className="flex items-center justify-between mt-1">
-                        <p className="text-3xl font-bold text-[#0cadec]">{gerants.length}</p>
-                        <CreateGerantModal  enterprises={[{ _id: entrepriseId, nomEntreprise }]} >
-                           
-                        </CreateGerantModal>
-                    </div>
-                </div>
-
             </div>
 
-            {/* Section principale avec les listes et la messagerie */}
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 ">
-                <div className="lg:col-span-3 space-y-6">
+            {/* ═══════════════════════════════════════════════════════════════
+                SECTION 2: ACTIONS RAPIDES (séparée, claire)
+            ═══════════════════════════════════════════════════════════════ */}
+            <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+                <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                    <Plus className="w-4 h-4" />
+                    Actions rapides
+                </h3>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <div className="flex items-center gap-3 p-3 rounded-xl bg-blue-50 hover:bg-blue-100 transition-colors cursor-pointer">
+                        <CreateAgentModal services={services} entrepriseId={entrepriseId} />
+                        <span className="text-sm font-medium text-blue-700">Nouvel Agent</span>
+                    </div>
+                    <div className="flex items-center gap-3 p-3 rounded-xl bg-emerald-50 hover:bg-emerald-100 transition-colors cursor-pointer">
+                        <CreateClientModal services={services} entrepriseId={entrepriseId} />
+                        <span className="text-sm font-medium text-emerald-700">Nouveau Client</span>
+                    </div>
+                    <div className="flex items-center gap-3 p-3 rounded-xl bg-purple-50 hover:bg-purple-100 transition-colors cursor-pointer">
+                        <CreateServiceModal enterprises={[{ _id: entrepriseId, nomEntreprise }]} />
+                        <span className="text-sm font-medium text-purple-700">Nouveau Service</span>
+                    </div>
+                    <div className="flex items-center gap-3 p-3 rounded-xl bg-amber-50 hover:bg-amber-100 transition-colors cursor-pointer">
+                        <CreateGerantModal enterprises={[{ _id: entrepriseId, nomEntreprise }]} />
+                        <span className="text-sm font-medium text-amber-700">Nouveau Gérant</span>
+                    </div>
+                </div>
+            </div>
+
+            {/* ═══════════════════════════════════════════════════════════════
+                SECTION 3: LISTES (Agents, Clients, Services)
+            ═══════════════════════════════════════════════════════════════ */}
+            <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
+                <div className="xl:col-span-3 space-y-6">
                     {/* Liste des Agents */}
                     <div className='flex justify-between items-center'>
   <h2 className="text-xl font-semibold text-blue-500">Liste des Agents</h2>
@@ -916,89 +1035,108 @@ const CombinedView = ({
     </Select>
   </div>
 </div>
-                    <div className="bg-white p-4 rounded-lg shadow-xl">
-                        <div className="flex items-center justify-between mb-4">
-
-                        </div>
-
-                        {/* Tableau des agents */}
+                    <div className="bg-white p-4 rounded-2xl shadow-lg border border-blue-100">
+                        {/* Liste des agents en cartes */}
                         {displayedAgents.length > 0 ? (
-                            <div className="overflow-x-auto">
-                                <table className="min-w-full divide-y divide-gray-200">
-                                    <thead className="bg-gray-50">
-                                        <tr>
-                                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nom(s)</th>
-                                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Prénom(s)</th>
-                                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Téléphone</th>
-                                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Services</th>
-                                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rôle</th>
-                                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Paiement</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="bg-white divide-y divide-gray-100">
-                                        {displayedAgents.map((agent) => (
-                                            <tr
-                                                key={agent._id}
-                                                onClick={() => handleAgentClick(agent)}
-                                                className="cursor-pointer hover:bg-gray-50"
-                                            >
-                                                <td className="px-6 py-4 whitespace-nowrap">
-                                                    <div className="text-sm font-medium text-gray-900 uppercase">{agent.nom || "IPSUM"}</div>
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap">
-                                                    <div className="text-sm text-gray-900">{agent.prenom || "Lorem"}</div>
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap">
-                                                    <div className="text-sm text-gray-500">{agent.email || "ip.lorem@gmail.com"}</div>
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap">
-                                                    <div className="text-sm text-gray-500">{agent.telephone || "778282828"}</div>
-                                                </td>
-                                                <td className="px-6 py-4">
-                                                    {agent.servicesAffecte && agent.servicesAffecte.length > 0 ? (
-                                                        <div className="flex flex-wrap gap-1">
-                                                            {agent.servicesAffecte.map((service, index) => (
-                                                                <Badge key={index} variant="secondary" className="bg-gray-100">
-                                                                    {service.nomService || "Hello Word"}
-                                                                </Badge>
-                                                            ))}
-                                                        </div>
-                                                    ) : (
-                                                        <span className="text-sm text-gray-500">Hello Word</span>
-                                                    )}
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap">
-                                                    <div className="text-sm text-gray-500">{agent.role || "Word"}</div>
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap">
-                                                    <Badge className={agent.dejaPaye ? "bg-[#10C400] text-white" : "bg-[#6F7BFF] text-white"}>
-                                                        {agent.dejaPaye ? "Deja Payés" : "À Payés"}
-                                                    </Badge>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
+                            <div className="space-y-3">
+                                {displayedAgents.map((agent) => (
+                                    <div
+                                        key={agent._id}
+                                        onClick={() => handleAgentClick(agent)}
+                                        className="group bg-white rounded-xl border border-gray-100 hover:border-blue-200 hover:shadow-lg transition-all duration-300 cursor-pointer overflow-hidden"
+                                    >
+                                        {/* Barre d'accent en haut */}
+                                        <div className={`h-1 ${agent.dejaPaye ? 'bg-gradient-to-r from-emerald-400 to-green-500' : 'bg-gradient-to-r from-blue-400 to-indigo-500'}`} />
+
+                                        <div className="p-4">
+                                            <div className="flex items-center gap-4">
+                                                {/* Avatar */}
+                                                <Avatar className="w-12 h-12 ring-2 ring-offset-2 ring-blue-100 flex-shrink-0">
+                                                    <AvatarFallback className="bg-gradient-to-br from-blue-500 to-indigo-600 text-white font-semibold">
+                                                        {getInitials(agent.nom, agent.prenom)}
+                                                    </AvatarFallback>
+                                                </Avatar>
+
+                                                {/* Info principale */}
+                                                <div className="flex-1 min-w-0 grid grid-cols-1 md:grid-cols-4 gap-2 md:gap-4 items-center">
+                                                    <div>
+                                                        <h3 className="font-semibold text-gray-900 truncate group-hover:text-blue-600 transition-colors">
+                                                            {agent.nom?.toUpperCase()} {agent.prenom}
+                                                        </h3>
+                                                        <p className="text-sm text-gray-500">{agent.role || 'Agent'}</p>
+                                                    </div>
+
+                                                    <div className="hidden md:flex flex-col gap-1">
+                                                        <p className="text-sm text-gray-500 truncate flex items-center gap-1.5">
+                                                            <Mail className="w-3.5 h-3.5 text-gray-400" />
+                                                            {agent.email}
+                                                        </p>
+                                                        <p className="text-sm text-gray-500 flex items-center gap-1.5">
+                                                            <Phone className="w-3.5 h-3.5 text-gray-400" />
+                                                            {agent.telephone}
+                                                        </p>
+                                                    </div>
+
+                                                    <div className="hidden md:block">
+                                                        {agent.servicesAffecte && agent.servicesAffecte.length > 0 ? (
+                                                            <div className="flex flex-wrap gap-1">
+                                                                {agent.servicesAffecte.slice(0, 2).map((service, index) => (
+                                                                    <Badge key={index} variant="secondary" className="bg-blue-50 text-blue-700 text-xs">
+                                                                        {service.nomService}
+                                                                    </Badge>
+                                                                ))}
+                                                                {agent.servicesAffecte.length > 2 && (
+                                                                    <Badge variant="secondary" className="bg-gray-100 text-gray-600 text-xs">
+                                                                        +{agent.servicesAffecte.length - 2}
+                                                                    </Badge>
+                                                                )}
+                                                            </div>
+                                                        ) : (
+                                                            <span className="text-sm text-gray-400">Aucun service</span>
+                                                        )}
+                                                    </div>
+
+                                                    <div className="hidden md:flex justify-end">
+                                                        <Badge className={`${agent.dejaPaye
+                                                            ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-100'
+                                                            : 'bg-blue-100 text-blue-700 hover:bg-blue-100'
+                                                        }`}>
+                                                            {agent.dejaPaye ? 'Payé' : 'À payer'}
+                                                        </Badge>
+                                                    </div>
+                                                </div>
+
+                                                {/* Badge mobile */}
+                                                <Badge className={`md:hidden flex-shrink-0 ${agent.dejaPaye
+                                                    ? 'bg-emerald-100 text-emerald-700'
+                                                    : 'bg-blue-100 text-blue-700'
+                                                }`}>
+                                                    {agent.dejaPaye ? 'Payé' : 'À payer'}
+                                                </Badge>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
                         ) : (
-                            <div className="text-center py-8 text-gray-500">
-                                {agentSearchTerm ?
-                                    "Aucun agent ne correspond à votre recherche" :
-                                    agentPaymentFilter !== 'all' ?
-                                        `Aucun agent ${agentPaymentFilter === 'paid' ? 'Deja Payés' : 'À Payés'} trouvé` :
-                                        "Aucun agent trouvé"
-                                }
+                            <div className="flex flex-col items-center justify-center py-12">
+                                <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mb-4">
+                                    <Users className="w-8 h-8 text-blue-400" />
+                                </div>
+                                <h3 className="text-lg font-medium text-gray-900 mb-1">Aucun agent trouvé</h3>
+                                <p className="text-sm text-gray-500">
+                                    {agentSearchTerm ? `Aucun résultat pour "${agentSearchTerm}"` : 'Commencez par ajouter un agent'}
+                                </p>
                             </div>
                         )}
 
                         {/* Pagination des agents */}
-                        {renderPagination(agentPage, agentTotalPages, setAgentPage)}
+                        {renderPagination(agentPage, agentTotalPages, setAgentPage, filteredAgents.length, agentStartIndex)}
                     </div>
 
                     {/* Liste des Clients */}
-                    <div className='flex justify-between '>
-                        <h2 className="text-xl font-semibold text-blue-500">Liste des Clients</h2>
+                    <div className='flex justify-between items-center'>
+                        <h2 className="text-xl font-semibold text-emerald-600">Liste des Clients</h2>
 
                         <div className="flex space-x-2">
                             <div className="relative">
@@ -1033,96 +1171,114 @@ const CombinedView = ({
                             </Select>
                         </div>
                     </div>
-                    <div className="bg-white p-4 rounded-lg shadow-xl">
-                        <div className="flex items-center justify-between mb-4">
-                        </div>
-
-                        {/* Tableau des clients */}
+                    <div className="bg-white p-4 rounded-2xl shadow-lg border border-emerald-100">
+                        {/* Liste des clients en cartes */}
                         {displayedClients.length > 0 ? (
-                            <div className="overflow-x-auto">
-                                <table className="min-w-full divide-y divide-gray-200">
-                                    <thead className="bg-gray-50">
-                                        <tr>
-                                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nom(s)</th>
-                                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Prénom(s)</th>
-                                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Téléphone</th>
-                                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Services</th>
-                                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rôle</th>
-                                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Paiement</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="bg-white divide-y divide-gray-100">
-                                        {displayedClients.map((client) => (
-                                            <tr
-                                                key={client._id}
-                                                onClick={() => handleClientClick(client)}
-                                                className="cursor-pointer hover:bg-gray-50"
-                                            >
-                                                <td className="px-6 py-4 whitespace-nowrap">
-                                                    <div className="text-sm font-medium text-gray-900 uppercase">{client.nom}</div>
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap">
-                                                    <div className="text-sm text-gray-900">{client.prenom}</div>
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap">
-                                                    <div className="text-sm text-gray-500">{client.email}</div>
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap">
-                                                    <div className="text-sm text-gray-500">{client.telephone}</div>
-                                                </td>
-                                                <td className="px-6 py-4">
-                                                    {client.servicesChoisis && client.servicesChoisis.length > 0 ? (
-                                                        <div className="flex flex-wrap gap-1">
-                                                            {client.servicesChoisis.map((service, index) => (
-                                                                <Badge key={index} variant="secondary" className="bg-gray-100">
-                                                                    {service.nomService}
-                                                                </Badge>
-                                                            ))}
-                                                        </div>
-                                                    ) : (
-                                                        <span className="text-sm text-gray-500"></span>
-                                                    )}
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap">
-                                                    <div className="text-sm text-gray-500">Client</div>
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap">
-                                                    <Badge className={client.aDejaPaye ? "bg-[#10C400] text-white" : "bg-[#6F7BFF] text-white"}>
-                                                        {client.aDejaPaye ? "Déjà Reçus" : "Non Reçus"}
-                                                    </Badge>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
+                            <div className="space-y-3">
+                                {displayedClients.map((client) => (
+                                    <div
+                                        key={client._id}
+                                        onClick={() => handleClientClick(client)}
+                                        className="group bg-white rounded-xl border border-gray-100 hover:border-emerald-200 hover:shadow-lg transition-all duration-300 cursor-pointer overflow-hidden"
+                                    >
+                                        {/* Barre d'accent en haut */}
+                                        <div className={`h-1 ${client.aDejaPaye ? 'bg-gradient-to-r from-emerald-400 to-green-500' : 'bg-gradient-to-r from-amber-400 to-orange-500'}`} />
+
+                                        <div className="p-4">
+                                            <div className="flex items-center gap-4">
+                                                {/* Avatar */}
+                                                <Avatar className="w-12 h-12 ring-2 ring-offset-2 ring-emerald-100 flex-shrink-0">
+                                                    <AvatarFallback className="bg-gradient-to-br from-emerald-500 to-green-600 text-white font-semibold">
+                                                        {getInitials(client.nom, client.prenom)}
+                                                    </AvatarFallback>
+                                                </Avatar>
+
+                                                {/* Info principale */}
+                                                <div className="flex-1 min-w-0 grid grid-cols-1 md:grid-cols-4 gap-2 md:gap-4 items-center">
+                                                    <div>
+                                                        <h3 className="font-semibold text-gray-900 truncate group-hover:text-emerald-600 transition-colors">
+                                                            {client.nom?.toUpperCase()} {client.prenom}
+                                                        </h3>
+                                                        <p className="text-sm text-gray-500">Client</p>
+                                                    </div>
+
+                                                    <div className="hidden md:flex flex-col gap-1">
+                                                        <p className="text-sm text-gray-500 truncate flex items-center gap-1.5">
+                                                            <Mail className="w-3.5 h-3.5 text-gray-400" />
+                                                            {client.email}
+                                                        </p>
+                                                        <p className="text-sm text-gray-500 flex items-center gap-1.5">
+                                                            <Phone className="w-3.5 h-3.5 text-gray-400" />
+                                                            {client.telephone}
+                                                        </p>
+                                                    </div>
+
+                                                    <div className="hidden md:block">
+                                                        {client.servicesChoisis && client.servicesChoisis.length > 0 ? (
+                                                            <div className="flex flex-wrap gap-1">
+                                                                {client.servicesChoisis.slice(0, 2).map((service, index) => (
+                                                                    <Badge key={index} variant="secondary" className="bg-emerald-50 text-emerald-700 text-xs">
+                                                                        {service.nomService}
+                                                                    </Badge>
+                                                                ))}
+                                                                {client.servicesChoisis.length > 2 && (
+                                                                    <Badge variant="secondary" className="bg-gray-100 text-gray-600 text-xs">
+                                                                        +{client.servicesChoisis.length - 2}
+                                                                    </Badge>
+                                                                )}
+                                                            </div>
+                                                        ) : (
+                                                            <span className="text-sm text-gray-400">Aucun service</span>
+                                                        )}
+                                                    </div>
+
+                                                    <div className="hidden md:flex justify-end">
+                                                        <Badge className={`${client.aDejaPaye
+                                                            ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-100'
+                                                            : 'bg-amber-100 text-amber-700 hover:bg-amber-100'
+                                                        }`}>
+                                                            {client.aDejaPaye ? 'Reçu' : 'Non reçu'}
+                                                        </Badge>
+                                                    </div>
+                                                </div>
+
+                                                {/* Badge mobile */}
+                                                <Badge className={`md:hidden flex-shrink-0 ${client.aDejaPaye
+                                                    ? 'bg-emerald-100 text-emerald-700'
+                                                    : 'bg-amber-100 text-amber-700'
+                                                }`}>
+                                                    {client.aDejaPaye ? 'Reçu' : 'Non reçu'}
+                                                </Badge>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
                         ) : (
-                            <div className="text-center py-8 text-gray-500">
-                                {clientSearchTerm ?
-                                    "Aucun client ne correspond à votre recherche" :
-                                    clientPaymentFilter !== 'all' ?
-                                        `Aucun client ${clientPaymentFilter === 'paid' ? 'Déjà Reçus' : 'Non Reçus'} trouvé` :
-                                        "Aucun client trouvé"
-                                }
+                            <div className="flex flex-col items-center justify-center py-12">
+                                <div className="w-16 h-16 bg-emerald-50 rounded-full flex items-center justify-center mb-4">
+                                    <User className="w-8 h-8 text-emerald-400" />
+                                </div>
+                                <h3 className="text-lg font-medium text-gray-900 mb-1">Aucun client trouvé</h3>
+                                <p className="text-sm text-gray-500">
+                                    {clientSearchTerm ? `Aucun résultat pour "${clientSearchTerm}"` : 'Commencez par ajouter un client'}
+                                </p>
                             </div>
                         )}
 
                         {/* Pagination des clients */}
-                        {renderPagination(clientPage, clientTotalPages, setClientPage)}
+                        {renderPagination(clientPage, clientTotalPages, setClientPage, filteredClients.length, clientStartIndex)}
                     </div>
                 </div>
 
-                {/* Panneau latéral avec services et messagerie */}
-                <div className='mt-[-175px] space-y-6 lg:w-[300px] '>
-                    <div className="col-span-1">
-                        <BalanceEntreprise balances={balance} />
-                    </div>
-                    <div className="space-y-6">
-
+                {/* Panneau latéral avec services uniquement */}
+                <div className="xl:col-span-1 space-y-4">
                         {/* Liste des Services */}
-                        <div className="bg-white p-4 rounded-lg  shadow-xl">
-                            <h2 className="text-xl font-semibold text-blue-500 mb-4">Liste des Services</h2>
+                        <div className="bg-white p-4 rounded-2xl shadow-lg border border-purple-100">
+                            <h2 className="text-lg font-semibold text-purple-600 mb-4 flex items-center gap-2">
+                                <Briefcase className="w-5 h-5" />
+                                Services
+                            </h2>
 
                             {/* Barre de recherche pour les services */}
                             <div className="relative mb-4">
@@ -1131,66 +1287,73 @@ const CombinedView = ({
                                 </div>
                                 <Input
                                     type="text"
-                                    placeholder="Rechercher un service"
-                                    className="pl-10 w-full bg-white border border-gray-200"
+                                    placeholder="Rechercher..."
+                                    className="pl-10 w-full bg-gray-50 border-0 h-9 text-sm"
                                     value={serviceSearchTerm}
                                     onChange={(e) => setServiceSearchTerm(e.target.value)}
                                 />
                             </div>
 
-                            {/* Tableau des services */}
+                            {/* Liste des services en cartes compactes */}
                             {displayedServices.length > 0 ? (
-                                <div className="overflow-x-auto">
-                                    <table className="min-w-full divide-y divide-gray-200">
-                                        <thead className="bg-gray-50">
-                                            <tr>
-                                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nom(s)</th>
-                                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tarif</th>
-                                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Gérant(s)</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="bg-white divide-y divide-gray-100">
-                                            {displayedServices.map((service) => (
-                                                <tr
-                                                    key={service._id}
-                                                    onClick={() => handleServiceClick(service)}
-                                                    className="cursor-pointer hover:bg-gray-50"
-                                                >
-                                                    <td className="px-6 py-4 whitespace-nowrap">
-                                                        <div className="text-sm font-medium text-gray-900 uppercase">{service.nomService || "IPSUM"}</div>
-                                                    </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap">
-                                                        <div className="text-sm text-gray-500">{service.tarif || "Lorem"}</div>
-                                                    </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap">
-                                                        <div className="text-sm text-gray-500">
-                                                            {service.gerants && service.gerants.length > 0
-                                                                ? service.gerants.map(gerant => `${gerant.nom} ${gerant.prenom}`).join(', ')
-                                                                : "IPSUM Lorem"
-                                                            }
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
+                                <div className="space-y-2">
+                                    {displayedServices.map((service) => (
+                                        <div
+                                            key={service._id}
+                                            onClick={() => handleServiceClick(service)}
+                                            className="group p-3 rounded-xl border border-gray-100 hover:border-purple-200 hover:bg-purple-50/50 cursor-pointer transition-all"
+                                        >
+                                            <div className="flex items-center justify-between mb-1">
+                                                <h4 className="font-medium text-gray-900 text-sm group-hover:text-purple-600 transition-colors">
+                                                    {service.nomService}
+                                                </h4>
+                                                <Badge variant="secondary" className="bg-purple-100 text-purple-700 text-xs">
+                                                    {service.tarif?.toLocaleString() || 0} FCFA
+                                                </Badge>
+                                            </div>
+                                            {service.gerants && service.gerants.length > 0 && (
+                                                <p className="text-xs text-gray-500 truncate">
+                                                    {service.gerants.map(g => `${g.prenom}`).join(', ')}
+                                                </p>
+                                            )}
+                                        </div>
+                                    ))}
                                 </div>
                             ) : (
-                                <div className="text-center py-8 text-gray-500">
-                                    {serviceSearchTerm ?
-                                        "Aucun service ne correspond à votre recherche" :
-                                        "Aucun service trouvé"
-                                    }
+                                <div className="flex flex-col items-center justify-center py-8">
+                                    <div className="w-12 h-12 bg-purple-50 rounded-full flex items-center justify-center mb-3">
+                                        <Briefcase className="w-6 h-6 text-purple-400" />
+                                    </div>
+                                    <p className="text-sm text-gray-500">
+                                        {serviceSearchTerm ? 'Aucun résultat' : 'Aucun service'}
+                                    </p>
                                 </div>
                             )}
 
                             {/* Pagination des services */}
-                            {renderPagination(servicePage, serviceTotalPages, setServicePage)}
+                            {serviceTotalPages > 1 && (
+                                <div className="flex items-center justify-center gap-1 mt-4 pt-3 border-t border-gray-100">
+                                    <button
+                                        onClick={() => setServicePage(p => Math.max(p - 1, 1))}
+                                        disabled={servicePage === 1}
+                                        className="h-8 w-8 flex items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 disabled:opacity-40"
+                                    >
+                                        <ChevronLeft className="w-4 h-4" />
+                                    </button>
+                                    <span className="text-sm text-gray-500 px-2">
+                                        {servicePage} / {serviceTotalPages}
+                                    </span>
+                                    <button
+                                        onClick={() => setServicePage(p => Math.min(p + 1, serviceTotalPages))}
+                                        disabled={servicePage === serviceTotalPages}
+                                        className="h-8 w-8 flex items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 disabled:opacity-40"
+                                    >
+                                        <ChevronRight className="w-4 h-4" />
+                                    </button>
+                                </div>
+                            )}
                         </div>
 
-                        {/* Messagerie */}
-
-                    </div>
                 </div>
             </div>
 

@@ -290,8 +290,9 @@ const SidebarMenuContent = ({ currentUser }: { currentUser?: User}) => {
           <PasswordModal
             onSuccess={handlePasswordSuccess}
             onCancel={handlePasswordCancel}
-            userRole={currentUser?.role} // ✅ Utilise le vrai rôle de l'utilisateur
-            enterpriseId={currentUser?.enterpriseId} // ✅ Passe aussi l'ID de l'entreprise si disponible
+            userRole={currentUser?.role}
+            userEmail={currentUser?.email}
+            enterpriseId={currentUser?.enterpriseId}
           />
         )}
       </SidebarContent>

@@ -3,22 +3,18 @@ import { ENTERPRISES_ENDPOINT, PAYMENT_FOR_ALL_AGENTS_ENTREPRISE, PAYMENT_FOR_AL
 import PaymentListView from './_components/ListPaiements';
 
 const PaymentsPage = async () => {
-  // Récupérer l'entreprise courante
-  const enterprises = await fetchJSON(ENTERPRISES_ENDPOINT);
-  const currentEnterpriseId = enterprises[0]?._id;
- 
-  
-  const paymentsResponse = await fetchJSON(PAYMENT_FOR_ALL_AGENTS_ENTREPRISE);
+  // Paralléliser TOUS les appels API avec tags pour cache
+  const [enterprises, paymentsResponse, paymentLinksResponse] = await Promise.all([
+    fetchJSON(ENTERPRISES_ENDPOINT, { tags: ['enterprises'] }),
+    fetchJSON(PAYMENT_FOR_ALL_AGENTS_ENTREPRISE, { tags: ['paiements'] }),
+    fetchJSON(PAYMENT_FOR_ALL_CLIENTS_ENTREPRISE, { tags: ['paiements'] })
+  ]);
+
   const payments = paymentsResponse.data || [];
-  
-  // Récupérer les liens de paiement via la route spécifique
-  const paymentLinksResponse = await fetchJSON(PAYMENT_FOR_ALL_CLIENTS_ENTREPRISE);
   const paymentLinks = paymentLinksResponse.data || [];
-  
- 
-  
+
   return (
-    <PaymentListView 
+    <PaymentListView
       payments={payments}
       paymentLinks={paymentLinks}
     />
