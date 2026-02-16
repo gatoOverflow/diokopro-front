@@ -9,7 +9,8 @@ import {
   XCircle,
   Building2,
   ArrowUpDown,
-  SlidersHorizontal
+  SlidersHorizontal,
+  RefreshCw,
 } from 'lucide-react';
 import {
   Select,
@@ -38,6 +39,8 @@ interface CandidatureFiltersProps {
     rejected: number;
   };
   filteredCount: number;
+  onRefresh?: () => void;
+  isRefreshing?: boolean;
 }
 
 const CandidatureFilters: React.FC<CandidatureFiltersProps> = ({
@@ -48,7 +51,9 @@ const CandidatureFilters: React.FC<CandidatureFiltersProps> = ({
   searchValue,
   onSearchChange,
   counts,
-  filteredCount
+  filteredCount,
+  onRefresh,
+  isRefreshing = false,
 }) => {
   const statusTabs = [
     {
@@ -94,23 +99,36 @@ const CandidatureFilters: React.FC<CandidatureFiltersProps> = ({
 
   return (
     <div className="space-y-4 mb-6">
-      {/* Search Bar */}
-      <div className="relative">
-        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-        <Input
-          type="text"
-          placeholder="Rechercher par nom, NINEA, RCCM ou représentant..."
-          value={searchValue}
-          onChange={(e) => onSearchChange(e.target.value)}
-          className="pl-12 pr-10 h-12 w-full bg-white border-gray-300 rounded-xl text-base focus:border-[#0cadec] focus:ring-[#0cadec]/30 shadow-sm"
-        />
-        {searchValue && (
-          <button
-            onClick={() => onSearchChange('')}
-            className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-gray-100 rounded-full transition-colors"
+      {/* Search Bar + Refresh */}
+      <div className="flex gap-2">
+        <div className="relative flex-1">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+          <Input
+            type="text"
+            placeholder="Rechercher par nom, NINEA, RCCM ou représentant..."
+            value={searchValue}
+            onChange={(e) => onSearchChange(e.target.value)}
+            className="pl-12 pr-10 h-12 w-full bg-white border-gray-300 rounded-xl text-base focus:border-[#0cadec] focus:ring-[#0cadec]/30 shadow-sm"
+          />
+          {searchValue && (
+            <button
+              onClick={() => onSearchChange('')}
+              className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-gray-100 rounded-full transition-colors"
+            >
+              <X className="w-4 h-4 text-gray-400" />
+            </button>
+          )}
+        </div>
+        {onRefresh && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onRefresh}
+            disabled={isRefreshing}
+            className="h-12 px-4 border-gray-300 hover:border-[#0cadec] hover:text-[#0cadec] rounded-xl"
           >
-            <X className="w-4 h-4 text-gray-400" />
-          </button>
+            <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+          </Button>
         )}
       </div>
 

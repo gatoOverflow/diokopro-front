@@ -70,4 +70,15 @@ export const DEBITER_COMPTE_ENTREPRISE=`${API_URL}/retirer-compte-otp/entreprise
 export const REFUSE_ENTREPRISE_URL=`${API_URL}/authSuper/DisableEntreprise`
 export const UPDATE_ENTREPRISE_URL=`${API_URL}/updateEntreprise`
 export const USERSBYID_URL = `${API_URL}/get-user`
+
+// SuperAdmin - Gestion entreprises et soldes
+export const SUPERADMIN_UPDATE_ENTREPRISE_URL = `${API_URL}/authSuper/updateEntreprise`
+export const SUPERADMIN_AJUSTER_SOLDE_URL = `${API_URL}/authSuper/ajusterSolde`
+export const SUPERADMIN_TRANSACTIONS_URL = `${API_URL}/authSuper/transactions`
+export const SUPERADMIN_AUDIT_LOG_URL = `${API_URL}/authSuper/auditLog`
+export const SUPERADMIN_ENTREPRISE_DETAILS_URL = `${API_URL}/authSuper/entreprise`
+export const SUPERADMIN_ENTREPRISES_PAGINATED_URL = `${API_URL}/authSuper/getAllEntreprisesPaginated`
+export const SUPERADMIN_CANDIDATURES_PAGINATED_URL = `${API_URL}/candidatures`
+export const SUPERADMIN_DASHBOARD_STATS_URL = `${API_URL}/superadmin/dashboard-stats`
+
 //Events

@@ -1,16 +1,8 @@
 // Composants async pour le streaming des données SuperAdmin
 import { fetchJSON } from '@/lib/api';
 import {
-  GET_ALL_SERVICE,
-  GET_ALL_CLIENT_URL,
-  GET_ALL_GERANTS,
-  GET_ALL_AGENTS_TO_PAY,
-  GET_ALL_AGENTS_TO_NOT_PAY,
-  BALANCE_ENDPOINT_FOR_ALL_ENTREPRISE,
-  ALL_ENTERPRISES_ENDPOINT,
-  ALL_GET_ALL_AGENTS,
-  ALL_GET_ALL_CLIENTS_ENTREPRISE,
-  GET_ALL_NUMBER_ENTREPRISE
+  SUPERADMIN_ENTREPRISES_PAGINATED_URL,
+  SUPERADMIN_DASHBOARD_STATS_URL,
 } from '@/actions/endpoint';
 
 // Skeleton pour les métriques SuperAdmin
@@ -54,43 +46,27 @@ export function SuperAdminSkeleton() {
   );
 }
 
-// Loader pour toutes les données SuperAdmin
+// Loader optimisé - seulement 2 appels API au lieu de 9
 export async function loadSuperAdminData() {
-  const [
-    enterprises,
-    balance,
-    services,
-    clientsResponse,
-    agenttopay,
-    agentToNotPay,
-    agentsResponse,
-    clientResponse,
-    gerantsResponse,
-    numberofEntreprise
-  ] = await Promise.all([
-    // Désactiver le cache pour les gros endpoints (> 2MB)
-    fetchJSON(ALL_ENTERPRISES_ENDPOINT, { cache: 'no-store' }),
-    fetchJSON(BALANCE_ENDPOINT_FOR_ALL_ENTREPRISE, { tags: ['balance'], revalidate: 30 }),
-    fetchJSON(GET_ALL_SERVICE, { tags: ['services'] }),
-    fetchJSON(`${GET_ALL_CLIENT_URL}/clients`, { tags: ['clients'] }),
-    fetchJSON(GET_ALL_AGENTS_TO_PAY, { cache: 'no-store' }),
-    fetchJSON(GET_ALL_AGENTS_TO_NOT_PAY, { cache: 'no-store' }),
-    fetchJSON(ALL_GET_ALL_AGENTS, { cache: 'no-store' }),
-    fetchJSON(ALL_GET_ALL_CLIENTS_ENTREPRISE, { cache: 'no-store' }),
-    fetchJSON(GET_ALL_GERANTS, { tags: ['gerants'] }),
-    fetchJSON(GET_ALL_NUMBER_ENTREPRISE, { tags: ['enterprises'] })
+  const [enterprisesResponse, statsResponse] = await Promise.all([
+    // Pagination serveur - première page uniquement
+    fetchJSON(`${SUPERADMIN_ENTREPRISES_PAGINATED_URL}?page=1&limit=12`, { cache: 'no-store' }),
+    // Stats dashboard en un seul appel
+    fetchJSON(SUPERADMIN_DASHBOARD_STATS_URL, { cache: 'no-store' }),
   ]);
 
   return {
-    enterprises: enterprises || [],
-    balance: balance?.totalSolde || 0,
-    services: services || [],
-    clients: clientsResponse?.data || [],
-    agenttopay: agenttopay || [],
-    agentToNotPay: agentToNotPay || [],
-    agentsCount: agentsResponse?.count || 0,
-    clientsCount: clientResponse?.count || 0,
-    gerants: gerantsResponse || [],
-    enterprisesCount: numberofEntreprise?.count || 0
+    enterprises: enterprisesResponse?.data || [],
+    enterprisesPagination: enterprisesResponse?.pagination || {
+      page: 1,
+      limit: 12,
+      total: 0,
+      totalPages: 0
+    },
+    // Stats from single endpoint
+    balance: statsResponse?.totalBalance || 0,
+    agentsCount: statsResponse?.totalAgentsCount || 0,
+    clientsCount: statsResponse?.totalClientsCount || 0,
+    enterprisesCount: statsResponse?.entreprisesCount || 0,
   };
 }

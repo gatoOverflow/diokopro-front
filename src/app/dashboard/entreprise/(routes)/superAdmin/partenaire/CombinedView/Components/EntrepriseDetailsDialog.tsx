@@ -17,7 +17,15 @@ import {
   Edit,
   Trash2,
   Info,
+  History,
+  ScrollText,
+  PlusCircle,
+  MinusCircle,
 } from 'lucide-react';
+import EditEntrepriseDialog from './EditEntrepriseDialog';
+import AjusterSoldeDialog from './AjusterSoldeDialog';
+import TransactionsHistoryDialog from './TransactionsHistoryDialog';
+import AuditLogDialog from './AuditLogDialog';
 import {
   Dialog,
   DialogContent,
@@ -35,16 +43,42 @@ interface EntrepriseDetailsDialogProps {
   entreprise: any;
   isOpen: boolean;
   onClose: () => void;
+  onEntrepriseUpdated?: (updatedEntreprise: any) => void;
 }
 
 const EntrepriseDetailsDialog: React.FC<EntrepriseDetailsDialogProps> = ({
   entreprise,
   isOpen,
   onClose,
+  onEntrepriseUpdated,
 }) => {
   const [copiedField, setCopiedField] = useState<string | null>(null);
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [isAjusterSoldeOpen, setIsAjusterSoldeOpen] = useState(false);
+  const [isTransactionsOpen, setIsTransactionsOpen] = useState(false);
+  const [isAuditLogOpen, setIsAuditLogOpen] = useState(false);
+  const [localEntreprise, setLocalEntreprise] = useState(entreprise);
 
-  if (!entreprise) return null;
+  // Mettre à jour localEntreprise quand entreprise change
+  React.useEffect(() => {
+    setLocalEntreprise(entreprise);
+  }, [entreprise]);
+
+  const handleEntrepriseUpdated = (updatedEntreprise: any) => {
+    setLocalEntreprise(updatedEntreprise.entreprise || updatedEntreprise);
+    onEntrepriseUpdated?.(updatedEntreprise.entreprise || updatedEntreprise);
+  };
+
+  const handleSoldeUpdated = (transaction: any) => {
+    if (transaction?.transaction) {
+      setLocalEntreprise((prev: any) => ({
+        ...prev,
+        solde: transaction.transaction.soldeApres,
+      }));
+    }
+  };
+
+  if (!entreprise || !localEntreprise) return null;
 
   const getInitials = (name: string) => {
     return name
@@ -79,11 +113,23 @@ const EntrepriseDetailsDialog: React.FC<EntrepriseDetailsDialogProps> = ({
   };
 
   const handleEdit = () => {
-    toast.info('Fonctionnalité de modification à venir');
+    setIsEditOpen(true);
+  };
+
+  const handleAjusterSolde = () => {
+    setIsAjusterSoldeOpen(true);
+  };
+
+  const handleViewTransactions = () => {
+    setIsTransactionsOpen(true);
+  };
+
+  const handleViewAuditLog = () => {
+    setIsAuditLogOpen(true);
   };
 
   const handleToggleStatus = () => {
-    toast.info(`${entreprise.estActif ? 'Désactivation' : 'Activation'} à venir`);
+    toast.info(`${localEntreprise.estActif ? 'Désactivation' : 'Activation'} à venir`);
   };
 
   const handleDelete = () => {
@@ -95,9 +141,9 @@ const EntrepriseDetailsDialog: React.FC<EntrepriseDetailsDialogProps> = ({
       <DialogContent className="max-w-2xl h-[90vh] flex flex-col p-0 gap-0 overflow-hidden">
         {/* Accessible Title (hidden visually) */}
         <VisuallyHidden.Root>
-          <DialogTitle>Détails de l'entreprise {entreprise.nomEntreprise}</DialogTitle>
+          <DialogTitle>Détails de l'entreprise {localEntreprise.nomEntreprise}</DialogTitle>
           <DialogDescription>
-            Informations détaillées sur l'entreprise {entreprise.nomEntreprise}
+            Informations détaillées sur l'entreprise {localEntreprise.nomEntreprise}
           </DialogDescription>
         </VisuallyHidden.Root>
 
@@ -107,29 +153,29 @@ const EntrepriseDetailsDialog: React.FC<EntrepriseDetailsDialogProps> = ({
 
           <div className="relative flex items-start gap-4">
             <Avatar className="w-16 h-16 sm:w-20 sm:h-20 ring-4 ring-white/30 shadow-xl">
-              <AvatarImage src={entreprise.logo} alt={entreprise.nomEntreprise} />
+              <AvatarImage src={localEntreprise.logo} alt={localEntreprise.nomEntreprise} />
               <AvatarFallback className="bg-white text-[#0cadec] text-xl sm:text-2xl font-bold">
-                {getInitials(entreprise.nomEntreprise)}
+                {getInitials(localEntreprise.nomEntreprise)}
               </AvatarFallback>
             </Avatar>
 
             <div className="flex-1 min-w-0">
               <h2 className="text-xl sm:text-2xl font-bold mb-1 truncate" aria-label="Nom de l'entreprise">
-                {entreprise.nomEntreprise}
+                {localEntreprise.nomEntreprise}
               </h2>
-              {entreprise.representéPar && (
+              {localEntreprise.representéPar && (
                 <p className="text-white/80 text-sm mb-3">
-                  Représenté par {entreprise.representéPar}
+                  Représenté par {localEntreprise.representéPar}
                 </p>
               )}
               <Badge
                 className={`${
-                  entreprise.estActif
+                  localEntreprise.estActif
                     ? 'bg-green-500/20 text-green-100 border-green-400/50'
                     : 'bg-red-500/20 text-red-100 border-red-400/50'
                 } border`}
               >
-                {entreprise.estActif ? 'Entreprise Active' : 'Entreprise Inactive'}
+                {localEntreprise.estActif ? 'Entreprise Active' : 'Entreprise Inactive'}
               </Badge>
             </div>
           </div>
@@ -138,9 +184,9 @@ const EntrepriseDetailsDialog: React.FC<EntrepriseDetailsDialogProps> = ({
         {/* Content - SCROLLABLE */}
         <div className="p-6 overflow-y-auto flex-1">
           {/* Solde Card */}
-          {entreprise.solde !== undefined && (
+          {localEntreprise.solde !== undefined && (
             <div className="bg-gradient-to-r from-emerald-50 to-green-50 border border-emerald-300 rounded-xl p-5 mb-6">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
                   <div className="p-3 bg-emerald-500 rounded-xl shadow-lg shadow-emerald-500/30">
                     <Wallet className="w-6 h-6 text-white" />
@@ -148,10 +194,40 @@ const EntrepriseDetailsDialog: React.FC<EntrepriseDetailsDialogProps> = ({
                   <div>
                     <p className="text-sm text-emerald-700 font-medium">Solde disponible</p>
                     <p className="text-2xl sm:text-3xl font-bold text-emerald-900">
-                      {formatAmount(entreprise.solde)} <span className="text-base sm:text-lg">FCFA</span>
+                      {formatAmount(localEntreprise.solde)} <span className="text-base sm:text-lg">FCFA</span>
                     </p>
                   </div>
                 </div>
+              </div>
+              {/* Actions solde */}
+              <div className="flex flex-wrap gap-2 pt-3 border-t border-emerald-200">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleAjusterSolde}
+                  className="border-emerald-300 text-emerald-700 hover:bg-emerald-100 flex-1 sm:flex-none"
+                >
+                  <PlusCircle className="w-4 h-4 mr-1" />
+                  Ajuster
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleViewTransactions}
+                  className="border-emerald-300 text-emerald-700 hover:bg-emerald-100 flex-1 sm:flex-none"
+                >
+                  <History className="w-4 h-4 mr-1" />
+                  Transactions
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleViewAuditLog}
+                  className="border-violet-300 text-violet-700 hover:bg-violet-100 flex-1 sm:flex-none"
+                >
+                  <ScrollText className="w-4 h-4 mr-1" />
+                  Audit
+                </Button>
               </div>
             </div>
           )}
@@ -167,18 +243,18 @@ const EntrepriseDetailsDialog: React.FC<EntrepriseDetailsDialogProps> = ({
                 Coordonnées
               </h4>
               <div className="space-y-3">
-                {entreprise.emailEntreprise ? (
+                {localEntreprise.emailEntreprise ? (
                   <div
                     className="flex items-center gap-3 p-2 rounded-lg hover:bg-white cursor-pointer transition-colors group"
-                    onClick={() => copyToClipboard(entreprise.emailEntreprise, 'email', 'Email')}
+                    onClick={() => copyToClipboard(localEntreprise.emailEntreprise, 'email', 'Email')}
                   >
                     <Mail className="w-4 h-4 text-gray-500" />
                     <a
-                      href={`mailto:${entreprise.emailEntreprise}`}
+                      href={`mailto:${localEntreprise.emailEntreprise}`}
                       onClick={(e) => e.stopPropagation()}
                       className="text-sm text-[#0cadec] hover:underline flex-1 truncate"
                     >
-                      {entreprise.emailEntreprise}
+                      {localEntreprise.emailEntreprise}
                     </a>
                     {copiedField === 'email' ? (
                       <Check className="w-4 h-4 text-green-500" />
@@ -190,18 +266,18 @@ const EntrepriseDetailsDialog: React.FC<EntrepriseDetailsDialogProps> = ({
                   <p className="text-sm text-gray-400 italic">Email non renseigné</p>
                 )}
 
-                {entreprise.telephoneEntreprise ? (
+                {localEntreprise.telephoneEntreprise ? (
                   <div
                     className="flex items-center gap-3 p-2 rounded-lg hover:bg-white cursor-pointer transition-colors group"
-                    onClick={() => copyToClipboard(entreprise.telephoneEntreprise, 'phone', 'Téléphone')}
+                    onClick={() => copyToClipboard(localEntreprise.telephoneEntreprise, 'phone', 'Téléphone')}
                   >
                     <Phone className="w-4 h-4 text-gray-500" />
                     <a
-                      href={`tel:${entreprise.telephoneEntreprise}`}
+                      href={`tel:${localEntreprise.telephoneEntreprise}`}
                       onClick={(e) => e.stopPropagation()}
                       className="text-sm text-[#0cadec] hover:underline flex-1"
                     >
-                      {entreprise.telephoneEntreprise}
+                      {localEntreprise.telephoneEntreprise}
                     </a>
                     {copiedField === 'phone' ? (
                       <Check className="w-4 h-4 text-green-500" />
@@ -213,10 +289,10 @@ const EntrepriseDetailsDialog: React.FC<EntrepriseDetailsDialogProps> = ({
                   <p className="text-sm text-gray-400 italic">Téléphone non renseigné</p>
                 )}
 
-                {entreprise.adresse ? (
+                {localEntreprise.adresse ? (
                   <div className="flex items-start gap-3 p-2">
                     <MapPin className="w-4 h-4 text-gray-500 mt-0.5" />
-                    <span className="text-sm text-gray-700">{entreprise.adresse}</span>
+                    <span className="text-sm text-gray-700">{localEntreprise.adresse}</span>
                   </div>
                 ) : (
                   <p className="text-sm text-gray-400 italic pl-2">Adresse non renseignée</p>
@@ -233,33 +309,33 @@ const EntrepriseDetailsDialog: React.FC<EntrepriseDetailsDialogProps> = ({
                 Informations légales
               </h4>
               <div className="space-y-3">
-                {entreprise.ninea ? (
+                {localEntreprise.ninea ? (
                   <div>
                     <p className="text-xs text-gray-500 mb-1">NINEA</p>
                     <p className="text-sm font-mono bg-white px-3 py-1.5 rounded-lg border border-gray-300">
-                      {entreprise.ninea}
+                      {localEntreprise.ninea}
                     </p>
                   </div>
                 ) : (
                   <p className="text-sm text-gray-400 italic">NINEA non renseigné</p>
                 )}
 
-                {entreprise.rccm ? (
+                {localEntreprise.rccm ? (
                   <div>
                     <p className="text-xs text-gray-500 mb-1">RCCM</p>
                     <p className="text-sm font-mono bg-white px-3 py-1.5 rounded-lg border border-gray-300">
-                      {entreprise.rccm}
+                      {localEntreprise.rccm}
                     </p>
                   </div>
                 ) : (
                   <p className="text-sm text-gray-400 italic">RCCM non renseigné</p>
                 )}
 
-                {entreprise.dateCreation && (
+                {localEntreprise.dateCreation && (
                   <div className="flex items-center gap-2 pt-2">
                     <Calendar className="w-4 h-4 text-gray-500" />
                     <span className="text-sm text-gray-700">
-                      Créée le {formatDate(entreprise.dateCreation)}
+                      Créée le {formatDate(localEntreprise.dateCreation)}
                     </span>
                   </div>
                 )}
@@ -273,7 +349,7 @@ const EntrepriseDetailsDialog: React.FC<EntrepriseDetailsDialogProps> = ({
               <div className="flex items-center justify-center gap-2 mb-2">
                 <User className="w-5 h-5 text-[#0cadec]" />
                 <span className="text-3xl font-bold text-[#0cadec]">
-                  {entreprise.stats?.agents || 0}
+                  {localEntreprise.stats?.agents || 0}
                 </span>
               </div>
               <p className="text-sm text-gray-600 font-medium">Agents</p>
@@ -282,7 +358,7 @@ const EntrepriseDetailsDialog: React.FC<EntrepriseDetailsDialogProps> = ({
               <div className="flex items-center justify-center gap-2 mb-2">
                 <Users className="w-5 h-5 text-emerald-600" />
                 <span className="text-3xl font-bold text-emerald-600">
-                  {entreprise.stats?.clients || 0}
+                  {localEntreprise.stats?.clients || 0}
                 </span>
               </div>
               <p className="text-sm text-gray-600 font-medium">Clients</p>
@@ -290,7 +366,7 @@ const EntrepriseDetailsDialog: React.FC<EntrepriseDetailsDialogProps> = ({
           </div>
 
           {/* Admin info */}
-          {entreprise.admin && (
+          {localEntreprise.admin && (
             <div className="bg-gray-50 rounded-xl p-4 border border-gray-300 mb-6">
               <h4 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
                 <div className="p-1.5 bg-amber-100 rounded-lg">
@@ -301,33 +377,33 @@ const EntrepriseDetailsDialog: React.FC<EntrepriseDetailsDialogProps> = ({
               <div className="flex items-center gap-3">
                 <Avatar className="w-10 h-10">
                   <AvatarFallback className="bg-amber-100 text-amber-700">
-                    {getInitials(`${entreprise.admin.prenom} ${entreprise.admin.nom}`)}
+                    {getInitials(`${localEntreprise.admin.prenom} ${localEntreprise.admin.nom}`)}
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1 min-w-0">
                   <p className="font-medium text-gray-900">
-                    {entreprise.admin.prenom} {entreprise.admin.nom}
+                    {localEntreprise.admin.prenom} {localEntreprise.admin.nom}
                   </p>
-                  <p className="text-sm text-gray-500 truncate">{entreprise.admin.email}</p>
+                  <p className="text-sm text-gray-500 truncate">{localEntreprise.admin.email}</p>
                 </div>
                 <Badge variant="outline" className="text-xs border-gray-300">
-                  {entreprise.admin.role}
+                  {localEntreprise.admin.role}
                 </Badge>
               </div>
             </div>
           )}
 
           {/* Gerants */}
-          {entreprise.gerants && entreprise.gerants.length > 0 && (
+          {localEntreprise.gerants && localEntreprise.gerants.length > 0 && (
             <div className="bg-gray-50 rounded-xl p-4 border border-gray-300">
               <h4 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
                 <div className="p-1.5 bg-cyan-100 rounded-lg">
                   <Users className="w-4 h-4 text-cyan-600" />
                 </div>
-                Gérants ({entreprise.gerants.length})
+                Gérants ({localEntreprise.gerants.length})
               </h4>
               <div className="space-y-2 max-h-48 overflow-y-auto">
-                {entreprise.gerants.map((gerant: any, index: number) => (
+                {localEntreprise.gerants.map((gerant: any, index: number) => (
                   <div
                     key={index}
                     className="flex items-center gap-3 bg-white p-2.5 rounded-lg border border-gray-200"
@@ -357,13 +433,13 @@ const EntrepriseDetailsDialog: React.FC<EntrepriseDetailsDialogProps> = ({
                 size="sm"
                 onClick={handleToggleStatus}
                 className={`border-gray-300 ${
-                  entreprise.estActif
+                  localEntreprise.estActif
                     ? 'text-red-600 hover:bg-red-50 hover:border-red-300'
                     : 'text-green-600 hover:bg-green-50 hover:border-green-300'
                 }`}
               >
                 <Power className="w-4 h-4 mr-2" />
-                {entreprise.estActif ? 'Désactiver' : 'Activer'}
+                {localEntreprise.estActif ? 'Désactiver' : 'Activer'}
               </Button>
               <Button
                 variant="outline"
@@ -395,6 +471,30 @@ const EntrepriseDetailsDialog: React.FC<EntrepriseDetailsDialogProps> = ({
           </div>
         </div>
       </DialogContent>
+
+      {/* Dialogs */}
+      <EditEntrepriseDialog
+        entreprise={localEntreprise}
+        isOpen={isEditOpen}
+        onClose={() => setIsEditOpen(false)}
+        onSuccess={handleEntrepriseUpdated}
+      />
+      <AjusterSoldeDialog
+        entreprise={localEntreprise}
+        isOpen={isAjusterSoldeOpen}
+        onClose={() => setIsAjusterSoldeOpen(false)}
+        onSuccess={handleSoldeUpdated}
+      />
+      <TransactionsHistoryDialog
+        entreprise={localEntreprise}
+        isOpen={isTransactionsOpen}
+        onClose={() => setIsTransactionsOpen(false)}
+      />
+      <AuditLogDialog
+        entreprise={localEntreprise}
+        isOpen={isAuditLogOpen}
+        onClose={() => setIsAuditLogOpen(false)}
+      />
     </Dialog>
   );
 };

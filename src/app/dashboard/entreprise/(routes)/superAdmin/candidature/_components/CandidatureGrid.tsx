@@ -1,104 +1,81 @@
 "use client";
 
-import React, { useMemo, useState } from 'react';
-import { Building2, Inbox } from 'lucide-react';
+import React from 'react';
+import { Inbox } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import CandidatureCard from './CandidatureCard';
 import { InterfaceEntreprise } from '../../../_models/entreprise.model';
 
-type StatusFilter = 'all' | 'pending' | 'accepted' | 'rejected';
 type CandidatureStatus = 'pending' | 'accepted' | 'rejected';
 
+interface Pagination {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
+
 interface CandidatureGridProps {
-  entreprises: InterfaceEntreprise[];
-  searchTerm: string;
-  statusFilter: StatusFilter;
-  sortBy: string;
+  candidatures: InterfaceEntreprise[];
+  isLoading?: boolean;
+  pagination: Pagination;
+  currentPage: number;
+  onPageChange: (page: number) => void;
   onEntrepriseClick: (entreprise: InterfaceEntreprise) => void;
   onAccept: (entreprise: InterfaceEntreprise) => void;
   onReject: (entreprise: InterfaceEntreprise) => void;
 }
 
-const ITEMS_PER_PAGE = 9;
-
 const CandidatureGrid: React.FC<CandidatureGridProps> = ({
-  entreprises,
-  searchTerm,
-  statusFilter,
-  sortBy,
+  candidatures,
+  isLoading = false,
+  pagination,
+  currentPage,
+  onPageChange,
   onEntrepriseClick,
   onAccept,
   onReject
 }) => {
-  const [currentPage, setCurrentPage] = useState(1);
-
   // Determine status of an entreprise
   const getEntrepriseStatus = (entreprise: InterfaceEntreprise): CandidatureStatus => {
-    // If estActif is true, it's accepted
+    // Use candidatureStatus if available from backend
+    if ((entreprise as any).candidatureStatus) {
+      return (entreprise as any).candidatureStatus;
+    }
+    // Fallback to computed status
     if (entreprise.estActif) return 'accepted';
-    // If there's a rejection reason, it's rejected
     if (entreprise.raisonRefus) return 'rejected';
-    // Otherwise, it's pending
     return 'pending';
   };
 
-  // Filter and sort entreprises
-  const filteredEntreprises = useMemo(() => {
-    let result = [...entreprises];
-
-    // Filter by status
-    if (statusFilter !== 'all') {
-      result = result.filter((ent) => {
-        const status = getEntrepriseStatus(ent);
-        return status === statusFilter;
-      });
-    }
-
-    // Filter by search term
-    if (searchTerm) {
-      const term = searchTerm.toLowerCase();
-      result = result.filter((ent) =>
-        ent.nomEntreprise?.toLowerCase().includes(term) ||
-        ent.ninea?.toLowerCase().includes(term) ||
-        ent.rccm?.toLowerCase().includes(term) ||
-        ent.representéPar?.toLowerCase().includes(term) ||
-        ent.emailEntreprise?.toLowerCase().includes(term)
-      );
-    }
-
-    // Sort
-    result.sort((a, b) => {
-      switch (sortBy) {
-        case 'name':
-          return a.nomEntreprise.localeCompare(b.nomEntreprise);
-        case 'name-desc':
-          return b.nomEntreprise.localeCompare(a.nomEntreprise);
-        case 'date':
-          return new Date(b.dateCreation).getTime() - new Date(a.dateCreation).getTime();
-        case 'date-asc':
-          return new Date(a.dateCreation).getTime() - new Date(b.dateCreation).getTime();
-        default:
-          return 0;
-      }
-    });
-
-    return result;
-  }, [entreprises, statusFilter, searchTerm, sortBy]);
-
-  // Pagination
-  const totalPages = Math.ceil(filteredEntreprises.length / ITEMS_PER_PAGE);
-  const paginatedEntreprises = filteredEntreprises.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE
-  );
-
-  // Reset page when filters change
-  React.useEffect(() => {
-    setCurrentPage(1);
-  }, [searchTerm, statusFilter, sortBy]);
+  // Loading skeleton
+  if (isLoading && candidatures.length === 0) {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <div key={i} className="bg-white rounded-xl border border-gray-200 p-5">
+            <div className="flex items-start gap-3 mb-4">
+              <Skeleton className="w-12 h-12 rounded-full" />
+              <div className="flex-1">
+                <Skeleton className="h-5 w-32 mb-2" />
+                <Skeleton className="h-4 w-20" />
+              </div>
+            </div>
+            <Skeleton className="h-4 w-full mb-2" />
+            <Skeleton className="h-4 w-2/3 mb-4" />
+            <div className="flex gap-2">
+              <Skeleton className="h-9 flex-1" />
+              <Skeleton className="h-9 flex-1" />
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
 
   // Empty state
-  if (filteredEntreprises.length === 0) {
+  if (!isLoading && candidatures.length === 0) {
     return (
       <div className="bg-white rounded-2xl border border-gray-300 p-12 text-center">
         <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -108,11 +85,7 @@ const CandidatureGrid: React.FC<CandidatureGridProps> = ({
           Aucune candidature trouvée
         </h3>
         <p className="text-gray-500">
-          {searchTerm
-            ? 'Essayez de modifier vos critères de recherche'
-            : statusFilter !== 'all'
-              ? `Aucune candidature ${statusFilter === 'pending' ? 'en attente' : statusFilter === 'accepted' ? 'acceptée' : 'refusée'}`
-              : 'Aucune candidature pour le moment'}
+          Essayez de modifier vos critères de recherche
         </p>
       </div>
     );
@@ -120,45 +93,47 @@ const CandidatureGrid: React.FC<CandidatureGridProps> = ({
 
   return (
     <div className="space-y-6">
-      {/* Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {paginatedEntreprises.map((entreprise) => (
-          <CandidatureCard
-            key={entreprise._id}
-            entreprise={entreprise}
-            status={getEntrepriseStatus(entreprise)}
-            onClick={() => onEntrepriseClick(entreprise)}
-            onAccept={(e) => {
-              e.stopPropagation();
-              onAccept(entreprise);
-            }}
-            onReject={(e) => {
-              e.stopPropagation();
-              onReject(entreprise);
-            }}
-          />
-        ))}
+      {/* Grid with loading overlay */}
+      <div className={`relative ${isLoading ? 'opacity-60 pointer-events-none' : ''}`}>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {candidatures.map((entreprise) => (
+            <CandidatureCard
+              key={entreprise._id}
+              entreprise={entreprise}
+              status={getEntrepriseStatus(entreprise)}
+              onClick={() => onEntrepriseClick(entreprise)}
+              onAccept={(e) => {
+                e.stopPropagation();
+                onAccept(entreprise);
+              }}
+              onReject={(e) => {
+                e.stopPropagation();
+                onReject(entreprise);
+              }}
+            />
+          ))}
+        </div>
       </div>
 
-      {/* Pagination */}
-      {totalPages > 1 && (
+      {/* Server-Side Pagination */}
+      {pagination.totalPages > 1 && (
         <div className="flex items-center justify-center gap-2 pt-4">
           <Button
             variant="outline"
             size="sm"
-            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-            disabled={currentPage === 1}
+            onClick={() => onPageChange(Math.max(1, currentPage - 1))}
+            disabled={currentPage === 1 || isLoading}
             className="border-gray-300 rounded-xl"
           >
             Précédent
           </Button>
 
           <div className="flex items-center gap-1">
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
+            {Array.from({ length: pagination.totalPages }, (_, i) => i + 1).map((page) => {
               // Show first, last, current, and adjacent pages
               if (
                 page === 1 ||
-                page === totalPages ||
+                page === pagination.totalPages ||
                 (page >= currentPage - 1 && page <= currentPage + 1)
               ) {
                 return (
@@ -166,7 +141,8 @@ const CandidatureGrid: React.FC<CandidatureGridProps> = ({
                     key={page}
                     variant={currentPage === page ? 'default' : 'outline'}
                     size="sm"
-                    onClick={() => setCurrentPage(page)}
+                    onClick={() => onPageChange(page)}
+                    disabled={isLoading}
                     className={`w-10 h-10 rounded-xl ${
                       currentPage === page
                         ? 'bg-[#0cadec] hover:bg-[#0cadec]/90'
@@ -193,12 +169,19 @@ const CandidatureGrid: React.FC<CandidatureGridProps> = ({
           <Button
             variant="outline"
             size="sm"
-            onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-            disabled={currentPage === totalPages}
+            onClick={() => onPageChange(Math.min(pagination.totalPages, currentPage + 1))}
+            disabled={currentPage === pagination.totalPages || isLoading}
             className="border-gray-300 rounded-xl"
           >
             Suivant
           </Button>
+        </div>
+      )}
+
+      {/* Pagination Info */}
+      {pagination.total > 0 && (
+        <div className="text-center text-sm text-gray-500">
+          Affichage de {((currentPage - 1) * pagination.limit) + 1} à {Math.min(currentPage * pagination.limit, pagination.total)} sur {pagination.total} candidatures
         </div>
       )}
     </div>

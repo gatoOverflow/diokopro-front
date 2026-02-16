@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useEffect, useTransition } from 'react';
 import { toast } from 'sonner';
 import { refuseEntreprise, updateEntrepriseStatus } from '@/actions/acceptEntreprise';
+import { getCandidaturesPaginated } from '@/actions/superAdminActions';
 import { InterfaceEntreprise } from '../../../_models/entreprise.model';
 
 // Components
@@ -15,11 +16,29 @@ import ConfirmationModal from './ConfirmationModal';
 type StatusFilter = 'all' | 'pending' | 'accepted' | 'rejected';
 
 interface CandidatureViewProps {
-  entreprises: InterfaceEntreprise[];
+  initialCandidatures?: InterfaceEntreprise[];
+  initialCounts?: {
+    all: number;
+    pending: number;
+    accepted: number;
+    rejected: number;
+  };
+  initialPagination?: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
 }
 
-const CandidatureView: React.FC<CandidatureViewProps> = ({ entreprises = [] }) => {
+const CandidatureView: React.FC<CandidatureViewProps> = ({
+  initialCandidatures = [],
+  initialCounts,
+  initialPagination,
+}) => {
   // State
+  const [isPending, startTransition] = useTransition();
+  const [candidatures, setCandidatures] = useState(initialCandidatures);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [sortBy, setSortBy] = useState('date');
@@ -27,51 +46,89 @@ const CandidatureView: React.FC<CandidatureViewProps> = ({ entreprises = [] }) =
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [confirmationType, setConfirmationType] = useState<'accept' | 'reject' | null>(null);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  // Calculate counts
-  const counts = useMemo(() => {
-    const pending = entreprises.filter((e) => !e.estActif && !e.raisonRefus).length;
-    const accepted = entreprises.filter((e) => e.estActif).length;
-    const rejected = entreprises.filter((e) => !e.estActif && e.raisonRefus).length;
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(9);
+  const [pagination, setPagination] = useState(initialPagination || {
+    page: 1,
+    limit: 9,
+    total: initialCandidatures.length,
+    totalPages: Math.ceil(initialCandidatures.length / 9),
+  });
 
-    return {
-      all: entreprises.length,
-      pending,
-      accepted,
-      rejected
-    };
-  }, [entreprises]);
+  // Counts state
+  const [counts, setCounts] = useState(initialCounts || {
+    all: initialCandidatures.length,
+    pending: 0,
+    accepted: 0,
+    rejected: 0,
+  });
 
-  // Calculate filtered count
-  const filteredCount = useMemo(() => {
-    let result = [...entreprises];
+  // Debounce search
+  const [debouncedSearch, setDebouncedSearch] = useState('');
 
-    // Filter by status
-    if (statusFilter !== 'all') {
-      result = result.filter((ent) => {
-        if (statusFilter === 'pending') return !ent.estActif && !ent.raisonRefus;
-        if (statusFilter === 'accepted') return ent.estActif;
-        if (statusFilter === 'rejected') return !ent.estActif && ent.raisonRefus;
-        return true;
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchTerm);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
+  // Fetch candidatures from server
+  const fetchCandidatures = useCallback(async () => {
+    setIsLoading(true);
+
+    try {
+      const result = await getCandidaturesPaginated({
+        page: currentPage,
+        limit: itemsPerPage,
+        search: debouncedSearch || undefined,
+        status: statusFilter,
+        sort: sortBy,
       });
+
+      if (result.type === 'error') {
+        toast.error(result.error || 'Erreur lors du chargement');
+        return;
+      }
+
+      setCandidatures(result.data);
+      setCounts(result.counts);
+      setPagination(result.pagination);
+    } catch (error) {
+      console.error('Error fetching candidatures:', error);
+      toast.error('Erreur lors du chargement des candidatures');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [currentPage, itemsPerPage, debouncedSearch, statusFilter, sortBy]);
+
+  // Track if we've fetched data at least once (to skip only the very first render)
+  const [hasFetched, setHasFetched] = React.useState(false);
+
+  // Fetch when filters change
+  useEffect(() => {
+    // Skip ONLY the initial fetch if we have initial data and haven't fetched yet
+    if (!hasFetched && initialCandidatures.length > 0 && currentPage === 1 && !debouncedSearch && statusFilter === 'all' && sortBy === 'date') {
+      setHasFetched(true);
+      return;
     }
 
-    // Filter by search
-    if (searchTerm) {
-      const term = searchTerm.toLowerCase();
-      result = result.filter((ent) =>
-        ent.nomEntreprise?.toLowerCase().includes(term) ||
-        ent.ninea?.toLowerCase().includes(term) ||
-        ent.rccm?.toLowerCase().includes(term) ||
-        ent.representéPar?.toLowerCase().includes(term)
-      );
-    }
+    setHasFetched(true);
+    startTransition(() => {
+      fetchCandidatures();
+    });
+  }, [currentPage, itemsPerPage, debouncedSearch, statusFilter, sortBy]);
 
-    return result.length;
-  }, [entreprises, statusFilter, searchTerm]);
+  // Reset page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [debouncedSearch, statusFilter, sortBy, itemsPerPage]);
 
   // Calculate taux d'acceptation
-  const tauxAcceptation = useMemo(() => {
+  const tauxAcceptation = React.useMemo(() => {
     const total = counts.accepted + counts.rejected;
     if (total === 0) return 0;
     return Math.round((counts.accepted / total) * 100);
@@ -117,8 +174,9 @@ const CandidatureView: React.FC<CandidatureViewProps> = ({ entreprises = [] }) =
 
         if (result.type === 'success') {
           toast.success(`${selectedEntreprise.nomEntreprise} a été acceptée avec succès`);
-          // Reload to refresh data
-          setTimeout(() => window.location.reload(), 1000);
+          // Refresh data
+          fetchCandidatures();
+          handleCloseConfirm();
         } else {
           throw new Error(result.error || 'Erreur lors de l\'acceptation');
         }
@@ -132,8 +190,9 @@ const CandidatureView: React.FC<CandidatureViewProps> = ({ entreprises = [] }) =
 
         if (result.type === 'success') {
           toast.success(`${selectedEntreprise.nomEntreprise} a été refusée`);
-          // Reload to refresh data
-          setTimeout(() => window.location.reload(), 1000);
+          // Refresh data
+          fetchCandidatures();
+          handleCloseConfirm();
         } else {
           throw new Error(result.error || 'Erreur lors du refus');
         }
@@ -142,7 +201,7 @@ const CandidatureView: React.FC<CandidatureViewProps> = ({ entreprises = [] }) =
       toast.error(error.message || 'Une erreur est survenue');
       throw error;
     }
-  }, [selectedEntreprise, confirmationType]);
+  }, [selectedEntreprise, confirmationType, fetchCandidatures]);
 
   // Accept/Reject from details modal
   const handleAcceptFromDetails = useCallback(() => {
@@ -160,6 +219,15 @@ const CandidatureView: React.FC<CandidatureViewProps> = ({ entreprises = [] }) =
       setIsConfirmOpen(true);
     }
   }, [selectedEntreprise]);
+
+  const handlePageChange = useCallback((page: number) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
+  const handleRefresh = useCallback(() => {
+    fetchCandidatures();
+  }, [fetchCandidatures]);
 
   return (
     <div className="min-h-screen bg-gray-50/30">
@@ -181,15 +249,18 @@ const CandidatureView: React.FC<CandidatureViewProps> = ({ entreprises = [] }) =
           searchValue={searchTerm}
           onSearchChange={setSearchTerm}
           counts={counts}
-          filteredCount={filteredCount}
+          filteredCount={pagination.total}
+          onRefresh={handleRefresh}
+          isRefreshing={isLoading || isPending}
         />
 
-        {/* Grid */}
+        {/* Grid with Server-Side Pagination */}
         <CandidatureGrid
-          entreprises={entreprises}
-          searchTerm={searchTerm}
-          statusFilter={statusFilter}
-          sortBy={sortBy}
+          candidatures={candidatures}
+          isLoading={isLoading || isPending}
+          pagination={pagination}
+          currentPage={currentPage}
+          onPageChange={handlePageChange}
           onEntrepriseClick={handleEntrepriseClick}
           onAccept={handleAcceptClick}
           onReject={handleRejectClick}

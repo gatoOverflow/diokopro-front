@@ -11,7 +11,8 @@ import {
   CheckCircle2,
   XCircle,
   Clock,
-  SlidersHorizontal
+  SlidersHorizontal,
+  RefreshCw,
 } from 'lucide-react';
 import {
   Select,
@@ -35,6 +36,8 @@ interface EntrepriseFiltersProps {
   filteredCount?: number;
   searchValue?: string;
   onSearchChange?: (value: string) => void;
+  onRefresh?: () => void;
+  isRefreshing?: boolean;
 }
 
 const EntrepriseFilters: React.FC<EntrepriseFiltersProps> = ({
@@ -48,6 +51,8 @@ const EntrepriseFilters: React.FC<EntrepriseFiltersProps> = ({
   filteredCount = 0,
   searchValue = '',
   onSearchChange,
+  onRefresh,
+  isRefreshing = false,
 }) => {
   // Status tabs configuration
   const statusTabs = [
@@ -116,8 +121,21 @@ const EntrepriseFilters: React.FC<EntrepriseFiltersProps> = ({
           </div>
         )}
 
-        {/* View Mode Toggle */}
+        {/* View Mode Toggle + Refresh */}
         <div className="flex items-center gap-2 self-end sm:self-auto">
+          {/* Refresh Button */}
+          {onRefresh && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onRefresh}
+              disabled={isRefreshing}
+              className="h-10 px-3 border-gray-300 hover:border-[#0cadec] hover:text-[#0cadec] rounded-xl"
+            >
+              <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+            </Button>
+          )}
+
           <div className="flex items-center p-1 bg-gray-100 rounded-xl border border-gray-300">
             <Button
               variant="ghost"

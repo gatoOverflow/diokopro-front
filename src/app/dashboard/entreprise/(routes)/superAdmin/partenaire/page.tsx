@@ -1,4 +1,4 @@
-// page.tsx (Server Component) - Version avec streaming Suspense
+// page.tsx (Server Component) - Version optimisée avec seulement 2 appels API
 import { Suspense } from 'react';
 import { loadSuperAdminData, SuperAdminSkeleton } from './DataLoaders';
 import CombinedViewTest from './CombinedView/CombinedViewpage';
@@ -9,16 +9,12 @@ async function SuperAdminDataLoader() {
 
   return (
     <CombinedViewTest
-      services={data.services}
-      agentapayer={data.agenttopay}
-      agentNotTopayer={data.agentToNotPay}
-      clients={data.clients}
       agents={data.enterprises}
-      gerants={data.gerants}
       clientsResponse={data.clientsCount}
       agentsResponse={data.agentsCount}
       getNumbersEntreprise={data.enterprisesCount}
       balance={data.balance}
+      initialPagination={data.enterprisesPagination}
     />
   );
 }
