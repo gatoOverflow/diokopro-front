@@ -359,7 +359,7 @@ const PaymentListView = ({ clients, agents }) => {
     };
 
     return (
-        <div className="p-6 bg-gray-50 min-h-screen">
+        <div>
             {/* Section des agents */}
             <div className="mb-10">
                 <div className="flex items-center justify-between mb-6">
