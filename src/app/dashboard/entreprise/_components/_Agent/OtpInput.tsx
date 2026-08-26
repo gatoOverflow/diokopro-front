@@ -8,7 +8,7 @@ import { Lock } from 'lucide-react';
 interface OtpInputProps {
   length?: number;
   onComplete: (otp: string) => void;
-  onSubmit?: () => void;
+  onSubmit?: (otp: string) => void;
   onResend?: () => void;
   disabled?: boolean;
   isLoading?: boolean;
@@ -114,10 +114,9 @@ const OtpInput: React.FC<OtpInputProps> = ({
       inputRefs.current[index - 1]?.focus();
     }
     
-    // Si Enter est pressé et que tous les champs sont remplis, soumettre
     if (e.key === 'Enter' && otpValues.every(val => val !== '') && onSubmit) {
       e.preventDefault();
-      onSubmit();
+      onSubmit(otpValues.join(''));
     }
   };
   
@@ -158,13 +157,8 @@ const OtpInput: React.FC<OtpInputProps> = ({
   // Gérer la soumission du formulaire
   const handleSubmit = () => {
     if (isComplete && !disabled && !isLoading) {
-      // Mettre à jour d'abord le code OTP
       onComplete(completeOtp);
-      
-      // Puis appeler onSubmit si fourni (après un court délai pour s'assurer que onComplete a terminé)
-      if (onSubmit) {
-        setTimeout(onSubmit, 10);
-      }
+      onSubmit?.(completeOtp);
     }
   };
 

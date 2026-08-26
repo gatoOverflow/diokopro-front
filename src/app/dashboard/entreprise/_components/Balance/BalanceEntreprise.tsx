@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { CreditCard, Minus, Plus, Send, Loader2, AlertCircle, CheckCircle, Wallet, ArrowUpCircle, ArrowDownCircle, MessageSquarePlus, TrendingUp } from 'lucide-react'
 import { envoyerMessage, rechargeCompte, retraitCompte } from '@/actions/Balance'
 import OtpInput from '../_Agent/OtpInput';
@@ -46,6 +46,7 @@ export default function BalanceEntreprise({ balances, entrepriseId, onBalanceUpd
   })
   
   const [loading, setLoading] = useState(false)
+  const otpInFlight = useRef(false)
   const [notification, setNotification] = useState<{
     type: 'success' | 'error' | null;
     message: string;
@@ -213,11 +214,20 @@ export default function BalanceEntreprise({ balances, entrepriseId, onBalanceUpd
 // ==================== OTP COMMUN POUR RECHARGE ET RETRAIT ====================
   
 // Vérifier l'OTP - Utilisé pour RECHARGE ET RETRAIT
-const handleVerifyOtp = async () => {
- 
-  
-  if (!otpCode || otpCode.length !== 6) {
+const handleVerifyOtp = async (codeFromInput?: string) => {
+  if (otpInFlight.current || loading) {
+    return
+  }
+
+  const code = String(codeFromInput || otpCode || '').replace(/\D/g, '')
+
+  if (!code || code.length !== 6) {
     showNotification('error', 'Veuillez entrer un code OTP valide à 6 chiffres')
+    return
+  }
+
+  if (!pendingChangeId) {
+    showNotification('error', 'Demande de validation introuvable. Relancez l’opération.')
     return
   }
 
@@ -226,16 +236,14 @@ const handleVerifyOtp = async () => {
     return
   }
 
+  otpInFlight.current = true
   setLoading(true)
   try {
     if (otpType === 'recharge') {
-      console.log('💳 Validation OTP pour RECHARGE')
-      // Validation OTP pour recharge
-      const response = await validateOTP(pendingChangeId, otpCode, entrepriseId)
-    
+      const response = await validateOTP(pendingChangeId, code, entrepriseId)
 
       if (response.success) {
-        showNotification('success', 'Lien de paiement envoyé via SMS !')
+        showNotification('success', 'Lien de paiement envoyé (SMS, WhatsApp et e-mail) !')
         resetRechargeModal()
         if (onBalanceUpdate) onBalanceUpdate()
       } else {
@@ -249,8 +257,7 @@ const handleVerifyOtp = async () => {
         }
       }
     } else if (otpType === 'retrait') {
-      const response = await validateOTP(pendingChangeId, otpCode, entrepriseId)
-    
+      const response = await validateOTP(pendingChangeId, code, entrepriseId)
 
       if (response.success) {
         showNotification('success', 'Retrait effectué avec succès')
@@ -268,11 +275,11 @@ const handleVerifyOtp = async () => {
       }
     }
   } catch (error) {
-    console.error('💥 Erreur lors de la vérification OTP:', error)
+    console.error('Erreur lors de la vérification OTP:', error)
     showNotification('error', 'Échec de la vérification du code OTP')
   } finally {
+    otpInFlight.current = false
     setLoading(false)
-    console.log('🏁 [handleVerifyOtp] Fin de la fonction')
   }
 }
 
