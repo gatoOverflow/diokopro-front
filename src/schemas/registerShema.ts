@@ -7,13 +7,14 @@ export const RegisterSchema = z.object({
   password: z.string().min(8, "Le mot de passe doit contenir au moins 8 caractères"),
   telephone: z.string().min(1, "Le numéro de téléphone est requis"),
   nomEntreprise: z.string().min(1, "Le nom de l'entreprise est requis"),
-  ninea: z.string().min(1, "Le numéro NINEA est requis"),
-  dateCreation: z.string().min(1, "La date de création est requise"),
-  rccm: z.string().min(1, "Le numéro RCCM est requis"),
-  representéPar: z.string().min(1, "Le représentant doit être renseigné"),
-
-  adresse: z.string().min(1, "L'adresse est requise"),
-  emailEntreprise: z.string().email("Format d'email invalide pour l'entreprise"),
+  // Informations d'entreprise renseignees plus tard dans les parametres :
+  // l'inscription ne demande plus que le nom.
+  ninea: z.string().optional(),
+  dateCreation: z.string().optional(),
+  rccm: z.string().optional(),
+  representéPar: z.string().optional(),
+  adresse: z.string().optional(),
+  emailEntreprise: z.string().email("Format d'email invalide pour l'entreprise").optional().or(z.literal("")),
   telephoneEntreprise: z.string().optional(),
 //teste 45
 });

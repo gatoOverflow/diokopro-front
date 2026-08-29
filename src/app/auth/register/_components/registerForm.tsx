@@ -19,7 +19,6 @@ const RegistrationForm = () => {
     const router = useRouter();
     const [state, formAction] = React.useActionState(register, undefined);
     const [isLoading, setIsLoading] = useState(false);
-    const [currentStep, setCurrentStep] = useState(1);
     const [showPassword, setShowPassword] = useState(false);
     const [formData, setFormData] = useState({
         nom: "",
@@ -70,26 +69,17 @@ const RegistrationForm = () => {
         }
     };
 
-    const nextStep = () => {
-        setCurrentStep(2);
-    };
-
-    const prevStep = () => {
-        setCurrentStep(1);
-    };
-
     return (
         <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center p-4">
             <Card className="w-full max-w-4xl shadow-lg overflow-hidden rounded-xl border-none">
                 <div className="flex flex-col md:flex-row">
                     {/* Side Panel */}
-                    <SidePanel currentStep={currentStep} />
+                    <SidePanel />
 
                     {/* Form Content */}
                     <div className="w-full md:w-2/3 p-6">
                         <form className="space-y-6" onSubmit={handleSubmit}>
-                            {currentStep === 1 && (
-                                <div className="space-y-6">
+                            <div className="space-y-6">
                                     <div className="mb-6">
                                         <h3 className="text-xl font-bold text-gray-800">Informations personnelles</h3>
                                         <p className="text-gray-500">Renseignez vos informations personnelles</p>
@@ -200,25 +190,6 @@ const RegistrationForm = () => {
                                         </p>
                                     </div>
 
-                                    <div className="pt-4">
-                                        <Button
-                                            type="button"
-                                            onClick={nextStep}
-                                            className="w-full bg-[#00B0F0]  text-white"
-                                        >
-                                            Continuer
-                                        </Button>
-                                    </div>
-                                </div>
-                            )}
-
-                            {currentStep === 2 && (
-                                <div className="space-y-14">
-                                    <div className="mb-6">
-                                        <h3 className="text-xl font-bold text-gray-800">Informations entreprise</h3>
-                                        <p className="text-gray-500">Renseignez les informations de votre entreprise</p>
-                                    </div>
-
                                     <div className="space-y-2">
                                         <Label htmlFor="nomEntreprise" className="font-medium text-gray-700">Nom de l'entreprise</Label>
                                         <div className="relative">
@@ -237,151 +208,22 @@ const RegistrationForm = () => {
                                         </div>
                                     </div>
 
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div className="space-y-2">
-                                            <Label htmlFor="ninea" className="font-medium text-gray-700">NINEA</Label>
-                                            <div className="relative">
-                                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-500">
-                                                    <FileText size={16} />
-                                                </div>
-                                                <Input
-                                                    id="ninea"
-                                                    name="ninea"
-                                                    value={formData.ninea}
-                                                    onChange={handleInputChange}
-                                                    className="pl-10 bg-gray-50 border-gray-200 focus:ring-blue-500"
-                                                    placeholder="Entrez votre NINEA"
-                                                    required
-                                                />
-                                            </div>
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label htmlFor="rccm" className="font-medium text-gray-700">RCCM</Label>
-                                            <div className="relative">
-                                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-500">
-                                                    <FileText size={16} />
-                                                </div>
-                                                <Input
-                                                    id="rccm"
-                                                    name="rccm"
-                                                    value={formData.rccm}
-                                                    onChange={handleInputChange}
-                                                    className="pl-10 bg-gray-50 border-gray-200 focus:ring-blue-500"
-                                                    placeholder="Entrez le numéro RCCM"
-                                                    required
-                                                />
-                                            </div>
-                                        </div>
-                                    </div>
- <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div className="space-y-2">
-                                            <Label htmlFor="adresse" className="font-medium text-gray-700">Adresse</Label>
-                                            <div className="relative">
-                                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-500">
-                                                    <FileText size={16} />
-                                                </div>
-                                                <Input
-                                                    id="adresse"
-                                                    name="adresse"
-                                                    value={formData.adresse}
-                                                    onChange={handleInputChange}
-                                                    className="pl-10 bg-gray-50 border-gray-200 focus:ring-blue-500"
-                                                    placeholder="Entrez votre Adresse"
-                                                    required
-                                                />
-                                            </div>
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label htmlFor="emailEntreprise" className="font-medium text-gray-700">Email Entreprise</Label>
-                                            <div className="relative">
-                                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-500">
-                                                    <FileText size={16} />
-                                                </div>
-                                                <Input
-                                                    id="emailEntreprise"
-                                                    name="emailEntreprise"
-                                                    value={formData.emailEntreprise}
-                                                    onChange={handleInputChange}
-                                                    className="pl-10 bg-gray-50 border-gray-200 focus:ring-blue-500"
-                                                    placeholder="Entrez l'Email"
-                                                    required
-                                                />
-                                            </div>
-                                        </div>
-                                         <div className="space-y-2">
-                                            <Label htmlFor="telephoneEntreprise" className="font-medium text-gray-700">Telephone (veuillez Renseigner l'indicatif)</Label>
-                    
-                                            <div className="relative">
-                                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-500">
-                                                    <FileText size={16} />
-                                                </div>
-                                                <Input
-                                                    id="telephoneEntreprise"
-                                                    name="telephoneEntreprise"
-                                                    value={formData.telephoneEntreprise}
-                                                    onChange={handleInputChange}
-                                                    className="pl-10 bg-gray-50 border-gray-200 focus:ring-blue-500"
-                                                    placeholder="+2217777777"
-                                                    required
-                                                />
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div className="space-y-2">
-                                            <Label htmlFor="dateCreation" className="font-medium text-gray-700">Date de création</Label>
-                                            <div className="relative">
-                                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-500">
-                                                    <Calendar size={16} />
-                                                </div>
-                                                <Input
-                                                    id="dateCreation"
-                                                    name="dateCreation"
-                                                    type="date"
-                                                    value={formData.dateCreation}
-                                                    onChange={handleInputChange}
-                                                    className="pl-10 bg-gray-50 border-gray-200 focus:ring-blue-500"
-                                                    required
-                                                />
-                                            </div>
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label htmlFor="representéPar" className="font-medium text-gray-700">Représenté par</Label>
-                                            <div className="relative">
-                                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-500">
-                                                    <User size={16} />
-                                                </div>
-                                                <Input
-                                                    id="representéPar"
-                                                    name="representéPar"
-                                                    value={formData.representéPar}
-                                                    onChange={handleInputChange}
-                                                    className="pl-10 bg-gray-50 border-gray-200 focus:ring-blue-500"
-                                                    placeholder="Entrez le nom du représentant"
-                                                    required
-                                                />
-                                            </div>
-                                        </div>
-                                    </div>
+                                    <p className="text-xs text-gray-500">
+                                        Les autres informations de votre entreprise (NINEA, RCCM, adresse…)
+                                        se renseignent ensuite dans les paramètres.
+                                    </p>
 
-                                    <div className="flex gap-3 pt-4">
-                                        <Button
-                                            type="button"
-                                            onClick={prevStep}
-                                            className="w-1/3 bg-[#A49F9F] text-white"
-                                        >
-                                            Retour
-                                        </Button>
+                                    <div className="pt-4">
                                         <Button
                                             type="submit"
-                                            className="w-2/3 bg-[#00B0F0]  text-white"
+                                            className="w-full bg-[#00B0F0]  text-white"
                                             disabled={isLoading}
                                         >
                                             {isLoading ? "Inscription en cours..." : "S'inscrire"}
                                         </Button>
                                     </div>
-                                </div>
-                            )}
+                            </div>
+
                         </form>
 
                         {state?.type === "error" && (

@@ -5,11 +5,13 @@ export type RequestData = {
     password: string;
     telephone: string;
     nomEntreprise: string;
-    ninea: string;
-    dateCreation: string;
-    rccm: string;
-    representéPar: string;
-    adresse: string;
+    // Renseignes plus tard dans les parametres : l'inscription ne demande
+    // que le nom de l'entreprise.
+    ninea?: string;
+    dateCreation?: string;
+    rccm?: string;
+    representéPar?: string;
+    adresse?: string;
     telephoneEntreprise?: string; // Optionnel, si nécessaire
     emailEntreprise?: string; // Optionnel, si nécessaire
   };
