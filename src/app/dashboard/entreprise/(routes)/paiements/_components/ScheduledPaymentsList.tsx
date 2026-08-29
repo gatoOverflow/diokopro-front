@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Search, ChevronLeft, ChevronRight, AlertTriangle, Calendar, Wallet } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import { getPayoutMethods, type PaymentMethod } from '@/actions/paymentMethods';
 
 interface ScheduledPayment {
     _id: string;
@@ -41,6 +42,17 @@ interface ScheduledPaymentsListProps {
 
 const ScheduledPaymentsList = ({ payments, stats }: ScheduledPaymentsListProps) => {
     const [currentPage, setCurrentPage] = useState(1);
+
+    // Libelles des portefeuilles, issus du catalogue de versement
+    const [portefeuilles, setPortefeuilles] = useState<PaymentMethod[]>([]);
+
+    useEffect(() => {
+        let annule = false;
+        getPayoutMethods()
+            .then((catalogue) => { if (!annule) setPortefeuilles(catalogue.data); })
+            .catch(() => { /* la liste reste affichable avec les codes bruts */ });
+        return () => { annule = true; };
+    }, []);
     const [searchTerm, setSearchTerm] = useState('');
     const [filteredPayments, setFilteredPayments] = useState<ScheduledPayment[]>([]);
     const ITEMS_PER_PAGE = 8;
@@ -83,20 +95,36 @@ const ScheduledPaymentsList = ({ payments, stats }: ScheduledPaymentsListProps) 
         return montant?.toLocaleString('fr-FR') || '0';
     };
 
+    // La couleur est deduite de l'operateur plutot qu'enumeree par code : le
+    // catalogue sert 21 portefeuilles sur 8 pays, et un meme operateur garde
+    // sa couleur d'un pays a l'autre.
+    const couleurPortefeuille = (code: string, nom: string) => {
+        const t = `${code} ${nom}`.toLowerCase();
+        if (t.includes('orange')) return 'bg-orange-100 text-orange-700';
+        if (t.includes('wave')) return 'bg-cyan-100 text-cyan-700';
+        if (t.includes('free')) return 'bg-blue-100 text-blue-700';
+        if (t.includes('mtn')) return 'bg-yellow-100 text-yellow-800';
+        if (t.includes('airtel')) return 'bg-red-100 text-red-700';
+        if (t.includes('moov')) return 'bg-indigo-100 text-indigo-700';
+        if (t.includes('djamo')) return 'bg-violet-100 text-violet-700';
+        if (t.includes('expresso')) return 'bg-emerald-100 text-emerald-700';
+        if (t.includes('money')) return 'bg-teal-100 text-teal-700';
+        return 'bg-gray-100 text-gray-700';
+    };
+
     const getWalletBadge = (wallet: string) => {
-        const walletColors: Record<string, string> = {
-            'orange-money-senegal': 'bg-orange-100 text-orange-700',
-            'free-money-senegal': 'bg-blue-100 text-blue-700',
-            'wave-senegal': 'bg-cyan-100 text-cyan-700',
-        };
-        const walletNames: Record<string, string> = {
-            'orange-money-senegal': 'Orange Money',
-            'free-money-senegal': 'Free Money',
-            'wave-senegal': 'Wave',
-        };
+        const methode = portefeuilles.find((m) => m.code === wallet);
+        // Sans libelle connu on affiche le code brut plutot que rien : mieux
+        // vaut une valeur technique lisible qu'un tiret muet.
+        const nom = methode?.name || wallet || '-';
+        const pays = methode?.country_name;
+
         return (
-            <span className={`px-2 py-1 rounded-full text-xs font-medium ${walletColors[wallet] || 'bg-gray-100 text-gray-700'}`}>
-                {walletNames[wallet] || wallet || '-'}
+            <span
+                className={`px-2 py-1 rounded-full text-xs font-medium ${couleurPortefeuille(wallet, nom)}`}
+                title={pays ? `${nom} — ${pays}` : nom}
+            >
+                {nom}
             </span>
         );
     };
