@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useState, useRef, useEffect } from 'react'
-import { CreditCard, Minus, Plus, Send, Loader2, AlertCircle, CheckCircle, Wallet, ArrowUpCircle, ArrowDownCircle, MessageSquarePlus, TrendingUp } from 'lucide-react'
+import { CreditCard, Minus, Plus, Send, Loader2, AlertCircle, CheckCircle, Clock, Wallet, ArrowUpCircle, ArrowDownCircle, MessageSquarePlus, TrendingUp } from 'lucide-react'
 import { envoyerMessage, rechargeCompte, retraitCompte } from '@/actions/Balance'
 import OtpInput from '../_Agent/OtpInput';
 import { validateOTP } from '@/actions/service';
@@ -54,11 +54,13 @@ export default function BalanceEntreprise({ balances, entrepriseId, onBalanceUpd
   const [loading, setLoading] = useState(false)
   const otpInFlight = useRef(false)
   const [notification, setNotification] = useState<{
-    type: 'success' | 'error' | null;
+    type: 'success' | 'error' | 'pending' | null;
     message: string;
   }>({ type: null, message: '' })
 
-  const showNotification = (type: 'success' | 'error', message: string) => {
+  // "pending" est un troisieme etat, ni succes ni echec : le retrait est parti
+  // chez l'operateur mais n'est pas encore confirme.
+  const showNotification = (type: 'success' | 'error' | 'pending', message: string) => {
     setNotification({ type, message })
     setTimeout(() => setNotification({ type: null, message: '' }), 5000)
   }
@@ -177,8 +179,12 @@ export default function BalanceEntreprise({ balances, entrepriseId, onBalanceUpd
           setOtpType('retrait')
           setShowOtpStep(true)
         } else {
-          // Retrait effectué avec succès sans OTP
-          showNotification('success', result.message || 'Retrait effectué avec succès')
+          // Retrait traité sans OTP. L'action distingue un retrait acquis d'un
+          // retrait seulement émis, en attente de l'opérateur.
+          showNotification(
+            result.pending ? 'pending' : 'success',
+            result.message || 'Retrait effectué avec succès'
+          )
           resetRetraitModal()
           if (onBalanceUpdate) onBalanceUpdate()
         }
@@ -266,7 +272,13 @@ const handleVerifyOtp = async (codeFromInput?: string) => {
       const response = await validateOTP(pendingChangeId, code, entrepriseId)
 
       if (response.success) {
-        showNotification('success', 'Retrait effectué avec succès')
+        // Le solde n'est debite qu'a la confirmation : ne pas annoncer un
+        // retrait acquis tant que l'operateur n'a pas repondu.
+        if (response.data?.pending) {
+          showNotification('pending', response.data?.message || "Retrait émis, en attente de confirmation par l'opérateur")
+        } else {
+          showNotification('success', 'Retrait effectué avec succès')
+        }
         resetRetraitModal()
         if (onBalanceUpdate) onBalanceUpdate()
       } else {
@@ -396,10 +408,14 @@ const handleVerifyOtp = async (codeFromInput?: string) => {
         <div className={`fixed top-4 right-4 z-50 p-4 rounded-2xl shadow-lg flex items-center gap-3 animate-in slide-in-from-top-2 ${
           notification.type === 'success'
             ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
-            : 'bg-red-50 text-red-800 border border-red-200'
+            : notification.type === 'pending'
+              ? 'bg-amber-50 text-amber-900 border border-amber-200'
+              : 'bg-red-50 text-red-800 border border-red-200'
         }`}>
           {notification.type === 'success' ? (
             <CheckCircle className="w-5 h-5 text-emerald-500" />
+          ) : notification.type === 'pending' ? (
+            <Clock className="w-5 h-5 text-amber-500" />
           ) : (
             <AlertCircle className="w-5 h-5 text-red-500" />
           )}

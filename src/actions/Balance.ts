@@ -147,8 +147,22 @@ export const retraitCompte = async (
     }
 
     
+    // Le retrait peut etre EMIS sans etre confirme : CaurisFlux valide de
+    // facon asynchrone et l'API repond alors pending. Annoncer "effectue"
+    // dans ce cas ferait croire que l'argent est parti et que le solde a
+    // ete debite, alors qu'aucun des deux n'est acquis.
+    if (response?.pending) {
+      return {
+        type: "success",
+        pending: true,
+        message: response?.message || "Retrait émis, en attente de confirmation par l'opérateur",
+        data: response,
+      };
+    }
+
     return {
       type: "success",
+      pending: false,
       message: "Retrait effectué avec succès",
       data: response,
     };
