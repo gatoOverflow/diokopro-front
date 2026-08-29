@@ -4,6 +4,7 @@ import { CircleX, Mail, Home, Plus, DollarSign, Calendar } from "lucide-react";
 import { toast } from "sonner";
 import { createAgent } from "@/actions/Agent";
 import { validateOTP } from "@/actions/service";
+import { getPayoutMethods, type PaymentMethod, type Country } from "@/actions/paymentMethods";
 import PhoneInput from "../../clientsPage/_components/phone";
 import OtpInput from "../../entreprise/_components/_Agent/OtpInput";
 import { Button } from "@/components/ui/button";
@@ -31,6 +32,10 @@ const CreateAgentModal = ({ services = [], entrepriseId = "" }: CreateAgentModal
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<ValidationErrors>({});
   const [showRecap, setShowRecap] = useState(false); // ✅ Nouvel état pour le récapitulatif
+  // Catalogue des portefeuilles de versement, servi par l'API
+  const [pays, setPays] = useState<Country[]>([]);
+  const [walletOptions, setWalletOptions] = useState<PaymentMethod[]>([]);
+  const [chargementWallets, setChargementWallets] = useState(false);
   const [formData, setFormData] = useState({
     nom: "",
     prenom: "",
@@ -45,6 +50,7 @@ const CreateAgentModal = ({ services = [], entrepriseId = "" }: CreateAgentModal
     intervallePaiement: 1,
     jourPaiement: 1,
     wallet: "",
+    pays: "",
     aPayer: false, // ✅ Initialisé à false par défaut
     dateProchainVirement: ""
   });
@@ -148,7 +154,8 @@ const CreateAgentModal = ({ services = [], entrepriseId = "" }: CreateAgentModal
         fonction: "", // ✅ Réinitialiser fonction
       entrepriseId: entrepriseId,
       salaire: "",
-      wallet: "", 
+      wallet: "",
+      pays: "", 
       frequencePaiement: "mensuel",
       intervallePaiement: 1,
       jourPaiement: 1,
@@ -158,11 +165,33 @@ const CreateAgentModal = ({ services = [], entrepriseId = "" }: CreateAgentModal
     setErrors({});
   };
 
-  const walletOptions = [ 
-    { value: 'orange-money-senegal', label: 'Orange Money Sénégal' }, 
-    { value: 'free-money-senegal', label: 'Free Money Sénégal' }, 
-    { value: 'wave-senegal', label: 'Wave Sénégal' }, 
-  ]
+  // Les portefeuilles viennent du catalogue : 21 methodes sur 8 pays, la
+  // liste codee en dur n'en couvrait que 3, toutes senegalaises.
+  useEffect(() => {
+    if (!isOpen) return;
+    let annule = false;
+
+    const chargerWallets = async () => {
+      setChargementWallets(true);
+      try {
+        const catalogue = await getPayoutMethods(formData.pays || undefined);
+        if (annule) return;
+        setWalletOptions(catalogue.data);
+        if (catalogue.meta?.countries?.length) setPays(catalogue.meta.countries);
+      } finally {
+        if (!annule) setChargementWallets(false);
+      }
+    };
+
+    chargerWallets();
+    return () => { annule = true; };
+  }, [isOpen, formData.pays]);
+
+  // Changer de pays invalide le portefeuille choisi : il n'y est pas servi
+  const handlePaysChange = (value: string) => {
+    setFormData(prev => ({ ...prev, pays: value, wallet: "" }));
+    setErrors(prev => ({ ...prev, wallet: [] }));
+  };
 
   const handleSubmit = async () => {
     
@@ -566,7 +595,7 @@ const CreateAgentModal = ({ services = [], entrepriseId = "" }: CreateAgentModal
                   </h4>
                   <div className="ml-8 grid grid-cols-2 gap-3">
                     <p className="text-gray-800"><span className="font-medium">Salaire :</span> {formData.salaire} FCFA</p>
-                    <p className="text-gray-800"><span className="font-medium">Portefeuille :</span> {walletOptions.find(w => w.value === formData.wallet)?.label || formData.wallet || 'Non défini'}</p>
+                    <p className="text-gray-800"><span className="font-medium">Portefeuille :</span> {walletOptions.find(w => w.code === formData.wallet)?.name || formData.wallet || 'Non défini'}</p>
                     <p className="text-gray-800"><span className="font-medium">Fréquence :</span> {formData.frequencePaiement}</p>
                     {formData.frequencePaiement === 'mensuel' && (
                       <p className="text-gray-800"><span className="font-medium">Jour du mois :</span> {formData.jourPaiement}</p>
@@ -639,11 +668,46 @@ const CreateAgentModal = ({ services = [], entrepriseId = "" }: CreateAgentModal
                 </div> */}
                  <div>
   <label className="block mb-1 font-medium text-gray-700">
+    Pays
+  </label>
+  <Select.Root value={formData.pays} onValueChange={handlePaysChange}>
+    <Select.Trigger className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 flex items-center justify-between">
+      <Select.Value placeholder="Tous les pays" />
+      <Select.Icon className="ml-2">
+        <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M4.18179 6.18181C4.35753 6.00608 4.64245 6.00608 4.81819 6.18181L7.49999 8.86362L10.1818 6.18181C10.3575 6.00608 10.6424 6.00608 10.8182 6.18181C10.9939 6.35755 10.9939 6.64247 10.8182 6.81821L7.81819 9.81821C7.73379 9.9026 7.61933 9.95001 7.49999 9.95001C7.38064 9.95001 7.26618 9.9026 7.18179 9.81821L4.18179 6.81821C4.00605 6.64247 4.00605 6.35755 4.18179 6.18181Z" fill="currentColor"/>
+        </svg>
+      </Select.Icon>
+    </Select.Trigger>
+
+    <Select.Portal>
+      <Select.Content className="bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto z-50">
+        <Select.Viewport className="p-1">
+          {pays.map((p) => (
+            <Select.Item
+              key={p.code}
+              value={p.code}
+              className="px-3 py-2 hover:bg-gray-100 cursor-pointer rounded-sm outline-none data-[highlighted]:bg-gray-100"
+            >
+              <Select.ItemText>{p.name}</Select.ItemText>
+            </Select.Item>
+          ))}
+        </Select.Viewport>
+      </Select.Content>
+    </Select.Portal>
+  </Select.Root>
+  <span className="text-xs text-gray-500 mt-1 block">
+    Choisissez le pays pour filtrer les portefeuilles disponibles
+  </span>
+</div>
+
+                 <div>
+  <label className="block mb-1 font-medium text-gray-700">
     Portefeuille mobile
   </label>
   <Select.Root value={formData.wallet} onValueChange={handleWalletChange}>
     <Select.Trigger className={`w-full border ${errors.wallet ? 'border-red-500' : 'border-gray-300'} rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 flex items-center justify-between`}>
-      <Select.Value placeholder="Sélectionnez un portefeuille" />
+      <Select.Value placeholder={chargementWallets ? "Chargement..." : "Sélectionnez un portefeuille"} />
       <Select.Icon className="ml-2">
         <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M4.18179 6.18181C4.35753 6.00608 4.64245 6.00608 4.81819 6.18181L7.49999 8.86362L10.1818 6.18181C10.3575 6.00608 10.6424 6.00608 10.8182 6.18181C10.9939 6.35755 10.9939 6.64247 10.8182 6.81821L7.81819 9.81821C7.73379 9.9026 7.61933 9.95001 7.49999 9.95001C7.38064 9.95001 7.26618 9.9026 7.18179 9.81821L4.18179 6.81821C4.00605 6.64247 4.00605 6.35755 4.18179 6.18181Z" fill="currentColor"/>
@@ -655,12 +719,14 @@ const CreateAgentModal = ({ services = [], entrepriseId = "" }: CreateAgentModal
       <Select.Content className="bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto z-50">
         <Select.Viewport className="p-1">
           {walletOptions.map((option) => (
-            <Select.Item 
-              key={option.value} 
-              value={option.value}
+            <Select.Item
+              key={option.code}
+              value={option.code}
               className="px-3 py-2 hover:bg-gray-100 cursor-pointer rounded-sm outline-none data-[highlighted]:bg-gray-100"
             >
-              <Select.ItemText>{option.label}</Select.ItemText>
+              <Select.ItemText>
+                {option.name}{option.country_name && !formData.pays ? ` — ${option.country_name}` : ''}
+              </Select.ItemText>
             </Select.Item>
           ))}
         </Select.Viewport>
