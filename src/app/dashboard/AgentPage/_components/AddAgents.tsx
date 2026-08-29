@@ -37,7 +37,6 @@ const CreateAgentModal = ({ services = [], entrepriseId = "" }: CreateAgentModal
     email: "",
     telephone: "",
     adresse: "",
-    nin: "",
     fonction: "", // ✅ Nouveau champ pour le poste/fonction
     entrepriseId: entrepriseId,
     // Nouveaux champs pour les paiements
@@ -146,8 +145,7 @@ const CreateAgentModal = ({ services = [], entrepriseId = "" }: CreateAgentModal
       email: "",
       telephone: "",
       adresse: "",
-      nin: "",
-      fonction: "", // ✅ Réinitialiser fonction
+        fonction: "", // ✅ Réinitialiser fonction
       entrepriseId: entrepriseId,
       salaire: "",
       wallet: "", 
@@ -556,7 +554,6 @@ const CreateAgentModal = ({ services = [], entrepriseId = "" }: CreateAgentModal
                     <p className="text-gray-800"><span className="font-medium">Email :</span> {formData.email}</p>
                     <p className="text-gray-800"><span className="font-medium">Téléphone :</span> {formData.telephone}</p>
                     <p className="text-gray-800 col-span-2"><span className="font-medium">Adresse :</span> {formData.adresse}</p>
-                    {formData.nin && <p className="text-gray-800 col-span-2"><span className="font-medium">NIN :</span> {formData.nin}</p>}
                     {formData.fonction && <p className="text-gray-800 col-span-2"><span className="font-medium">Fonction :</span> {formData.fonction}</p>}
                   </div>
                 </div>
@@ -791,19 +788,6 @@ const CreateAgentModal = ({ services = [], entrepriseId = "" }: CreateAgentModal
                   )}
                 </div>
 
-                <div>
-                  <label className="block mb-1 font-medium text-gray-700">NIN (optionnel)</label>
-                  <input
-                    type="text"
-                    name="nin"
-                    value={formData.nin}
-                    onChange={handleChange}
-                    placeholder="Numéro d'identification national"
-                    className={`w-full border ${errors.nin ? 'border-red-500' : 'border-gray-300'
-                      } rounded-md p-2`}
-                  />
-                  {getFieldError('nin')}
-                </div>
 
                 {/* ✅ Nouveau champ : Nom de la fonction */}
                 <div>

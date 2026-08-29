@@ -12,8 +12,14 @@ const ClientSchema = z.object({
   prenom: z.string().min(1, { message: "Le prénom est obligatoire" }),
   email: z.string().email({ message: "Format d'email invalide" }),
   telephone: z.string().min(10, { message: "Le numéro de téléphone est obligatoire" }),
-  adresse: z.string().min(1, { message: "L'adresse est obligatoire" }),
+  // Adresse et NIN ne sont plus demandes a la creation : le backend les
+  // accepte comme facultatifs.
+  adresse: z.string().optional(),
   nin: z.string().optional(),
+  // Pays du client (ISO2) et moyen d'encaissement choisi. Facultatifs : sans
+  // moyen declare, le client recoit un lien de paiement classique.
+  pays: z.string().optional(),
+  moyenPaiement: z.string().optional(),
   serviceId: z.string().min(1, { message: "L'ID du service est obligatoire" }),
   entrepriseId: z.string().min(1, { message: "L'ID de l'entreprise est obligatoire" }),
   niveauService: z.string().min(1, { message: "Le niveau de service est obligatoire" }),

@@ -83,3 +83,9 @@ export const SUPERADMIN_CANDIDATURES_PAGINATED_URL = `${API_URL}/candidatures`
 export const SUPERADMIN_DASHBOARD_STATS_URL = `${API_URL}/superadmin/dashboard-stats`
 
 //Events
+
+// Catalogue des moyens de paiement
+// payment-methods = encaissement (le client paie)
+// payout-methods  = versement (le salaire de l'agent)
+export const PAYMENT_METHODS_URL = `${API_URL}/payment-methods`
+export const PAYOUT_METHODS_URL = `${API_URL}/payout-methods`

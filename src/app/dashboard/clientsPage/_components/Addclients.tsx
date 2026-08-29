@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { createClient } from "@/actions/clientreq";
 import PhoneInput from "./phone";
 import { validateOTP } from "@/actions/service";
+import { getPaymentMethods, type PaymentMethod, type Country } from "@/actions/paymentMethods";
 import { Button } from "@/components/ui/button";
 import OtpInput from "../../entreprise/_components/_Agent/OtpInput";
 import { useRouter } from "next/navigation"; // Ajout pour Next.js
@@ -38,13 +39,17 @@ const CreateClientModal = ({ services = [], entrepriseId = "" }: CreateClientMod
   const [errors, setErrors] = useState<ValidationErrors>({});
   const [showRecap, setShowRecap] = useState(false); // ✅ Nouvel état pour le récapitulatif
   const [selectedServiceNiveaux, setSelectedServiceNiveaux] = useState<NiveauService[]>([]);
+  // Catalogue des moyens d'encaissement, charge depuis l'API
+  const [pays, setPays] = useState<Country[]>([]);
+  const [moyensPaiement, setMoyensPaiement] = useState<PaymentMethod[]>([]);
+  const [chargementMoyens, setChargementMoyens] = useState(false);
   const [formData, setFormData] = useState({
     nom: "",
     prenom: "",
     email: "",
     telephone: "",
-    adresse: "",
-    nin: "",
+    pays: "",
+    moyenPaiement: "",
     serviceId: "",
     nomService: "",
     entrepriseId: entrepriseId,
@@ -54,7 +59,7 @@ const CreateClientModal = ({ services = [], entrepriseId = "" }: CreateClientMod
     frequencePaiement: "mensuel",
     intervallePaiement: 1,
     jourPaiement: 1,
-    aFAirePayer: false,
+    aFAirePayer: true,
     //supportFees:false,
     // Champ pour la date programmée
     dateProgrammee: ""
@@ -109,6 +114,34 @@ const CreateClientModal = ({ services = [], entrepriseId = "" }: CreateClientMod
     return "";
   };
 
+
+  // Le catalogue des moyens d'encaissement est servi par l'API. La liste des
+  // pays est deduite du catalogue lui-meme, elle n'est pas codee en dur.
+  useEffect(() => {
+    if (!isOpen) return;
+    let annule = false;
+
+    const chargerMoyens = async () => {
+      setChargementMoyens(true);
+      try {
+        const catalogue = await getPaymentMethods(formData.pays || undefined);
+        if (annule) return;
+        setMoyensPaiement(catalogue.data);
+        if (catalogue.meta?.countries?.length) setPays(catalogue.meta.countries);
+      } finally {
+        if (!annule) setChargementMoyens(false);
+      }
+    };
+
+    chargerMoyens();
+    return () => { annule = true; };
+  }, [isOpen, formData.pays]);
+
+  // Changer de pays invalide le moyen deja choisi : il n'y est pas forcement servi
+  const handlePaysChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setFormData(prev => ({ ...prev, pays: e.target.value, moyenPaiement: '' }));
+  };
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ 
@@ -151,8 +184,8 @@ const CreateClientModal = ({ services = [], entrepriseId = "" }: CreateClientMod
       prenom: "",
       email: "",
       telephone: "",
-      adresse: "",
-      nin: "",
+      pays: "",
+      moyenPaiement: "",
       serviceId: "",
       nomService: "",
       entrepriseId: entrepriseId,
@@ -162,7 +195,7 @@ const CreateClientModal = ({ services = [], entrepriseId = "" }: CreateClientMod
       frequencePaiement: "mensuel",
       intervallePaiement: 1,
       jourPaiement: 1,
-      aFAirePayer: false,
+      aFAirePayer: true,
      // supportFees:false,
       // Réinitialiser la date programmée
       dateProgrammee: ""
@@ -182,8 +215,7 @@ const CreateClientModal = ({ services = [], entrepriseId = "" }: CreateClientMod
       { field: 'nom', message: 'Le nom est requis' },
       { field: 'prenom', message: 'Le prénom est requis' },
       { field: 'email', message: 'L\'email est requis' },
-      { field: 'telephone', message: 'Le téléphone est requis' },
-      { field: 'adresse', message: 'L\'adresse est requise' }
+      { field: 'telephone', message: 'Le téléphone est requis' }
     ];
 
     requiredFields.forEach(({ field, message }) => {
@@ -590,8 +622,6 @@ const CreateClientModal = ({ services = [], entrepriseId = "" }: CreateClientMod
                     <p className="text-gray-800"><span className="font-medium">Prénom :</span> {formData.prenom}</p>
                     <p className="text-gray-800"><span className="font-medium">Email :</span> {formData.email}</p>
                     <p className="text-gray-800"><span className="font-medium">Téléphone :</span> {formData.telephone}</p>
-                    <p className="text-gray-800 col-span-2"><span className="font-medium">Adresse :</span> {formData.adresse}</p>
-                    {formData.nin && <p className="text-gray-800 col-span-2"><span className="font-medium">NIN :</span> {formData.nin}</p>}
                   </div>
                 </div>
 
@@ -781,41 +811,6 @@ const CreateClientModal = ({ services = [], entrepriseId = "" }: CreateClientMod
                   )}
                 </div>
 
-                <div>
-                  <label className="block mb-1 font-medium text-gray-700">Adresse <span className="text-red-500">*</span></label>
-                  <div className={`flex items-center border ${errors.adresse ? 'border-red-500' : 'border-gray-300'
-                    } rounded-md p-2 focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-transparent`}>
-                    <Home className="w-4 h-4 mr-2 text-gray-500" />
-                    <input
-                      type="text"
-                      name="adresse"
-                      value={formData.adresse}
-                      onChange={handleChange}
-                      placeholder="Votre adresse complète"
-                      className="flex-1 outline-none"
-                      required
-                    />
-                  </div>
-                  {errors.adresse?.length > 0 ? (
-                    <span className="text-red-500 text-sm mt-1">{errors.adresse[0]}</span>
-                  ) : (
-                    <span className="text-xs text-gray-500 mt-1">Ce champ est obligatoire</span>
-                  )}
-                </div>
-
-                <div>
-                  <label className="block mb-1 font-medium text-gray-700">NIN (optionnel)</label>
-                  <input
-                    type="text"
-                    name="nin"
-                    value={formData.nin}
-                    onChange={handleChange}
-                    placeholder="Numéro d'identification national"
-                    className={`w-full border ${errors.nin ? 'border-red-500' : 'border-gray-300'
-                      } rounded-md p-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
-                  />
-                  {getFieldError('nin')}
-                </div>
 
                 {/* Section des paramètres de paiement */}
                 <div className="mt-6 border-t pt-4">
@@ -823,6 +818,53 @@ const CreateClientModal = ({ services = [], entrepriseId = "" }: CreateClientMod
                     <DollarSign className="w-5 h-5 mr-2 text-orange-500" />
                     Paramètres de paiement
                   </h3>
+
+                  {/* Pays puis moyen d'encaissement : on choisit le pays, la
+                      liste des moyens se filtre dessus. Laisser vide envoie au
+                      client un lien de paiement sur lequel il choisit lui-meme. */}
+                  <div className="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                      <label className="block mb-1 font-medium text-gray-700">Pays</label>
+                      <select
+                        name="pays"
+                        value={formData.pays}
+                        onChange={handlePaysChange}
+                        className="border border-gray-300 rounded-md p-2 w-full focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      >
+                        <option value="">Tous les pays</option>
+                        {pays.map((p) => (
+                          <option key={p.code} value={p.code}>{p.name}</option>
+                        ))}
+                      </select>
+                      {getFieldError('pays')}
+                    </div>
+
+                    <div>
+                      <label className="block mb-1 font-medium text-gray-700">Moyen de paiement</label>
+                      <select
+                        name="moyenPaiement"
+                        value={formData.moyenPaiement}
+                        onChange={handleChange}
+                        disabled={chargementMoyens}
+                        className="border border-gray-300 rounded-md p-2 w-full focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
+                      >
+                        <option value="">
+                          {chargementMoyens ? 'Chargement...' : 'Laisser le client choisir'}
+                        </option>
+                        {moyensPaiement.map((m) => (
+                          <option key={`${m.code}-${m.country ?? 'all'}`} value={m.code}>
+                            {m.name}{m.country_name && !formData.pays ? ` — ${m.country_name}` : ''}
+                          </option>
+                        ))}
+                      </select>
+                      {getFieldError('moyenPaiement')}
+                      <span className="text-xs text-gray-500 mt-1 block">
+                        {formData.moyenPaiement
+                          ? 'Une demande de paiement sera envoyee directement sur son telephone'
+                          : 'Sans choix, le client recoit un lien et selectionne lui-meme'}
+                      </span>
+                    </div>
+                  </div>
 
                   <div className="grid grid-cols-2 gap-4 mb-4">
                     <div>
