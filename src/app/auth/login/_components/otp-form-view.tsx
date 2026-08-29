@@ -10,7 +10,7 @@ import {
   InputOTPSlot,
 } from "@/components/ui/input-otp";
 import { useRef, useState, useEffect } from "react";
-import { RefreshCw, Smartphone, ArrowLeft } from "lucide-react";
+import { RefreshCw, Smartphone, ArrowLeft, Loader2 } from "lucide-react";
 
 interface OtpFormViewProps {
   otp: string;
@@ -22,6 +22,7 @@ interface OtpFormViewProps {
   onBack: () => void;
   entrepriseId: string;
   isResending?: boolean;
+  isVerifying?: boolean;
 }
 
 export const OtpFormView = ({
@@ -34,6 +35,7 @@ export const OtpFormView = ({
   onBack,
   entrepriseId,
   isResending = false,
+  isVerifying = false,
 }: OtpFormViewProps) => {
   const formRef = useRef<HTMLFormElement>(null);
   const [countdown, setCountdown] = useState(60);
@@ -49,19 +51,19 @@ export const OtpFormView = ({
     }
   }, [countdown]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (otp.length === 6) {
-      const formData = new FormData();
-      formData.append('email', email);
-      formData.append('otp', otp);
-      formData.append('entrepriseId', entrepriseId);
-      handleVerifyOtp(formData);
-    }
+    if (otp.length !== 6 || isVerifying) return;
+
+    const formData = new FormData();
+    formData.append('email', email);
+    formData.append('otp', otp);
+    formData.append('entrepriseId', entrepriseId);
+    await handleVerifyOtp(formData);
   };
 
   const handleResend = async () => {
-    if (canResend && !isResending) {
+    if (canResend && !isResending && !isVerifying) {
       await handleResendOtp();
       setCountdown(60);
       setCanResend(false);
@@ -134,9 +136,16 @@ export const OtpFormView = ({
         <Button
           type="submit"
           className="w-full h-11 bg-[#0cadec] hover:bg-[#0cadec]/90"
-          disabled={otp.length !== 6}
+          disabled={otp.length !== 6 || isVerifying}
         >
-          Vérifier le code
+          {isVerifying ? (
+            <span className="flex items-center justify-center gap-2">
+              <Loader2 className="w-4 h-4 animate-spin" />
+              Vérification...
+            </span>
+          ) : (
+            "Vérifier le code"
+          )}
         </Button>
 
         {/* Renvoyer OTP */}

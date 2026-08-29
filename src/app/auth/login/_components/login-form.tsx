@@ -28,6 +28,7 @@ const LoginForm = () => {
   const [password, setPassword] = useState("");
   const [otp, setOtp] = useState("");
   const [isResending, setIsResending] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
 
   const handleLogin = async (formData: FormData) => {
     // Sauvegarder email et password pour le renvoi d'OTP
@@ -47,17 +48,32 @@ const LoginForm = () => {
   };
 
   const handleVerifyOtp = async (formData: FormData) => {
-    const result = await verifyOtp(null, formData);
-    const entrepriseId = formData.get('entrepriseId');
+    if (isVerifying) return;
+    setIsVerifying(true);
 
-    setOtpState({
-      type: result.type || "",
-      message: result.message || "",
-      url: result.url || ""
-    });
+    try {
+      const result = await verifyOtp(null, formData);
 
-    if (result.type === "redirect" && result.url) {
-      router.push(result.url);
+      setOtpState({
+        type: result.type || "",
+        message: result.message || "",
+        url: result.url || ""
+      });
+
+      if (result.type === "redirect" && result.url) {
+        // On garde l'indicateur actif : la redirection prend le relais, le
+        // relacher ici ferait clignoter le bouton avant le changement de page.
+        router.push(result.url);
+        return;
+      }
+    } catch (error) {
+      setOtpState({
+        type: "error",
+        message: "La vérification a échoué. Réessayez.",
+        url: ""
+      });
+    } finally {
+      setIsVerifying(false);
     }
   };
 
@@ -141,6 +157,7 @@ const LoginForm = () => {
           handleResendOtp={handleResendOtp}
           onBack={handleBack}
           isResending={isResending}
+          isVerifying={isVerifying}
           entrepriseId=""
         />
       )}
