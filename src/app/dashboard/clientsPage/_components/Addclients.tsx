@@ -6,6 +6,8 @@ import { createClient } from "@/actions/clientreq";
 import PhoneInput from "./phone";
 import { validateOTP } from "@/actions/service";
 import { getPaymentMethods, type PaymentMethod, type Country } from "@/actions/paymentMethods";
+import { useFormDraft } from "@/hooks/useFormDraft";
+import { DraftBanner } from "@/components/draft-banner";
 import { Button } from "@/components/ui/button";
 import OtpInput from "../../entreprise/_components/_Agent/OtpInput";
 import { useRouter } from "next/navigation"; // Ajout pour Next.js
@@ -64,6 +66,21 @@ const CreateClientModal = ({ services = [], entrepriseId = "" }: CreateClientMod
     // Champ pour la date programmée
     dateProgrammee: ""
   });
+
+  // Brouillon local : une fenetre fermee par erreur ne doit pas faire perdre
+  // la saisie. Le brouillon est propre a l'entreprise ouverte.
+  const { brouillonRestaure, dateBrouillon, effacerBrouillon } = useFormDraft(
+    `client:${entrepriseId || 'sans-entreprise'}`,
+    formData,
+    (sauvegarde) => setFormData((prev) => ({ ...prev, ...sauvegarde })),
+    {
+      actif: isOpen,
+      meriteSauvegarde: (v) => {
+        const d = v as typeof formData;
+        return Boolean(d.nom || d.prenom || d.email || d.telephone || d.serviceId);
+      }
+    }
+  );
   
   // États pour la vérification OTP
   const [showOtpVerification, setShowOtpVerification] = useState(false);
@@ -314,6 +331,7 @@ const CreateClientModal = ({ services = [], entrepriseId = "" }: CreateClientMod
           setShowOtpVerification(true);
         } else {
           toast.success("Client créé avec succès !");
+          effacerBrouillon();
           resetModal();
           // ✅ Actualiser la page après création réussie
           setTimeout(() => {
@@ -362,6 +380,7 @@ const CreateClientModal = ({ services = [], entrepriseId = "" }: CreateClientMod
       
       if (response.success) {
         toast.success("Client validé avec succès !");
+        effacerBrouillon();
         resetModal();
         // ✅ Actualiser la page après validation OTP réussie
         setTimeout(() => {
@@ -610,6 +629,12 @@ const CreateClientModal = ({ services = [], entrepriseId = "" }: CreateClientMod
                     <p className="text-gray-800"><span className="font-medium">Niveau de service :</span> {selectedServiceNiveaux.find(n => n._id === formData.niveauService)?.nom || formData.niveauService}</p>
                   </div>
                 </div>
+
+                <DraftBanner
+                  visible={brouillonRestaure}
+                  date={dateBrouillon}
+                  onEffacer={effacerBrouillon}
+                />
 
                 {/* Informations personnelles */}
                 <div className="mb-6 bg-gray-50 rounded-lg p-4">

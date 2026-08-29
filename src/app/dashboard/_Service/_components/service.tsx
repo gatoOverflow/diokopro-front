@@ -6,6 +6,8 @@ import { createService, validateOTP } from "@/actions/service";
 import { toast } from "sonner";
 import OtpInput from "../../entreprise/_components/_Agent/OtpInput";
 import { Button } from "@/components/ui/button";
+import { useFormDraft } from "@/hooks/useFormDraft";
+import { DraftBanner } from "@/components/draft-banner";
 
 interface Enterprise {
   _id: string;
@@ -39,6 +41,21 @@ const CreateServiceModal = ({ enterprises }: CreateServiceModalProps) => {
     : enterprises && enterprises._id 
       ? enterprises._id 
       : "";
+
+  // Brouillon local : une fenetre fermee par erreur ne doit pas faire perdre
+  // la saisie. Le brouillon est propre a l'entreprise ouverte.
+  const { brouillonRestaure, dateBrouillon, effacerBrouillon } = useFormDraft(
+    `service:${enterpriseId || 'sans-entreprise'}`,
+    formData,
+    (sauvegarde) => setFormData((prev) => ({ ...prev, ...sauvegarde })),
+    {
+      actif: isOpen,
+      meriteSauvegarde: (v) => {
+        const d = v as typeof formData;
+        return Boolean(d.nomService || d.description || d.tarifactionBase);
+      }
+    }
+  );
 
   const addNiveau = () => {
     setNiveaux([...niveaux, { nom: "", tarif: 0 }]);
@@ -123,6 +140,7 @@ const CreateServiceModal = ({ enterprises }: CreateServiceModalProps) => {
         setShowRecap(false);
       } else if (response.type === "success") {
         toast.success("Service créé avec succès !");
+        effacerBrouillon();
         resetModal();
       } else if (response.errors) {
         setErrors(response.errors);
@@ -162,6 +180,7 @@ const CreateServiceModal = ({ enterprises }: CreateServiceModalProps) => {
       
       if (response.success) {
         toast.success("Service validé avec succès !");
+        effacerBrouillon();
         resetModal();
       } else {
         toast.error(response.error || "Code OTP invalide ou expiré");
@@ -227,6 +246,12 @@ const CreateServiceModal = ({ enterprises }: CreateServiceModalProps) => {
                 <CircleX className="w-6 h-6" />
               </Button>
             </div>
+
+            <DraftBanner
+              visible={brouillonRestaure}
+              date={dateBrouillon}
+              onEffacer={effacerBrouillon}
+            />
 
             {/* ✅ Logique corrigée : 3 états possibles */}
             {showOtpVerification ? (

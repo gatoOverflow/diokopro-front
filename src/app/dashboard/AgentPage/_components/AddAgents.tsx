@@ -5,6 +5,8 @@ import { toast } from "sonner";
 import { createAgent } from "@/actions/Agent";
 import { validateOTP } from "@/actions/service";
 import { getPayoutMethods, type PaymentMethod, type Country } from "@/actions/paymentMethods";
+import { useFormDraft } from "@/hooks/useFormDraft";
+import { DraftBanner } from "@/components/draft-banner";
 import PhoneInput from "../../clientsPage/_components/phone";
 import OtpInput from "../../entreprise/_components/_Agent/OtpInput";
 import { Button } from "@/components/ui/button";
@@ -54,6 +56,21 @@ const CreateAgentModal = ({ services = [], entrepriseId = "" }: CreateAgentModal
     aPayer: false, // ✅ Initialisé à false par défaut
     dateProchainVirement: ""
   });
+
+  // Brouillon local : une fenetre fermee par erreur ne doit pas faire perdre
+  // la saisie. Le brouillon est propre a l'entreprise ouverte.
+  const { brouillonRestaure, dateBrouillon, effacerBrouillon } = useFormDraft(
+    `agent:${entrepriseId || 'sans-entreprise'}`,
+    formData,
+    (sauvegarde) => setFormData((prev) => ({ ...prev, ...sauvegarde })),
+    {
+      actif: isOpen,
+      meriteSauvegarde: (v) => {
+        const d = v as typeof formData;
+        return Boolean(d.nom || d.prenom || d.email || d.telephone || d.salaire);
+      }
+    }
+  );
 
   // États pour la vérification OTP
   const [showOtpVerification, setShowOtpVerification] = useState(false);
@@ -317,6 +334,7 @@ const CreateAgentModal = ({ services = [], entrepriseId = "" }: CreateAgentModal
       } else if (response.type === "success") {
         // Cas où l'agent a été créé sans besoin de validation OTP
         toast.success("Agent créé avec succès !");
+        effacerBrouillon();
         resetModal();
         // ✅ Actualiser la page après création réussie
         setTimeout(() => {
@@ -362,6 +380,7 @@ const CreateAgentModal = ({ services = [], entrepriseId = "" }: CreateAgentModal
 
       if (response.success) {
         toast.success("Agent validé avec succès !");
+        effacerBrouillon();
         resetModal();
         // ✅ Actualiser la page après validation OTP réussie
         setTimeout(() => {
@@ -570,6 +589,12 @@ const CreateAgentModal = ({ services = [], entrepriseId = "" }: CreateAgentModal
                     <p className="text-gray-800"><span className="font-medium">Service :</span> {formData.nomService || services.find(s => s._id === formData.serviceId)?.nomService}</p>
                   </div>
                 </div> */}
+
+                <DraftBanner
+                  visible={brouillonRestaure}
+                  date={dateBrouillon}
+                  onEffacer={effacerBrouillon}
+                />
 
                 {/* Informations personnelles */}
                 <div className="mb-6 bg-gray-50 rounded-lg p-4">
