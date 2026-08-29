@@ -3,22 +3,6 @@ import React, { useState, useEffect, useMemo, useRef, useCallback } from "react"
 import { createPortal } from "react-dom";
 import { ChevronDown, Search, Loader2, X } from "lucide-react";
 
-interface Country {
-  name: {
-    common: string;
-    official: string;
-  };
-  cca2: string;
-  idd: {
-    root: string;
-    suffixes: string[];
-  };
-  flags: {
-    png: string;
-    svg: string;
-  };
-}
-
 interface CountryCode {
   name: string;
   code: string;
@@ -34,9 +18,18 @@ interface PhoneInputProps {
   required?: boolean;
 }
 
-// Pays de repli (utilisé si l'API restcountries est indisponible).
-// Couvre l'Afrique de l'Ouest + indicatifs courants pour ne jamais bloquer la saisie.
-const FALLBACK_COUNTRIES: CountryCode[] = [
+// Liste locale des indicatifs.
+//
+// Elle etait auparavant chargee depuis restcountries.com a chaque montage.
+// Cette API repond desormais un 301 vers files-03.restcountries.com SANS
+// en-tete access-control-allow-origin sur la redirection elle-meme : le
+// navigateur avorte avec "Failed to fetch" avant de la suivre. L'erreur
+// apparaissait donc a chaque ouverture de formulaire.
+//
+// Un indicatif telephonique ne change pas : une liste locale evite l'appel
+// reseau, la latence et la dependance a un tiers. Les 8 pays servis par le
+// catalogue de paiement (SN, CI, BF, BJ, TG, ML, CM, CG) sont tous presents.
+const COUNTRIES: CountryCode[] = [
   { name: "Sénégal", code: "SN", dial_code: "+221", flag: "https://flagcdn.com/sn.svg" },
   { name: "Côte d'Ivoire", code: "CI", dial_code: "+225", flag: "https://flagcdn.com/ci.svg" },
   { name: "Mali", code: "ML", dial_code: "+223", flag: "https://flagcdn.com/ml.svg" },
@@ -48,6 +41,7 @@ const FALLBACK_COUNTRIES: CountryCode[] = [
   { name: "Mauritanie", code: "MR", dial_code: "+222", flag: "https://flagcdn.com/mr.svg" },
   { name: "Gambie", code: "GM", dial_code: "+220", flag: "https://flagcdn.com/gm.svg" },
   { name: "Cameroun", code: "CM", dial_code: "+237", flag: "https://flagcdn.com/cm.svg" },
+  { name: "Congo", code: "CG", dial_code: "+242", flag: "https://flagcdn.com/cg.svg" },
   { name: "France", code: "FR", dial_code: "+33", flag: "https://flagcdn.com/fr.svg" },
   { name: "Maroc", code: "MA", dial_code: "+212", flag: "https://flagcdn.com/ma.svg" },
   { name: "États-Unis", code: "US", dial_code: "+1", flag: "https://flagcdn.com/us.svg" },
@@ -64,10 +58,10 @@ const PhoneInput: React.FC<PhoneInputProps> = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [countries, setCountries] = useState<CountryCode[]>([]);
+  const [countries] = useState<CountryCode[]>(COUNTRIES);
   const [selectedCountry, setSelectedCountry] = useState<CountryCode | null>(null);
   const [phoneNumber, setPhoneNumber] = useState("");
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [mounted, setMounted] = useState(false);
 
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -79,43 +73,11 @@ const PhoneInput: React.FC<PhoneInputProps> = ({
   }, []);
 
   useEffect(() => {
-    const fetchCountries = async () => {
-      try {
-        const response = await fetch(
-          "https://restcountries.com/v3.1/all?fields=name,cca2,idd,flags"
-        );
-        if (!response.ok) throw new Error("restcountries unavailable");
-        const data: Country[] = await response.json();
-
-        const formattedCountries: CountryCode[] = data
-          .filter((country) => country.idd?.root)
-          .map((country) => ({
-            name: country.name.common,
-            code: country.cca2,
-            dial_code: `${country.idd.root}${country.idd.suffixes?.[0] || ""}`,
-            flag: country.flags.svg,
-          }))
-          .sort((a, b) => a.name.localeCompare(b.name, "fr"));
-
-        setCountries(formattedCountries);
-        const fallback =
-          formattedCountries.find((c) => c.code === DEFAULT_COUNTRY_CODE) ||
-          formattedCountries[0];
-        if (fallback) setSelectedCountry((prev) => prev ?? fallback);
-      } catch (err) {
-        console.error("Erreur lors du chargement des pays, utilisation du repli:", err);
-        setCountries(FALLBACK_COUNTRIES);
-        setSelectedCountry(
-          (prev) =>
-            prev ?? FALLBACK_COUNTRIES.find((c) => c.code === DEFAULT_COUNTRY_CODE) ?? FALLBACK_COUNTRIES[0]
-        );
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchCountries();
+    const parDefaut =
+      COUNTRIES.find((c) => c.code === DEFAULT_COUNTRY_CODE) ?? COUNTRIES[0];
+    setSelectedCountry((prev) => prev ?? parDefaut);
   }, []);
+
 
   const filteredCountries = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
