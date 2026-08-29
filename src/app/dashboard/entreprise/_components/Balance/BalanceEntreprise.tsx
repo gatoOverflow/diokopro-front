@@ -7,11 +7,12 @@ import { Input } from '@/components/ui/input'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { CreditCard, Minus, Plus, Send, Loader2, AlertCircle, CheckCircle, Wallet, ArrowUpCircle, ArrowDownCircle, MessageSquarePlus, TrendingUp } from 'lucide-react'
 import { envoyerMessage, rechargeCompte, retraitCompte } from '@/actions/Balance'
 import OtpInput from '../_Agent/OtpInput';
 import { validateOTP } from '@/actions/service';
+import { getPayoutMethods, type PaymentMethod, type Country } from '@/actions/paymentMethods';
 
 interface Balance {
   balance: number;
@@ -38,8 +39,13 @@ export default function BalanceEntreprise({ balances, entrepriseId, onBalanceUpd
   const [retraitData, setRetraitData] = useState({
     montant: '',
     numAdmin: '',
-    wallet: ''
+    wallet: '',
+    pays: ''
   })
+  // Catalogue des portefeuilles de versement, servi par l'API
+  const [pays, setPays] = useState<Country[]>([])
+  const [walletOptions, setWalletOptions] = useState<PaymentMethod[]>([])
+  const [chargementWallets, setChargementWallets] = useState(false)
   const [messageData, setMessageData] = useState({
     titre: '',
     message: ''
@@ -196,7 +202,7 @@ export default function BalanceEntreprise({ balances, entrepriseId, onBalanceUpd
     setShowOtpStep(false)
     setOtpCode('')
     setPendingChangeId('')
-    setRetraitData({ montant: '', numAdmin: '', wallet: '' })
+    setRetraitData({ montant: '', numAdmin: '', wallet: '', pays: '' })
   }
 
   // Fermer la modal et réinitialiser
@@ -361,11 +367,27 @@ const handleVerifyOtp = async (codeFromInput?: string) => {
     }
   }
 
-  const walletOptions = [
-    { value: 'orange-money-senegal', label: 'Orange Money Sénégal' },
-    { value: 'free-money-senegal', label: 'Free Money Sénégal' },
-    { value: 'wave-senegal', label: 'Wave Sénégal' },
-  ]
+  // Les portefeuilles viennent du catalogue : la liste codee en dur ne
+  // couvrait que le Senegal, alors que le versement sert 8 pays.
+  useEffect(() => {
+    if (!isRetraitOpen) return
+    let annule = false
+
+    const chargerWallets = async () => {
+      setChargementWallets(true)
+      try {
+        const catalogue = await getPayoutMethods(retraitData.pays || undefined)
+        if (annule) return
+        setWalletOptions(catalogue.data)
+        if (catalogue.meta?.countries?.length) setPays(catalogue.meta.countries)
+      } finally {
+        if (!annule) setChargementWallets(false)
+      }
+    }
+
+    chargerWallets()
+    return () => { annule = true }
+  }, [isRetraitOpen, retraitData.pays])
 
   return (
     <>
@@ -547,6 +569,24 @@ const handleVerifyOtp = async (codeFromInput?: string) => {
                     />
                   </div>
                   <div>
+                    <Label htmlFor="pays" className="text-gray-700">Pays</Label>
+                    <Select
+                      value={retraitData.pays}
+                      onValueChange={(value) => setRetraitData({...retraitData, pays: value, wallet: ''})}
+                      disabled={loading}
+                    >
+                      <SelectTrigger className="mt-1.5">
+                        <SelectValue placeholder="Tous les pays" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {pays.map((p) => (
+                          <SelectItem key={p.code} value={p.code}>{p.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
                     <Label htmlFor="wallet" className="text-gray-700">Portefeuille mobile</Label>
                     <Select
                       value={retraitData.wallet}
@@ -554,12 +594,12 @@ const handleVerifyOtp = async (codeFromInput?: string) => {
                       disabled={loading}
                     >
                       <SelectTrigger className="mt-1.5">
-                        <SelectValue placeholder="Choisir un portefeuille" />
+                        <SelectValue placeholder={chargementWallets ? 'Chargement...' : 'Choisir un portefeuille'} />
                       </SelectTrigger>
                       <SelectContent>
                         {walletOptions.map((option) => (
-                          <SelectItem key={option.value} value={option.value}>
-                            {option.label}
+                          <SelectItem key={option.code} value={option.code}>
+                            {option.name}{option.country_name && !retraitData.pays ? ` — ${option.country_name}` : ''}
                           </SelectItem>
                         ))}
                       </SelectContent>

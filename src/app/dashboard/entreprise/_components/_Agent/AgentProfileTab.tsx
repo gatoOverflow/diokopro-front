@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { X, Plus, Calendar, DollarSign } from 'lucide-react';
 import { Agent, Service, NiveauService } from '@/app/lib/types';
+import { getPayoutMethods, type PaymentMethod } from '@/actions/paymentMethods';
 
 interface AgentProfileTabProps {
   agent: Agent;
@@ -48,12 +49,18 @@ const AgentProfileTab: React.FC<AgentProfileTabProps> = ({
   showRemoveFromServiceConfirmation
 }) => {
 
-  // Wallet options
-  const walletOptions = [
-    { value: 'orange-money-senegal', label: 'Orange Money Sénégal' },
-    { value: 'free-money-senegal', label: 'Free Money Sénégal' },
-    { value: 'wave-senegal', label: 'Wave Sénégal' },
-  ];
+  // Les portefeuilles viennent du catalogue, comme au formulaire de creation.
+  // Sans cela un agent hors Senegal serait creable mais pas modifiable, et
+  // son portefeuille s'afficherait sous forme de code brut.
+  const [walletOptions, setWalletOptions] = useState<PaymentMethod[]>([]);
+
+  useEffect(() => {
+    let annule = false;
+    getPayoutMethods()
+      .then((catalogue) => { if (!annule) setWalletOptions(catalogue.data); })
+      .catch(() => { /* le formulaire reste utilisable sans le catalogue */ });
+    return () => { annule = true; };
+  }, []);
 
   // Fonction helper pour afficher les erreurs d'un champ
   const getFieldError = (fieldName: string) => {
@@ -227,8 +234,8 @@ const AgentProfileTab: React.FC<AgentProfileTabProps> = ({
               >
 
                 {walletOptions.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
+                  <option key={option.code} value={option.code}>
+                    {option.name}{option.country_name ? ` — ${option.country_name}` : ''}
                   </option>
                 ))}
               </select>
@@ -236,8 +243,8 @@ const AgentProfileTab: React.FC<AgentProfileTabProps> = ({
             </div>
           ) : (
             (() => {
-              const selectedWallet = walletOptions.find(option => option.value === agent.wallet);
-              return selectedWallet ? selectedWallet.label : agent.wallet || "-";
+              const selectedWallet = walletOptions.find(option => option.code === agent.wallet);
+              return selectedWallet ? selectedWallet.name : agent.wallet || "-";
             })()
           )}
         </div>
