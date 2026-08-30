@@ -12,9 +12,28 @@ const ClientsByServicePage = async () => {
   const entrepriseData = await fetchJSON(`${GET_ENTREPRISE_URL}/${currentEnterpriseId}`);
   const transactions = entrepriseData?.transactions || [];
 
-  
+  // De la plus recente a la plus ancienne.
+  //
+  // entreprise.transactions est un tableau ou l'on ajoute a la suite : il
+  // arrivait donc dans l'ordre chronologique, la transaction du jour tout en
+  // bas de la derniere page.
+  //
+  // Le tri se fait ici, sur la date brute. Plus loin dateCreation devient une
+  // chaine "jj/mm/aaaa" : trier dessus donnerait un ordre alphabetique, ou le
+  // 02 janvier precede le 01 decembre.
+  const transactionsTriees = [...transactions].sort((a, b) => {
+    const da = new Date(a?.date).getTime();
+    const db = new Date(b?.date).getTime();
+    // Une date absente ou illisible part en fin de liste plutot que de
+    // remonter en tete a cause d'un NaN.
+    if (isNaN(da) && isNaN(db)) return 0;
+    if (isNaN(da)) return 1;
+    if (isNaN(db)) return -1;
+    return db - da;
+  });
+
   // Transformer TOUTES les transactions en format uniforme
-  const allTransactions = transactions.map(transaction => {
+  const allTransactions = transactionsTriees.map(transaction => {
     let nom = 'N/A';
     let prenom = 'N/A';
     let type = transaction.type;
