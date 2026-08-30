@@ -14,7 +14,6 @@ import { Button } from '@/components/ui/button';
 import { getPages } from '@/lib/page';
 import { User } from '@/lib/type';
 import { CollapseMenuButton } from './collapse-menu-button';
-import { PasswordModal } from './PasswordModal';
 
 // Create a context to manage authentication state
 const AuthContext = React.createContext({
@@ -75,14 +74,14 @@ const SidebarMenuContent = ({ currentUser }: { currentUser?: User}) => {
     };
 
     // Function to check if a path is protected
-    const isProtectedPath = (path: string) => {
-      // Vérifie d'abord si le chemin est dans la liste des exclusions
-      if (excludedPaths.some(excludedPath => path === excludedPath)) {
-        return false;
-      }
-      // Ensuite vérifie s'il est dans la liste des chemins protégés
-      return protectedPaths.some(protectedPath => path.startsWith(protectedPath));
-    };
+    // La demande de mot de passe a la navigation a ete retiree : la session
+    // authentifiee suffit. Plus aucun chemin n'est garde, donc le modal ne
+    // s'ouvre plus, il n'y a plus de redirection forcee vers /dashboard/Agents
+    // ni de reamorcage apres 5 minutes d'inactivite.
+    //
+    // Les listes protectedPaths et excludedPaths sont conservees : elles
+    // decrivent le perimetre qu'il faudrait rearmer pour retablir la barriere.
+    const isProtectedPath = (_path: string) => false;
 
     // Function to record user activity
     const recordUserActivity = () => {
@@ -285,16 +284,6 @@ const SidebarMenuContent = ({ currentUser }: { currentUser?: User}) => {
           ))}
         </ul>
 
-        {/* Password modal */}
-        {showPasswordModal && (
-          <PasswordModal
-            onSuccess={handlePasswordSuccess}
-            onCancel={handlePasswordCancel}
-            userRole={currentUser?.role}
-            userEmail={currentUser?.email}
-            enterpriseId={currentUser?.enterpriseId}
-          />
-        )}
       </SidebarContent>
     </AuthContext.Provider>
   )
